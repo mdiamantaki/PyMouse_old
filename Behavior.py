@@ -8,7 +8,7 @@ def erd():
     dj.ERD(schema).draw()
 
 @schema
-class ExperimentTypes(dj.Lookup):
+class ExperimentType(dj.Lookup):
     definition = """
     # Experiment type
     exp_type : char(10) # experiment type short name
@@ -17,7 +17,7 @@ class ExperimentTypes(dj.Lookup):
     """
 
 @schema
-class Tasks(dj.Lookup):
+class Task(dj.Lookup):
     definition = """
     # Behavioral experiment parameters
     task                         : int             # task identification number
@@ -35,7 +35,7 @@ class Tasks(dj.Lookup):
     """
 
 @schema
-class MouseWeights(dj.Manual):
+class MouseWeight(dj.Manual):
     definition = """
     # Weight of the animal
     -> mice.Mice
@@ -44,9 +44,8 @@ class MouseWeights(dj.Manual):
     weight                       : float # in grams
     """
 
-
 @schema
-class Sessions(dj.Manual):
+class Session(dj.Manual):
     definition = """
     # Behavior session info
     -> mice.Mice
@@ -57,46 +56,93 @@ class Sessions(dj.Manual):
     session_tmst                 : timestamp       # session timestamp
     """
 
-    class Conditions(dj.Manual):
+@schema
+class Condition(dj.Manual):
+    definition = """
+    # unique stimulus conditions
+    -> Session
+    cond_idx                 : smallint        # unique condition index
+    ---
+    """
+
+@schema
+class Movie(dj.Lookup):
+    definition = """
+    # movies used for generating clips and stills
+    movie_name           : char(8)                      # short movie title
+    ---
+    path                 : varchar(255)                 #
+    movie_class          : enum('mousecam','object3d','madmax') #
+    original_file        : varchar(255)                 #
+    file_template        : varchar(255)                 # filename template with full path
+    file_duration        : float                        # (s) duration of each file (must be equal)
+    codec="-c:v libx264 -preset slow -crf 5" : varchar(255)                 #
+    movie_description    : varchar(255)                 # full movie title
+    """
+
+    class Still(dj.Part):
         definition = """
-        # unique stimulus conditions
-        -> Sessions
-        cond_idx                 : smallint        # unique condition index
+        # Cached still frames from the movie
+        -> Movie
+        still_id             : int                          # ids of still images from the movie
         ---
+        still_frame          : longblob                     # uint8 grayscale movie
         """
 
-    class Trials(dj.Manual):
+    class Clip(dj.Part):
         definition = """
-        # Trial information
-        -> Sessions
-        -> Conditions
-        trial_idx                : int             # unique condition index
+        # Clips from movies
+        -> Movie
+        clip_number          : int                          # clip index
         ---
-        start_time               : double          # start time from session start (ms)
-        end_time                 : double          # end time from session start (ms)
+        file_name            : varchar(255)                 # full file name
+        clip                 : longblob                     #
         """
 
+@schema
+class MovieClipCond(dj.Manual):
+    definition = """
+    # movie clip conditions
+    -> Condition
+    ---
+    -> Movie.Clip
+    """
 
-    class Licks(dj.Manual):
-        definition = """
-        # Lick timestamps
-        -> Sessions
-        lick_time			: double 	# time from session start (ms)
-        ---
-        """
+@schema
+class Trial(dj.Manual):
+    definition = """
+    # Trial information
+    -> Session
+    -> Condition
+    trial_idx                : smallint        # unique condition index
+    ---
+    start_time               : int             # start time from session start (ms)
+    end_time                 : int             # end time from session start (ms)
+    """
 
-    class LiquidDelivery(dj.Manual):
-        definition = """
-        # Liquid delivery timestamps
-        -> Sessions
-        lick_time			: double 	# time from session start (ms)
-        ---
-        """
+@schema
+class Lick(dj.Manual):
+    definition = """
+    # Lick timestamps
+    -> Session
+    lick_time	     	  	: int           	# time from session start (ms)
+    ---
+    """
 
-    class AirpuffDelivery(dj.Manual):
-        definition = """
-        # Air puff delivery timestamps
-        -> Sessions
-        lick_time			: double 	# time from session start (ms)
-        ---
-        """
+@schema
+class LiquidDelivery(dj.Manual):
+    definition = """
+    # Liquid delivery timestamps
+    -> Sessions
+    lick_time			    : int 	            # time from session start (ms)
+    ---
+    """
+
+@schema
+class AirpuffDelivery(dj.Manual):
+    definition = """
+    # Air puff delivery timestamps
+    -> Sessions
+    lick_time		    	: int 	            # time from session start (ms)
+    ---
+    """
