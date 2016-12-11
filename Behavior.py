@@ -1,4 +1,5 @@
 import datajoint as dj
+import socket
 
 schema = dj.schema('pipeline_behavior', locals())
 
@@ -11,7 +12,7 @@ def erd():
 class ExperimentType(dj.Lookup):
     definition = """
     # Experiment type
-    exp_type : char(10) # experiment type short name
+    exp_type : char(10) # experiment schema
     ---
     description = '' : varchar(2048) # some description of the experiment
     """
@@ -20,17 +21,16 @@ class ExperimentType(dj.Lookup):
 class Task(dj.Lookup):
     definition = """
     # Behavioral experiment parameters
-    task                         : int             # task identification number
+    task_idx                     : int             # task identification number
     ---
     -> ExperimentType
-    intertrial_duration = 30000  : int  # time in between trials (ms)
-    trial_duration = 30000       : int  # trial time (ms)
-    timeout_duration = 180000    : int  # timeout punishment delay (ms)
+    intertrial_duration = 30     : int  # time in between trials (s)
+    trial_duration = 30          : int  # trial time (s)
+    timeout_duration = 180       : int  # timeout punishment delay (s)
     airpuff_duration = 400       : int  # duration of positive punishment (ms)
     response_interval = 1000     : int  # time before a new lick is considered a valid response (ms)
     reward_amount = 8            : int  # microliters of liquid
-    stimuli                      : varchar(4095) # stimuli to be presented (array of dictionaries)
-    rewarded_stimuli             : varchar(4095) # stimuli to be rewarded (array of dictionaries)
+    conditions                   : varchar(4095) # stimuli to be presented (array of dictionaries)
     description =''              : varchar(2048) # task description
     """
 
@@ -38,7 +38,7 @@ class Task(dj.Lookup):
 class MouseWeight(dj.Manual):
     definition = """
     # Weight of the animal
-    -> mice.Mice
+    animal_id                    : int # animal id
     timestamp=CURRENT_TIMESTAMP  : timestamp
     ---
     weight                       : float # in grams
@@ -48,13 +48,24 @@ class MouseWeight(dj.Manual):
 class Session(dj.Manual):
     definition = """
     # Behavior session info
-    -> mice.Mice
+    animal_id                    : int # animal id
     session_id                   : smallint        # session number
     ---
-    -> Tasks
+    intertrial_duration          : int  # time in between trials (s)
+    trial_duration               : int  # trial time (s)
+    timeout_duration             : int  # timeout punishment delay (s)
+    airpuff_duration             : int  # duration of positive punishment (ms)
+    response_interval            : int  # time before a new lick is considered a valid response (ms)
+    reward_amount                : int  # microliters of liquid
     setup                        : varchar(256)    # computer id
     session_tmst                 : timestamp       # session timestamp
+    notes =''                    : varchar(2048) # session notes
     """
+
+    @property
+    def populate(self, key):
+        key['setup'] = socket.gethostname()
+
 
 @schema
 class Condition(dj.Manual):
@@ -99,6 +110,10 @@ class Movie(dj.Lookup):
         clip                 : longblob                     #
         """
 
+        @staticmethod
+        def prepare(self, key):
+            key['setup'] = socket.gethostname()
+
 @schema
 class MovieClipCond(dj.Manual):
     definition = """
@@ -133,7 +148,7 @@ class Lick(dj.Manual):
 class LiquidDelivery(dj.Manual):
     definition = """
     # Liquid delivery timestamps
-    -> Sessions
+    -> Session
     lick_time			    : int 	            # time from session start (ms)
     ---
     """
@@ -142,7 +157,7 @@ class LiquidDelivery(dj.Manual):
 class AirpuffDelivery(dj.Manual):
     definition = """
     # Air puff delivery timestamps
-    -> Sessions
+    -> Session
     lick_time		    	: int 	            # time from session start (ms)
     ---
     """
