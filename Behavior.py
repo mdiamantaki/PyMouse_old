@@ -1,5 +1,6 @@
 import datajoint as dj
-import socket
+import socket, os
+import Stimulus
 
 schema = dj.schema('pipeline_behavior', locals())
 
@@ -100,7 +101,7 @@ class Movie(dj.Lookup):
         still_frame          : longblob                     # uint8 grayscale movie
         """
 
-    class Clip(dj.Part):
+    class Clip(Stimulus, dj.Part):
         definition = """
         # Clips from movies
         -> Movie
@@ -110,9 +111,24 @@ class Movie(dj.Lookup):
         clip                 : longblob                     #
         """
 
-        @staticmethod
+        from playMovie import *
+
         def prepare(self, key):
-            key['setup'] = socket.gethostname()
+
+            path = '~/stimuli/'  # default path to copy clips
+            if not os.path.isdir(path):  # create path if necessary
+                os.makedirs(path)
+
+            clips, names = (self & key).fetch['clip_number', 'file_name']
+            for iclip in clips:
+                if not os.path.isfile(path + names[iclip - 1]):
+                    (self & key.update(clip_number=iclip)).fetch1['clip'].tofile(path + names[iclip - 1])
+
+
+        def showTrial(self,cond):
+
+
+        def stopTrial(self):
 
 @schema
 class MovieClipCond(dj.Manual):
