@@ -1,6 +1,10 @@
 import datajoint as dj
-import socket, os
-import Stimulus
+from Stimulus import *
+from pygame.locals import *
+from pipeline import vis
+import io, imageio, pygame, sys, Socket, os
+import numpy as np
+
 
 schema = dj.schema('pipeline_behavior', locals())
 
@@ -111,7 +115,12 @@ class Movie(dj.Lookup):
         clip                 : longblob                     #
         """
 
-        from playMovie import *
+        def __init__(self):
+            self.curr_frame = 1
+            self.vid = []
+            self.clock = pygame.time.Clock()
+            self.pos = (0, 0)
+            self.vsize = (0, 0)
 
         def prepare(self, key):
 
@@ -124,12 +133,30 @@ class Movie(dj.Lookup):
                 if not os.path.isfile(path + names[iclip - 1]):
                     (self & key.update(clip_number=iclip)).fetch1['clip'].tofile(path + names[iclip - 1])
 
+        def init_trial(self, cond):
 
-        def showTrial(self,cond):
+            clip_info = (vis.Movie.Clip() * vis.Movie() & cond).fetch1()
+            self.vid = imageio.get_reader(io.BytesIO(clip_info['clip'].tobytes()), 'ffmpeg')
+            self.vsize = (clip_info['frame_width'], clip_info['frame_height'])
+            self.pos = np.divide(self.size, 2) - np.divide(self.size, 2)
+            self.stopped = False
 
+
+        def showTrial(self):
+            if self.curr_frame < range(self.vid.get_length()):
+
+                py_image = pygame.image.frombuffer(self.vid.get_next_data(), self.vsize, "RGB")
+                self.screen.blit(py_image, self.pos)
+                pygame.display.update()
+                self.curr_frame += 1
+                self.clock.tick_busy_loop(30)
+            else:
+                self.stopTrial()
 
         def stopTrial(self):
-
+            self.vid.close()
+            self.curr_frame = 1
+            self.stopped = True
 @schema
 class MovieClipCond(dj.Manual):
     definition = """

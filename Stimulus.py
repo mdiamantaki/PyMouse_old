@@ -11,7 +11,7 @@ class Stimulus:
         self.vcolor = [88, 88, 88]
         self.loc = loc
         self.screen = pygame.display.set_mode(self.size, pygame.NOFRAME)
-
+        self.stopped = True
         self.unshow()
 
     def init_block(self):  # create random block of all conditions

@@ -1,0 +1,11 @@
+{
+    "display.limit": 7,
+    "loglevel": "DEBUG",
+    "safemode": true,
+    "database.user": "manolis",
+    "database.port": 3306,
+    "database.host": "at-database.ad.bcm.edu",
+    "connection.init_function": null,
+    "display.width": 14,
+    "database.password": "manolis#1"
+}
