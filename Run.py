@@ -1,13 +1,13 @@
-from timer import *
-from licker import *
-from vstimulus import *
-timer = timer()
+from Timer import *
+from Licker import *
+from Stimulus import *
 import numpy as np
 import pygame
 import os
 from glob import glob
 
 os.environ['SDL_VIDEO_WINDOW_POS'] = "%d,%d" % (0, 0)
+timer = Timer()
 
 # Set Parameters
 w = 480
@@ -56,7 +56,7 @@ while trial < max_trials:  # Each trial is one block
                     stim.close()
                     quit()
 
-            if licker().lick():
+            if Licker().lick():
                 print('Correct!' if corr_resp else 'Wrong')
                 if corr_resp:
                     stim.color([88, 128, 88])
@@ -73,7 +73,7 @@ while trial < max_trials:  # Each trial is one block
         stim.unshow()
         timer.start()
         while timer.elapsed_time() < ITI:
-            if licker().lick():
+            if Licker().lick():
                 timer.start()
                 print('wait!')
                 stim.color([88, 88, 88])

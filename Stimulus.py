@@ -1,8 +1,6 @@
 import pygame
 import numpy as np
 
-
-
 class Stimulus:
     """ This class handles the stimulus presentation
     """
@@ -16,41 +14,34 @@ class Stimulus:
 
         self.unshow()
 
-    def prepare(self, key):  # to be overridden
-        pass
-
-    def init_block(self):
-
-        self.index = np.random.permutation(self.block_sz)
-
-    def init_trial(self):
+    def init_block(self):  # create random block of all conditions
 
         image_idx = self.index[0]
         if np.size(self.index) > 1:
             self.index = self.index[1:]
         else:
             self.init_block()
+        self.index = np.random.permutation(self.block_sz)
 
-        self.myVideoPlayer = VideoPlayer([480, 320], fullscreen=False, soundrenderer="pyaudio", loop=False)
-        self.myVideoPlayer.load_media(self.videos[image_idx])
-        self.myVideoPlayer.play()
+    def prepare(self, key):  # prepares stuff for presentation before experiment starts
+        pass
 
-        return image_idx
+    def init_trial(self): # initialize stuff for each trial
+        pass
 
-    def showTrial(self):
-        # flip
-        self.myVideoPlayer.play_frame()
+    def showTrial(self):  # start trial
+        pass
 
-    def stopTrial(self):
-        self.myVideoPlayer.quit()
+    def stopTrial(self):  # stop trial
+        pass
 
-    def unshow(self):
+    def unshow(self):  # refresh background
 
         self.screen.fill(self.vcolor)
         pygame.display.flip()
 
-    def color(self, color):
+    def color(self, color):  # updated background color
         self.vcolor = color
 
-    def close(self):
+    def close(self):  # exit
         pygame.quit()
