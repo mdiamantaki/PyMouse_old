@@ -1,8 +1,6 @@
 import datajoint as dj
 from Stimulus import *
-from pygame.locals import *
-from pipeline import vis
-import io, imageio, pygame, sys, Socket, os
+import io, imageio, pygame, os
 import numpy as np
 
 
@@ -13,6 +11,7 @@ def erd():
     """for convenience"""
     dj.ERD(schema).draw()
 
+
 @schema
 class ExperimentType(dj.Lookup):
     definition = """
@@ -21,6 +20,7 @@ class ExperimentType(dj.Lookup):
     ---
     description = '' : varchar(2048) # some description of the experiment
     """
+
 
 @schema
 class Task(dj.Lookup):
@@ -39,6 +39,7 @@ class Task(dj.Lookup):
     description =''              : varchar(2048) # task description
     """
 
+
 @schema
 class MouseWeight(dj.Manual):
     definition = """
@@ -48,6 +49,7 @@ class MouseWeight(dj.Manual):
     ---
     weight                       : float # in grams
     """
+
 
 @schema
 class Session(dj.Manual):
@@ -67,10 +69,6 @@ class Session(dj.Manual):
     notes =''                    : varchar(2048) # session notes
     """
 
-    @property
-    def populate(self, key):
-        key['setup'] = socket.gethostname()
-
 
 @schema
 class Condition(dj.Manual):
@@ -80,6 +78,50 @@ class Condition(dj.Manual):
     cond_idx                 : smallint        # unique condition index
     ---
     """
+
+
+@schema
+class Trial(dj.Manual):
+    definition = """
+    # Trial information
+    -> Session
+    -> Condition
+    trial_idx                : smallint        # unique condition index
+    ---
+    start_time               : int             # start time from session start (ms)
+    end_time                 : int             # end time from session start (ms)
+    """
+
+
+@schema
+class Lick(dj.Manual):
+    definition = """
+    # Lick timestamps
+    -> Session
+    lick_time	     	  	: int           	# time from session start (ms)
+    ---
+    """
+
+
+@schema
+class LiquidDelivery(dj.Manual):
+    definition = """
+    # Liquid delivery timestamps
+    -> Session
+    lick_time			    : int 	            # time from session start (ms)
+    ---
+    """
+
+
+@schema
+class AirpuffDelivery(dj.Manual):
+    definition = """
+    # Air puff delivery timestamps
+    -> Session
+    lick_time		    	: int 	            # time from session start (ms)
+    ---
+    """
+
 
 @schema
 class Movie(dj.Lookup):
@@ -105,7 +147,7 @@ class Movie(dj.Lookup):
         still_frame          : longblob                     # uint8 grayscale movie
         """
 
-    class Clip(Stimulus, dj.Part):
+    class Clip(dj.Part):
         definition = """
         # Clips from movies
         -> Movie
@@ -115,48 +157,6 @@ class Movie(dj.Lookup):
         clip                 : longblob                     #
         """
 
-        def __init__(self):
-            self.curr_frame = 1
-            self.vid = []
-            self.clock = pygame.time.Clock()
-            self.pos = (0, 0)
-            self.vsize = (0, 0)
-
-        def prepare(self, key):
-
-            path = '~/stimuli/'  # default path to copy clips
-            if not os.path.isdir(path):  # create path if necessary
-                os.makedirs(path)
-
-            clips, names = (self & key).fetch['clip_number', 'file_name']
-            for iclip in clips:
-                if not os.path.isfile(path + names[iclip - 1]):
-                    (self & key.update(clip_number=iclip)).fetch1['clip'].tofile(path + names[iclip - 1])
-
-        def init_trial(self, cond):
-
-            clip_info = (vis.Movie.Clip() * vis.Movie() & cond).fetch1()
-            self.vid = imageio.get_reader(io.BytesIO(clip_info['clip'].tobytes()), 'ffmpeg')
-            self.vsize = (clip_info['frame_width'], clip_info['frame_height'])
-            self.pos = np.divide(self.size, 2) - np.divide(self.size, 2)
-            self.stopped = False
-
-
-        def showTrial(self):
-            if self.curr_frame < range(self.vid.get_length()):
-
-                py_image = pygame.image.frombuffer(self.vid.get_next_data(), self.vsize, "RGB")
-                self.screen.blit(py_image, self.pos)
-                pygame.display.update()
-                self.curr_frame += 1
-                self.clock.tick_busy_loop(30)
-            else:
-                self.stopTrial()
-
-        def stopTrial(self):
-            self.vid.close()
-            self.curr_frame = 1
-            self.stopped = True
 @schema
 class MovieClipCond(dj.Manual):
     definition = """
@@ -166,41 +166,49 @@ class MovieClipCond(dj.Manual):
     -> Movie.Clip
     """
 
+    @staticmethod
+    def prepare(conditions):
+        path = 'stimuli/'  # default path to copy clips
+        if not os.path.isdir(path):  # create path if necessary
+            os.makedirs(path)
+
+        for key in (Movie.Clip() & conditions).fetch.as_dict:
+            filename = path + key['file_name']
+            if not os.path.isfile(filename):
+                (Movie.Clip() & key).fetch1['clip'].tofile(filename)
+
+    def init_trial(self, cond, sz):
+        self.curr_frame = 1
+        self.clock = pygame.time.Clock()
+
+        clip_info = (self * Movie() * Movie.Clip() & cond).fetch1()
+        self.vid = imageio.get_reader(io.BytesIO(clip_info['clip'].tobytes()), 'ffmpeg')
+        self.vsize = (clip_info['frame_width'], clip_info['frame_height'])
+        self.pos = np.divide(sz, 2) - np.divide(sz, 2)
+
+    def show_trial(self, screen):
+        if self.curr_frame < (self.vid.get_length()):
+
+            py_image = pygame.image.frombuffer(self.vid.get_next_data(), self.vsize, "RGB")
+            screen.blit(py_image, self.pos)
+            pygame.display.update()
+            self.curr_frame += 1
+            self.stopped = False
+            self.clock.tick_busy_loop(30)
+        else:
+            self.stop_trial()
+
+    def stop_trial(self):
+        self.vid.close()
+        self.stopped = True
+
+
 @schema
-class Trial(dj.Manual):
+class RewardCond(dj.Manual):
     definition = """
-    # Trial information
-    -> Session
+    # reward probe conditions
     -> Condition
-    trial_idx                : smallint        # unique condition index
     ---
-    start_time               : int             # start time from session start (ms)
-    end_time                 : int             # end time from session start (ms)
+    probe=0        :int         # probe number
     """
 
-@schema
-class Lick(dj.Manual):
-    definition = """
-    # Lick timestamps
-    -> Session
-    lick_time	     	  	: int           	# time from session start (ms)
-    ---
-    """
-
-@schema
-class LiquidDelivery(dj.Manual):
-    definition = """
-    # Liquid delivery timestamps
-    -> Session
-    lick_time			    : int 	            # time from session start (ms)
-    ---
-    """
-
-@schema
-class AirpuffDelivery(dj.Manual):
-    definition = """
-    # Air puff delivery timestamps
-    -> Session
-    lick_time		    	: int 	            # time from session start (ms)
-    ---
-    """

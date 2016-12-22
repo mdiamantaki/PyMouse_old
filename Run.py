@@ -1,5 +1,6 @@
 from Timer import *
 from Licker import *
+import Behavior as Beh
 from Stimulus import *
 import numpy as np
 import pygame
@@ -26,8 +27,9 @@ NOGO_resp = np.zeros(np.size(NOGO_images))
 ALL_images = GO_images + NOGO_images
 ALL_resp = np.concatenate([GO_resp, NOGO_resp])
 
-# Load images
-stim = vstimulus(ALL_images, w, h)
+# Initialize stimulus
+stim = Stimulus(w, h, (0, 0))
+stim.init_block()
 
 # Initialize other settings
 timer.start()
