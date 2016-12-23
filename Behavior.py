@@ -1,8 +1,4 @@
 import datajoint as dj
-from Stimulus import *
-import io, imageio, pygame, os
-import numpy as np
-
 
 schema = dj.schema('pipeline_behavior', locals())
 
@@ -21,6 +17,10 @@ class ExperimentType(dj.Lookup):
     description = '' : varchar(2048) # some description of the experiment
     """
 
+    contents = [
+        ('Movies', 'Typical movies stimulus'),
+    ]
+
 
 @schema
 class Task(dj.Lookup):
@@ -38,6 +38,12 @@ class Task(dj.Lookup):
     conditions                   : varchar(4095) # stimuli to be presented (array of dictionaries)
     description =''              : varchar(2048) # task description
     """
+
+    contents = [
+        (1, 'Movies', 30, 30, 180, 400, 1000, 8,
+         "{'probe':[0,1], 'clip_number':list(range(1,10)), 'movie_name':['obj1v4','obj2v4']}",
+         '3d object experiment'),
+    ]
 
 
 @schema
@@ -98,7 +104,7 @@ class Lick(dj.Manual):
     definition = """
     # Lick timestamps
     -> Session
-    lick_time	     	  	: int           	# time from session start (ms)
+    time	     	  	: int           	# time from session start (ms)
     ---
     """
 
@@ -108,7 +114,7 @@ class LiquidDelivery(dj.Manual):
     definition = """
     # Liquid delivery timestamps
     -> Session
-    lick_time			    : int 	            # time from session start (ms)
+    time			    : int 	            # time from session start (ms)
     ---
     """
 
@@ -118,7 +124,7 @@ class AirpuffDelivery(dj.Manual):
     definition = """
     # Air puff delivery timestamps
     -> Session
-    lick_time		    	: int 	            # time from session start (ms)
+    time		    	: int 	            # time from session start (ms)
     ---
     """
 
@@ -157,6 +163,7 @@ class Movie(dj.Lookup):
         clip                 : longblob                     #
         """
 
+
 @schema
 class MovieClipCond(dj.Manual):
     definition = """
@@ -165,42 +172,6 @@ class MovieClipCond(dj.Manual):
     ---
     -> Movie.Clip
     """
-
-    @staticmethod
-    def prepare(conditions):
-        path = 'stimuli/'  # default path to copy clips
-        if not os.path.isdir(path):  # create path if necessary
-            os.makedirs(path)
-
-        for key in (Movie.Clip() & conditions).fetch.as_dict:
-            filename = path + key['file_name']
-            if not os.path.isfile(filename):
-                (Movie.Clip() & key).fetch1['clip'].tofile(filename)
-
-    def init_trial(self, cond, sz):
-        self.curr_frame = 1
-        self.clock = pygame.time.Clock()
-
-        clip_info = (self * Movie() * Movie.Clip() & cond).fetch1()
-        self.vid = imageio.get_reader(io.BytesIO(clip_info['clip'].tobytes()), 'ffmpeg')
-        self.vsize = (clip_info['frame_width'], clip_info['frame_height'])
-        self.pos = np.divide(sz, 2) - np.divide(sz, 2)
-
-    def show_trial(self, screen):
-        if self.curr_frame < (self.vid.get_length()):
-
-            py_image = pygame.image.frombuffer(self.vid.get_next_data(), self.vsize, "RGB")
-            screen.blit(py_image, self.pos)
-            pygame.display.update()
-            self.curr_frame += 1
-            self.stopped = False
-            self.clock.tick_busy_loop(30)
-        else:
-            self.stop_trial()
-
-    def stop_trial(self):
-        self.vid.close()
-        self.stopped = True
 
 
 @schema
