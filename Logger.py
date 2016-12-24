@@ -63,6 +63,9 @@ class Logger:
                                                                    probe=cond.pop('probe'))))
             self.queue.put(dict(table=condition_table(), tuple=dict(cond.items() | self.session_key.items(),
                                                                     cond_idx=cond_idx)))
+        # outputs all the condition indexes of the session
+        cond_indexes = (Condition() & self.session_key).fetch['cond_idx']
+        return cond_indexes
 
     def log_trial_start(self, cond_idx):
         self.curr_cond = cond_idx
