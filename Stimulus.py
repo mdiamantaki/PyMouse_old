@@ -20,14 +20,7 @@ class Stimulus:
         self.conditions = []
         self.indexes = []
         self.unshow()
-
-    def get_curr_cond(self):  # get curr condition & create random block of all conditions
-        cond = self.conditions[self.indexes[0]]
-        if np.size(self.conditions) > 1:
-            self.indexes = self.indexes[1:]
-        else:
-            self.indexes = np.random.permutation(np.size(self.conditions))
-        return cond
+        pygame.mouse.set_visible(0)
 
     def prepare(self, conditions):  # prepares stuff for presentation before experiment starts
         pass
@@ -48,6 +41,15 @@ class Stimulus:
         self.screen.fill(self.vcolor)
         self.flip()
 
+    def __get_new_cond(self):  # get curr condition & create random block of all conditions,
+        #  should be called within init_trial
+        cond = self.conditions[self.indexes[0]]
+        if np.size(self.conditions) > 1:
+            self.indexes = self.indexes[1:]
+        else:
+            self.indexes = np.random.permutation(np.size(self.conditions))
+        return cond
+
     @staticmethod
     def flip():
         pygame.display.update()
@@ -57,6 +59,7 @@ class Stimulus:
 
     @staticmethod
     def close():  # exit
+        pygame.mouse.set_visible(1)
         pygame.display.quit()
         pygame.quit()
 
@@ -75,7 +78,7 @@ class Movies(Stimulus):
                 (Movie.Clip() & key).fetch1['clip'].tofile(filename)
 
     def init_trial(self):
-        cond = self.get_curr_cond()
+        cond = self.__get_new_cond()
         self.curr_frame = 1
         self.clock = pygame.time.Clock()
 
@@ -83,6 +86,13 @@ class Movies(Stimulus):
         self.vid = imageio.get_reader(io.BytesIO(clip_info['clip'].tobytes()), 'ffmpeg')
         self.vsize = (clip_info['frame_width'], clip_info['frame_height'])
         self.pos = np.divide(self.size, 2) - np.divide(self.size, 2)
+
+        # return reward_probe
+        if 'probe' in cond:
+            return clip_info['probe']
+        else:
+            return 0
+
 
     def show_trial(self):
         if self.curr_frame < (self.vid.get_length()):

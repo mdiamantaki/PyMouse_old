@@ -7,7 +7,7 @@ class Licker:
     def __init__(self, logger):
         self.logger = logger
 
-    def licked(self):
+    def lick(self):
         response = False
 
         events = pygame.event.get()
