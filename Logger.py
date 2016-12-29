@@ -67,7 +67,7 @@ class Logger:
         cond_indexes = (Condition() & self.session_key).fetch['cond_idx']
         return cond_indexes
 
-    def log_trial_start(self, cond_idx):
+    def start_trial(self, cond_idx):
         self.curr_cond = cond_idx
         self.trial_start = self.timer.elapsed_time()
 
@@ -93,11 +93,15 @@ class Logger:
         timestamp = self.timer.elapsed_time()
         self.queue.put(dict(table=AirpuffDelivery(), tuple=dict(self.session_key, time=timestamp)))
 
+    def get_session_key(self):
+        return self.session_key
+
     def inserter(self):  # insert worker
         while True:
-            item = self.queue.get()
-            item['table'].insert1(item['tuple'])
-            self.queue.task_done()
+            if self.queue.qsize() > 0:
+                item = self.queue.get()
+                item['table'].insert1(item['tuple'])
+                self.queue.task_done()
 
 
 

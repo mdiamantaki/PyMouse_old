@@ -13,7 +13,7 @@ class Stimulus:
         pygame.init()
         self.path = 'stimuli/'  # default path to copy local stimuli
         self.size = (256, 144)
-        self.vcolor = [88, 88, 88]
+        self.color = [88, 88, 88]
         self.loc = (0, 0)
         self.screen = pygame.display.set_mode(self.size, pygame.NOFRAME)
         self.stopped = True
@@ -38,7 +38,7 @@ class Stimulus:
         pass
 
     def unshow(self):  # updated background color
-        self.screen.fill(self.vcolor)
+        self.screen.fill(self.color)
         self.flip()
 
     def __get_new_cond(self):  # get curr condition & create random block of all conditions,
