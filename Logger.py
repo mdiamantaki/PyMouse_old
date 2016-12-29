@@ -1,9 +1,10 @@
 import numpy, socket
-from queue import Queue
+from Timer import *
 from Behavior import *
 from itertools import product
-from threading import Thread
-from Timer import *
+#from multiprocessing import Queue
+from concurrent.futures import ThreadPoolExecutor
+from queue import Queue
 
 
 class Logger:
@@ -13,9 +14,7 @@ class Logger:
         self.session_key = dict()
         self.last_trial = 0
         self.queue = Queue()
-        self.thread = Thread(target=self.inserter)
-        self.thread.daemon = True
-        self.thread.start()
+        self.thread = ThreadPoolExecutor(max_workers=1)
         self.timer = Timer()
         self.trial_start = 0
         self.curr_cond = []
@@ -37,9 +36,9 @@ class Logger:
         key = dict(self.session_key.items() | task_params.items())
         key['setup'] = socket.gethostname()
         self.queue.put(dict(table=Session(), tuple=key))
-
         # start session time
         self.timer.start()
+        self.inserter()
 
     def log_conditions(self, condition_table):
         # get last condition for this session
@@ -64,7 +63,10 @@ class Logger:
             self.queue.put(dict(table=condition_table(), tuple=dict(cond.items() | self.session_key.items(),
                                                                     cond_idx=cond_idx)))
         # outputs all the condition indexes of the session
-        cond_indexes = (Condition() & self.session_key).fetch['cond_idx']
+        cond_indexes = list(range(1, cond_idx+1))  # assumes continuous & complete indexes for each session
+
+        self.inserter()
+
         return cond_indexes
 
     def start_trial(self, cond_idx):
@@ -80,28 +82,35 @@ class Logger:
                          end_time=timestamp)
         self.queue.put(dict(table=Trial(), tuple=trial_key))
         self.last_trial += 1
+        self.inserter()
 
     def log_reward(self):
         timestamp = self.timer.elapsed_time()
         self.queue.put(dict(table=LiquidDelivery(), tuple=dict(self.session_key, time=timestamp)))
+        self.inserter()
 
     def log_lick(self):
         timestamp = self.timer.elapsed_time()
         self.queue.put(dict(table=Lick(), tuple=dict(self.session_key, time=timestamp)))
+        self.inserter()
 
     def log_air(self):
         timestamp = self.timer.elapsed_time()
         self.queue.put(dict(table=AirpuffDelivery(), tuple=dict(self.session_key, time=timestamp)))
+        self.inserter()
 
     def get_session_key(self):
         return self.session_key
 
     def inserter(self):  # insert worker
-        while True:
-            if self.queue.qsize() > 0:
-                item = self.queue.get()
-                item['table'].insert1(item['tuple'])
-                self.queue.task_done()
+        # self.thread.submit(self.dequeue)
+        self.dequeue()
+
+    def dequeue(self):
+        while not self.queue.empty():
+            item = self.queue.get()
+            item['table'].insert1(item['tuple'])
+
 
 
 

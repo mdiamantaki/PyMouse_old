@@ -9,7 +9,7 @@ class Stimulus:
     use function overrides for each stimulus class
     """
 
-    def __init__(self):
+    def __init__(self, logger):
         pygame.init()
         self.path = 'stimuli/'  # default path to copy local stimuli
         self.size = (256, 144)
@@ -20,12 +20,13 @@ class Stimulus:
         self.conditions = []
         self.indexes = []
         self.unshow()
+        self.logger = logger
         pygame.mouse.set_visible(0)
 
     def prepare(self, conditions):  # prepares stuff for presentation before experiment starts
         pass
 
-    def init_trial(self, key):  # initialize stuff for each trial
+    def init_trial(self):  # initialize stuff for each trial
         pass
 
     def show_trial(self):  # start trial
@@ -41,13 +42,14 @@ class Stimulus:
         self.screen.fill(self.color)
         self.flip()
 
-    def __get_new_cond(self):  # get curr condition & create random block of all conditions,
+    def _get_new_cond(self):  # get curr condition & create random block of all conditions,
         #  should be called within init_trial
-        cond = self.conditions[self.indexes[0]]
-        if np.size(self.conditions) > 1:
-            self.indexes = self.indexes[1:]
-        else:
+        if np.size(self.indexes) == 0:
             self.indexes = np.random.permutation(np.size(self.conditions))
+
+        cond = self.conditions[self.indexes[0]]
+        self.indexes = self.indexes[1:]
+
         return cond
 
     @staticmethod
@@ -72,27 +74,22 @@ class Movies(Stimulus):
         if not os.path.isdir(self.path):  # create path if necessary
             os.makedirs(self.path)
 
-        for key in (Movie.Clip() * MovieClipCond() & conditions).fetch.as_dict:
-            filename = self.path + key['file_name']
+        for cond_idx in conditions:
+            filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1['file_name']
             if not os.path.isfile(filename):
-                (Movie.Clip() & key).fetch1['clip'].tofile(filename)
+                (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx)).fetch1['clip'].tofile(filename)
 
     def init_trial(self):
-        cond = self.__get_new_cond()
+
+        cond = self._get_new_cond()
         self.curr_frame = 1
         self.clock = pygame.time.Clock()
-
-        clip_info = (Movie() * Movie.Clip() * MovieClipCond() & dict(cond_idx=cond)).fetch1()
+        clip_info = (Movie() * Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) & self.logger.session_key).fetch1()
         self.vid = imageio.get_reader(io.BytesIO(clip_info['clip'].tobytes()), 'ffmpeg')
         self.vsize = (clip_info['frame_width'], clip_info['frame_height'])
         self.pos = np.divide(self.size, 2) - np.divide(self.size, 2)
 
-        # return reward_probe
-        if 'probe' in cond:
-            return clip_info['probe']
-        else:
-            return 0
-
+        return cond
 
     def show_trial(self):
         if self.curr_frame < (self.vid.get_length()):
