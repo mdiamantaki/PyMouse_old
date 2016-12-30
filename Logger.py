@@ -2,8 +2,6 @@ import numpy, socket
 from Timer import *
 from Behavior import *
 from itertools import product
-#from multiprocessing import Queue
-from concurrent.futures import ThreadPoolExecutor
 from queue import Queue
 
 
@@ -14,12 +12,15 @@ class Logger:
         self.session_key = dict()
         self.last_trial = 0
         self.queue = Queue()
-        self.thread = ThreadPoolExecutor(max_workers=1)
         self.timer = Timer()
         self.trial_start = 0
         self.curr_cond = []
+        self.task_idx = []
 
     def log_session(self, animal_id, task_idx):
+
+        self.task_idx = task_idx
+
         # create session key
         self.session_key['animal_id'] = animal_id
         last_sessions = (Session() & self.session_key).fetch['session_id']
@@ -36,23 +37,19 @@ class Logger:
         key = dict(self.session_key.items() | task_params.items())
         key['setup'] = socket.gethostname()
         self.queue.put(dict(table=Session(), tuple=key))
+
         # start session time
         self.timer.start()
         self.inserter()
 
     def log_conditions(self, condition_table):
-        # get last condition for this session
-        last_conds = (Condition() & self.session_key).fetch['cond_idx']
-        if numpy.size(last_conds) == 0:
-            cond_idx = 0
-        else:
-            cond_idx = numpy.max(last_conds)
 
         # generate factorial conditions
-        conditions = eval((Task() & self.session_key).fetch1['conditions'])
-        conditions = list((dict(zip(conditions, x)) for x in product(*conditions.values())))
+        conditions = eval((Task() & self.task_idx).fetch1['conditions'])
+        conditions = sum([list((dict(zip(conds, x)) for x in product(*conds.values()))) for conds in conditions], [])
 
         # iterate through all conditions and insert
+        cond_idx = 0
         for cond in conditions:
             cond_idx += 1
             self.queue.put(dict(table=Condition(), tuple=dict(self.session_key, cond_idx=cond_idx)))
@@ -72,6 +69,9 @@ class Logger:
     def start_trial(self, cond_idx):
         self.curr_cond = cond_idx
         self.trial_start = self.timer.elapsed_time()
+
+        # return condition key
+        return dict(self.session_key, cond_idx=cond_idx)
 
     def log_trial(self):
         timestamp = self.timer.elapsed_time()
@@ -102,11 +102,7 @@ class Logger:
     def get_session_key(self):
         return self.session_key
 
-    def inserter(self):  # insert worker
-        # self.thread.submit(self.dequeue)
-        self.dequeue()
-
-    def dequeue(self):
+    def inserter(self):  # insert worker, in case we need threading
         while not self.queue.empty():
             item = self.queue.get()
             item['table'].insert1(item['tuple'])

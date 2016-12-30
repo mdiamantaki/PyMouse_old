@@ -1,7 +1,7 @@
 from pygame.locals import *
 import io, imageio, pygame, os
 import numpy as np
-from Behavior import *
+from Response import *
 
 
 class Stimulus:
@@ -16,14 +16,14 @@ class Stimulus:
         self.color = [88, 88, 88]
         self.loc = (0, 0)
         self.screen = pygame.display.set_mode(self.size, pygame.NOFRAME)
-        self.stopped = True
+        self.isrunning = False
         self.conditions = []
         self.indexes = []
         self.unshow()
         self.logger = logger
         pygame.mouse.set_visible(0)
 
-    def prepare(self, conditions):  # prepares stuff for presentation before experiment starts
+    def prepare(self):  # prepares stuff for presentation before experiment starts
         pass
 
     def init_trial(self):  # initialize stuff for each trial
@@ -37,6 +37,9 @@ class Stimulus:
 
     def get_condition_table(self):
         pass
+
+    def get_responder(self):
+        return Response
 
     def unshow(self):  # updated background color
         self.screen.fill(self.color)
@@ -68,13 +71,15 @@ class Stimulus:
 
 class Movies(Stimulus):
 
-    def prepare(self, conditions):
-        self.conditions = conditions
+    def prepare(self):
+
+        # log conditions
+        self.conditions = self.logger.log_conditions(self.get_condition_table())
 
         if not os.path.isdir(self.path):  # create path if necessary
             os.makedirs(self.path)
 
-        for cond_idx in conditions:
+        for cond_idx in self.conditions:
             filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1['file_name']
             if not os.path.isfile(filename):
                 (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx)).fetch1['clip'].tofile(filename)
@@ -88,6 +93,10 @@ class Movies(Stimulus):
         self.vid = imageio.get_reader(io.BytesIO(clip_info['clip'].tobytes()), 'ffmpeg')
         self.vsize = (clip_info['frame_width'], clip_info['frame_height'])
         self.pos = np.divide(self.size, 2) - np.divide(self.size, 2)
+        self.isrunning = True
+
+        # log start trial
+        self.logger.start_trial(cond)
 
         return cond
 
@@ -97,15 +106,34 @@ class Movies(Stimulus):
             self.screen.blit(py_image, self.pos)
             self.flip()
             self.curr_frame += 1
-            self.stopped = False
             self.clock.tick_busy_loop(30)
         else:
-            self.stop_trial()
+            self.isrunning = False
 
     def stop_trial(self):
         self.vid.close()
         self.unshow()
-        self.stopped = True
+        self.isrunning = False
+
+        # log trial
+        self.logger.log_trial()
 
     def get_condition_table(self):
         return MovieClipCond
+
+    def get_responder(self):
+        return MultiProbeResponse
+
+
+class PassiveMovies(Movies):
+    def get_responder(self):
+        return PassiveResponse
+
+
+class FreeWater(Stimulus):
+
+    def init_trial(self):
+        self.isrunning = True
+
+    def get_responder(self):
+        return PassiveResponse
