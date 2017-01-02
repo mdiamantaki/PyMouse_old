@@ -1,26 +1,44 @@
 from Behavior import *
-
+import numpy as np
 
 class Response:
-    """ this class handles the licks
+    """ this class handles the response to the licks
     """
     def __init__(self, logger, timer, params):
         self.logger = logger
-        self.params = params
+        self.air_dur = params['airpuff_duration']
         self.timer = timer
+        self.reward_probe = []
 
-    def punish(self):
-        self.give_air()
+        # calculate pulse duration for the desired reward amount
+        self.liquid_dur = dict()
+        probes = (LiquidCalibration() & dict(setup=self.logger.setup)).fetch['probe']
+        for probe in list(set(probes)):
+            key = dict(setup=self.logger.setup, probe=probe)
+            dates = (LiquidCalibration() & key).fetch.order_by('date')['date']
+            key['date'] = dates[-1]  # use the most recent calibration
+            pulse_dur, pulse_num, weight = (LiquidCalibration.PulseWeight() & key).fetch['pulse_dur',
+                                                                                         'pulse_num',
+                                                                                         'weight']
+            self.liquid_dur[probe] = np.interp(params['reward_amount'],
+                                               weight/pulse_num,
+                                               pulse_dur)
+            print(self.liquid_dur[probe])
+
+    def punish(self, probe):
+        print('Punishing!')
+        self.give_air(probe, self.air_dur)
         self.logger.log_air()
 
-    def reward(self):
-        self.give_liquid()
+    def reward(self, probe):
+        print('Rewarding!')
+        self.give_liquid(probe, self.liquid_dur[probe])
         self.logger.log_reward()
 
-    def give_air(self):
+    def give_air(self, probe, duration):
         pass
 
-    def give_liquid(self):
+    def give_liquid(self, probe, duration):
         pass
 
     def prepare_response(self, cond):
@@ -46,9 +64,9 @@ class MultiProbeResponse(Response):
 
     def trial_lick(self, probe):
         if self.reward_probe == probe:
-            print('correct!')
+            self.reward(probe)
         else:
-            print('wrong!')
+            self.punish(probe)
 
         return True  # break trial
 
@@ -63,6 +81,12 @@ class MultiProbeResponse(Response):
         self.timer.start()
 
 
-class PassiveResponse(Response):
+class FreeWater(Response):
     def trial_lick(self, probe):
-        self.reward()
+        self.reward(probe)
+
+
+class Calibrator(Response):
+    def __init__(self):
+        pass
+

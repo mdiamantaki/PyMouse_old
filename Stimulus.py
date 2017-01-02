@@ -127,13 +127,13 @@ class Movies(Stimulus):
 
 class PassiveMovies(Movies):
     def get_responder(self):
-        return PassiveResponse
+        return FreeWater
 
 
-class FreeWater(Stimulus):
+class NoStimulus(Stimulus):
 
     def init_trial(self):
         self.isrunning = True
 
     def get_responder(self):
-        return PassiveResponse
+        return FreeWater

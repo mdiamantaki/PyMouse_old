@@ -11,9 +11,9 @@ def runner(animal_id, task_idx):
     logger.log_session(animal_id, task_idx)
 
     # get parameters
-    params = (Task() & logger.get_session_key()).fetch1()
+    params = (Task() & dict(task_idx=task_idx)).fetch1()
 
-    # Initialize stimulus
+    # Start stimulus
     stim = eval(params['exp_type'])(logger)
     stim.prepare()
 
@@ -23,7 +23,7 @@ def runner(animal_id, task_idx):
     resp = stim.get_responder()(logger, timer, params)
 
     # RUN
-    max_trials = 2
+    max_trials = 10
     trial = 0
     while trial < max_trials:
 

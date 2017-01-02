@@ -9,6 +9,26 @@ def erd():
 
 
 @schema
+class LiquidCalibration(dj.Manual):
+    definition = """
+    # Liquid delivery calibration sessions for each probe
+    setup                        : varchar(256)   # Setup name
+    probe                        : int            # probe number
+    date                         : date           # session date (only one per day is allowed)
+    """
+
+    class PulseWeight(dj.Part):
+        definition = """
+        # Data for volume per pulse duty cycle estimation
+        -> LiquidCalibration
+        pulse_dur                : int   # duration of pulse in ms
+        ---
+        pulse_num                : int   # number of pulses
+        weight                   : float # weight of total liquid released in gr
+        """
+
+
+@schema
 class ExperimentType(dj.Lookup):
     definition = """
     # Experiment type
@@ -19,6 +39,8 @@ class ExperimentType(dj.Lookup):
 
     contents = [
         ('Movies', 'Typical movies stimulus'),
+        ('PassiveMovies', 'Movie presentation uncoupled with the licking behavior'),
+        ('NoStimulus', 'Free water condition with no stimulus'),
     ]
 
 
@@ -35,14 +57,14 @@ class Task(dj.Lookup):
     airpuff_duration = 400       : int  # duration of positive punishment (ms)
     response_interval = 1000     : int  # time before a new lick is considered a valid response (ms)
     reward_amount = 8            : int  # microliters of liquid
-    ispassive = 0                : tinyint # passive experiment
     conditions                   : varchar(4095) # stimuli to be presented (array of dictionaries)
     description =''              : varchar(2048) # task description
     """
 
     contents = [
         (1, 'Movies', 30, 30, 180, 400, 1000, 8, 0,
-         "[{'probe':[0], 'clip_number':list(range(1,3)), 'movie_name':['obj1v4']}, {'probe':[1], 'clip_number':list(range(1,3)), 'movie_name':['obj2v4']}]",
+         "[{'probe':[0], 'clip_number':list(range(1,3)), 'movie_name':['obj1v4']}, \
+          {'probe':[1], 'clip_number':list(range(1,3)), 'movie_name':['obj2v4']}]",
          '3d object experiment'),
     ]
 
@@ -70,7 +92,6 @@ class Session(dj.Manual):
     airpuff_duration             : int  # duration of positive punishment (ms)
     response_interval            : int  # time before a new lick is considered a valid response (ms)
     reward_amount                : int  # microliters of liquid
-    ispassive = 0                : tinyint # passive experiment
     setup                        : varchar(256)    # computer id
     session_tmst                 : timestamp       # session timestamp
     notes =''                    : varchar(2048) # session notes
