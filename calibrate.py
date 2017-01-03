@@ -31,9 +31,10 @@ def runner(args):
 
     # RUN
     print('Running calibration')
-    print('Pulse 0/%d' % pulsenum)
     trial = 0
     while trial < pulsenum:
+
+        print('Pulse %d/%d' % (trial+1, pulsenum), end="\r", flush=True)
 
         # trial period
         resp.give_liquid(probe, duration)
@@ -42,7 +43,6 @@ def runner(args):
         time.sleep(duration/1000 + pulse_interval/1000)
 
         trial += 1
-        print('Pulse %d/%d' % (trial, pulsenum))
 
     # get weight from user
     total_weight = input('Total liquid weight (gr): ')

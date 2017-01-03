@@ -9,6 +9,8 @@ class Licker:
         self.logger = logger
         self.resp_ind = resp_int
         self.timer = Timer()
+        self.lastlicktime = Timer()
+        self.lastlicktime.start()
 
     def lick(self):
         probe = 0
@@ -21,12 +23,16 @@ class Licker:
                     self.logger.log_lick()
                     if self.timer.elapsed_time() > self.resp_ind:
                         self.timer.start()
+                        self.lastlicktime.start()
                         probe = 1
                 elif event.key == pygame.K_RIGHT:
                     self.logger.log_lick()
                     if self.timer.elapsed_time() > self.resp_ind:
                         self.timer.start()
+                        self.lastlicktime.start()
                         probe = 2
 
         return probe
 
+    def getlastlicktime(self):
+        return self.lastlicktime.elapsed_time()

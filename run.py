@@ -59,6 +59,12 @@ def runner(animal_id, task_idx):
         else:
             resp.inter_trial_no_lick()
 
+        # in case of an unresponsive animal add a pause
+        if licker.getlastlicktime() > params['silence_thr'] > 0:
+            while licker.lick() == 0:
+                pass
+
+        # update trial
         trial += 1
 
     # close everything
