@@ -70,7 +70,7 @@ def runner(animal_id, task_idx):
 
     # close everything
     stim.close()
-    quit()
+    sys.exit(0)
 
 # input parameters
 runner(sys.argv[1], sys.argv[2])
