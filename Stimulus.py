@@ -67,7 +67,7 @@ class Stimulus:
     @staticmethod
     def close():  # exit
         pygame.mouse.set_visible(1)
-        #pygame.display.quit()
+        pygame.display.quit()
         pygame.quit()
 
 

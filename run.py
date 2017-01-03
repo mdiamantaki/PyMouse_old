@@ -69,7 +69,7 @@ def runner(animal_id, task_idx):
         trial += 1
 
     # close everything
-    stim.close()
+    # stim.close()
     sys.exit(0)
 
 # input parameters
