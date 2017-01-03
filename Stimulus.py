@@ -1,6 +1,5 @@
 from pygame.locals import *
 import io, imageio, pygame, os
-import numpy as np
 from Response import *
 
 
@@ -13,8 +12,7 @@ class Stimulus:
         pygame.init()
         self.path = 'stimuli/'  # default path to copy local stimuli
         self.size = (800, 480)
-        #self.size = (256, 144)
-        self.color = [188, 88, 88]
+        self.color = [88, 88, 88]
         self.loc = (0, 0)
         self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
         self.isrunning = False
@@ -74,17 +72,6 @@ class Stimulus:
 
 
 class Movies(Stimulus):
-    def prepare(self):
-        # log conditions
-        self.conditions = self.logger.log_conditions(self.get_condition_table())
-
-        # store local copy of files
-        if not os.path.isdir(self.path):  # create path if necessary
-            os.makedirs(self.path)
-        for cond_idx in self.conditions:
-            filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1['file_name']
-            if not os.path.isfile(filename):
-                (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1['clip'].tofile(filename)
 
     def init_trial(self):
         cond = self._get_new_cond()
@@ -93,7 +80,7 @@ class Movies(Stimulus):
         clip_info = (Movie() * Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) & self.logger.session_key).fetch1()
         self.vid = imageio.get_reader(io.BytesIO(clip_info['clip'].tobytes()), 'ffmpeg')
         self.vsize = (clip_info['frame_width'], clip_info['frame_height'])
-        self.pos = np.divide(self.size, 2) - np.divide(self.size, 2)
+        self.pos = np.divide(self.size, 2) - np.divide(self.vsize, 2)
         self.isrunning = True
 
         # log start trial
@@ -104,7 +91,7 @@ class Movies(Stimulus):
     def show_trial(self):
         if self.curr_frame < (self.vid.get_length()):
             py_image = pygame.image.frombuffer(self.vid.get_next_data(), self.vsize, "RGB")
-            self.screen.blit(pygame.transform.scale(py_image, (800,400)), self.pos)
+            self.screen.blit(py_image, self.pos)
             self.flip()
             self.curr_frame += 1
             self.clock.tick_busy_loop(30)
@@ -113,6 +100,55 @@ class Movies(Stimulus):
 
     def stop_trial(self):
         self.vid.close()
+        self.unshow()
+        self.isrunning = False
+
+        # log trial
+        self.logger.log_trial()
+
+    def get_condition_table(self):
+        return MovieClipCond
+
+    def get_responder(self):
+        return MultiProbeResponse
+
+
+class PyMovies(Stimulus):
+    def prepare(self):
+        from omxplayer import OMXPlayer
+
+        self.player = OMXPlayer
+        # log conditions
+        self.conditions = self.logger.log_conditions(self.get_condition_table())
+
+        # store local copy of files
+        if not os.path.isdir(self.path):  # create path if necessary
+            os.makedirs(self.path)
+        for cond_idx in self.conditions:
+            filename = self.path + \
+                       (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1[
+                           'file_name']
+            if not os.path.isfile(filename):
+                (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1[
+                    'clip'].tofile(filename)
+
+    def init_trial(self):
+        cond = self._get_new_cond()
+        self.isrunning = True
+
+        self.filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) &
+                                     self.logger.session_key).fetch1['file_name']
+
+        # log start trial
+        self.logger.start_trial(cond)
+
+        return cond
+
+    def show_trial(self):
+        self.vid = self.player(self.filename)
+
+    def stop_trial(self):
+        self.vid.quit()
         self.unshow()
         self.isrunning = False
 
