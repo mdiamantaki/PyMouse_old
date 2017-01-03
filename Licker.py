@@ -30,5 +30,5 @@ class Licker:
 
         return probe
 
-    def getlastlicktime(self):
-        return self.timer.elapsed_time()
+    def minutessincelastlick(self):
+        return self.timer.elapsed_time()/1000/60

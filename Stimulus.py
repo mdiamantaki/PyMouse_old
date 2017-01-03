@@ -23,6 +23,8 @@ class Stimulus:
         self.logger = logger
         pygame.mouse.set_visible(0)
 
+        pygame.display.toggle_fullscreen()
+
     def prepare(self):  # prepares stuff for presentation before experiment starts
         # log conditions
         self.conditions = self.logger.log_conditions(self.get_condition_table())

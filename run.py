@@ -60,7 +60,7 @@ def runner(animal_id, task_idx):
             resp.inter_trial_no_lick()
 
         # in case of an unresponsive animal add a pause
-        if licker.getlastlicktime() > params['silence_thr'] * 60 > 0:
+        if licker.minutessincelastlick() > params['silence_thr'] > 0:
             print('Sleeping...')
             while licker.lick() == 0:
                 pass
