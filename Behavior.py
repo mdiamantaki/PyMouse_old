@@ -32,7 +32,7 @@ class LiquidCalibration(dj.Manual):
 class ExperimentType(dj.Lookup):
     definition = """
     # Experiment type
-    exp_type : char(10) # experiment schema
+    exp_type : char(128) # experiment schema
     ---
     description = '' : varchar(2048) # some description of the experiment
     """
@@ -57,14 +57,15 @@ class Task(dj.Lookup):
     airpuff_duration = 400       : int  # duration of positive punishment (ms)
     response_interval = 1000     : int  # time before a new lick is considered a valid response (ms)
     reward_amount = 8            : int  # microliters of liquid
+    silence_thr = 30             : int  # lickless period after which stimulus is paused (min)
     conditions                   : varchar(4095) # stimuli to be presented (array of dictionaries)
     description =''              : varchar(2048) # task description
     """
 
     contents = [
-        (1, 'Movies', 30, 30, 180, 400, 1000, 8, 0,
-         "[{'probe':[0], 'clip_number':list(range(1,3)), 'movie_name':['obj1v4']}, \
-          {'probe':[1], 'clip_number':list(range(1,3)), 'movie_name':['obj2v4']}]",
+        (1, 'Movies', 30, 30, 180, 400, 1000, 8, 30,
+         "[{'probe':[0], 'clip_number':list(range(1,3)), 'movie_name':['obj1v4']},\
+         {'probe':[1], 'clip_number':list(range(1,3)), 'movie_name':['obj2v4']}]",
          '3d object experiment'),
     ]
 

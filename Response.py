@@ -23,7 +23,6 @@ class Response:
             self.liquid_dur[probe] = np.interp(params['reward_amount'],
                                                weight/pulse_num,
                                                pulse_dur)
-            print(self.liquid_dur[probe])
 
     def punish(self, probe):
         print('Punishing!')
