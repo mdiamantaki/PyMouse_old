@@ -39,7 +39,7 @@ class ExperimentType(dj.Lookup):
 
     contents = [
         ('Movies', 'Typical movies stimulus'),
-        ('PyMovies', 'Same as Movies but for Raspberry pi'),
+        ('RPMovies', 'Same as Movies but for Raspberry pi'),
         ('PassiveMovies', 'Movie presentation uncoupled with the licking behavior'),
         ('NoStimulus', 'Free water condition with no stimulus'),
     ]

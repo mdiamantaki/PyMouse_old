@@ -113,7 +113,7 @@ class Movies(Stimulus):
         return MultiProbeResponse
 
 
-class PyMovies(Stimulus):
+class RPMovies(Stimulus):
     def prepare(self):
         from omxplayer import OMXPlayer
 
