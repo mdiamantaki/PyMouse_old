@@ -24,7 +24,8 @@ class Stimulus:
         pygame.mouse.set_visible(0)
 
     def prepare(self):  # prepares stuff for presentation before experiment starts
-        pass
+        # log conditions
+        self.conditions = self.logger.log_conditions(self.get_condition_table())
 
     def init_trial(self):  # initialize stuff for each trial
         pass
@@ -70,22 +71,19 @@ class Stimulus:
 
 
 class Movies(Stimulus):
-
     def prepare(self):
-
         # log conditions
         self.conditions = self.logger.log_conditions(self.get_condition_table())
 
+        # store local copy of files
         if not os.path.isdir(self.path):  # create path if necessary
             os.makedirs(self.path)
-
         for cond_idx in self.conditions:
             filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1['file_name']
             if not os.path.isfile(filename):
-                (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx)).fetch1['clip'].tofile(filename)
+                (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1['clip'].tofile(filename)
 
     def init_trial(self):
-
         cond = self._get_new_cond()
         self.curr_frame = 1
         self.clock = pygame.time.Clock()
@@ -131,7 +129,6 @@ class PassiveMovies(Movies):
 
 
 class NoStimulus(Stimulus):
-
     def init_trial(self):
         self.isrunning = True
 
