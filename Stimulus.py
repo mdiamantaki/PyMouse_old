@@ -136,16 +136,16 @@ class PyMovies(Stimulus):
         cond = self._get_new_cond()
         self.isrunning = True
 
-        self.filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) &
+        filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) &
                                      self.logger.session_key).fetch1['file_name']
 
         # log start trial
         self.logger.start_trial(cond)
 
-        return cond
+        # start video
+        self.vid = self.player(filename)
 
-    def show_trial(self):
-        self.vid = self.player(self.filename)
+        return cond
 
     def stop_trial(self):
         self.vid.quit()
