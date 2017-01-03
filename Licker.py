@@ -9,6 +9,7 @@ class Licker:
         self.logger = logger
         self.resp_ind = resp_int
         self.timer = Timer()
+        self.timer.start()
 
     def lick(self):
         probe = 0

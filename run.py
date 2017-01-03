@@ -23,7 +23,7 @@ def runner(animal_id, task_idx):
     resp = stim.get_responder()(logger, timer, params)
 
     # RUN
-    max_trials = 10
+    max_trials = 2
     trial = 0
     while trial < max_trials:
 

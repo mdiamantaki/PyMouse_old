@@ -12,11 +12,11 @@ class Stimulus:
     def __init__(self, logger):
         pygame.init()
         self.path = 'stimuli/'  # default path to copy local stimuli
-        self.size = (400, 300)
+        self.size = (800, 480)
         #self.size = (256, 144)
-        self.color = [88, 88, 88]
+        self.color = [188, 88, 88]
         self.loc = (0, 0)
-        self.screen = pygame.display.set_mode(self.size, pygame.NOFRAME, pygame.RESIZABLE)
+        self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
         self.isrunning = False
         self.conditions = []
         self.indexes = []
@@ -104,7 +104,7 @@ class Movies(Stimulus):
     def show_trial(self):
         if self.curr_frame < (self.vid.get_length()):
             py_image = pygame.image.frombuffer(self.vid.get_next_data(), self.vsize, "RGB")
-            self.screen.blit(py_image, self.pos)
+            self.screen.blit(pygame.transform.scale(py_image, (800,400)), self.pos)
             self.flip()
             self.curr_frame += 1
             self.clock.tick_busy_loop(30)
