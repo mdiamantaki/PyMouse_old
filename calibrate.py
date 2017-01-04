@@ -37,7 +37,7 @@ def runner(args):
         print('Pulse %d/%d' % (trial+1, pulsenum), end="\r", flush=True)
 
         # trial period
-        resp.give_liquid(probe, duration)
+        resp.reward(probe, duration)
 
         # wait for next pulse
         time.sleep(duration/1000 + pulse_interval/1000)

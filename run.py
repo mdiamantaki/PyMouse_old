@@ -1,4 +1,3 @@
-from Licker import *
 from Logger import *
 from Stimulus import *
 import sys

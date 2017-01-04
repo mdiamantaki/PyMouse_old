@@ -15,3 +15,6 @@ class Timer:
 
     def elapsed_time(self):
         return int((self.time() - self.start_time)*1000)
+
+    def add_delay(self, sec):
+        self.start_time += sec
