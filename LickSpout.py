@@ -1,19 +1,17 @@
 from Database import *
 from time import sleep
 import numpy
-from importlib import util
 from Timer import *
 from concurrent.futures import ThreadPoolExecutor
+from RPi import GPIO
 
-# setup GPIO if exists
-if util.find_spec('RPi'):
-    from RPi import GPIO
-    GPIO.setmode(GPIO.BCM)
-    GPIO.setup([2, 9], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup([3, 4, 10, 11], GPIO.OUT, initial=GPIO.LOW)
-    channels = {'air':    {1: 10, 2: 11},
-                'liquid': {1: 3,  2: 4},
-                'lick':   {1: 2,  2: 9}}
+# setup GPIO
+GPIO.setmode(GPIO.BCM)
+GPIO.setup([2, 9], GPIO.IN)
+GPIO.setup([3, 4, 10, 11], GPIO.OUT, initial=GPIO.LOW)
+channels = {'air':    {1: 10, 2: 11},
+            'liquid': {1: 3,  2: 4},
+            'lick':   {1: 2,  2: 9}}
 
 
 class Licker:
