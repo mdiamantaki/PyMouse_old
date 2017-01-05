@@ -6,7 +6,7 @@ class Response:
     """ this class handles the response to the licks
     """
     def __init__(self, logger, timer, params):
-        self.beh = Behavior()
+        self.beh = Behavior(logger, params)
         self.logger = logger
         self.air_dur = params['airpuff_duration']
         self.timeout = params['timeout_duration']
