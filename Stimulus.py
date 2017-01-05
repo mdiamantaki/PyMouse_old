@@ -1,6 +1,7 @@
 from pygame.locals import *
 import io, imageio, pygame, os
 from Response import *
+import numpy as np
 
 
 class Stimulus:

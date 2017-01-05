@@ -75,16 +75,20 @@ class dummyResponse(Response):
         self.air_dur = params['airpuff_duration']
         self.timeout = params['timeout_duration']
         self.silence = params['silence_thr']
+        self.logger = logger
         self.timer = timer
         self.reward_probe = []
 
     def trial(self):
         probe = self.__lick()
-        if self.reward_probe == probe:
-            self.reward(probe)
+        if probe > 0:
+            if self.reward_probe == probe:
+                self.reward(probe)
+            else:
+                self.punish(probe)
+            return True  # break trial
         else:
-            self.punish(probe)
-        return True  # break trial
+            return False
 
     def inter_trial(self):
         if self.__lick():
@@ -102,13 +106,14 @@ class dummyResponse(Response):
 
     def __lick(self):
         """Simulate licks with keyboard"""
+        probe = 0
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
-                    return True
-                else:
-                    return False
+                    probe = 1
+
+        return probe
 
 
 class FreeWater(Response):
