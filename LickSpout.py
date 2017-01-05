@@ -1,5 +1,6 @@
 from Database import *
-import time, numpy
+import time as sleeptime
+import numpy
 from importlib import util
 from Timer import *
 from concurrent.futures import ThreadPoolExecutor
@@ -88,5 +89,5 @@ class ValveControl:
     @staticmethod
     def pulse_out(channel, duration):
         GPIO.output(channel, GPIO.HIGH)
-        time.sleep(duration/1000)
+        sleeptime.sleep(duration/1000)
         GPIO.output(channel, GPIO.LOW)
