@@ -1,6 +1,7 @@
 from Behavior import *
 import pygame, time
 
+
 class Response:
     """ this class handles the response to the licks
     """

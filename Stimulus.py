@@ -110,7 +110,7 @@ class Movies(Stimulus):
         return MovieClipCond
 
     def get_responder(self):
-        return MultiProbeResponse
+        return dummyResponse
 
 
 class RPMovies(Stimulus):
@@ -162,7 +162,7 @@ class RPMovies(Stimulus):
         return MultiProbeResponse
 
 
-class PassiveMovies(Movies):
+class PassiveMovies(RPMovies):
     def get_responder(self):
         return FreeWater
 
