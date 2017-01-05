@@ -19,6 +19,7 @@ class Logger:
         self.curr_cond = []
         self.task_idx = []
         self.date = systime.strftime("%Y-%m-%d")
+        self.reward_amount = []
 
     def log_session(self, animal_id, task_idx):
 
@@ -40,6 +41,8 @@ class Logger:
         key = dict(self.session_key.items() | task_params.items())
         key['setup'] = self.setup
         self.queue.put(dict(table=Session(), tuple=key))
+
+        self.reward_amount = task_params['reward_amount']
 
         # start session time
         self.timer.start()
