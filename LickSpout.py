@@ -1,10 +1,11 @@
 from Database import *
-import importlib, time, numpy
+import time, numpy
+from importlib import util
 from Timer import *
 from concurrent.futures import ThreadPoolExecutor
 
 # setup GPIO if exists
-if importlib.util.find_spec('RPi'):
+if util.find_spec('RPi'):
     from RPi import GPIO
     GPIO.setmode(GPIO.BCM)
     GPIO.setup([2, 9], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
