@@ -111,8 +111,11 @@ class dummyResponse(Response):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
+                    self.logger.log_lick(1)
                     probe = 1
-
+                if event.key == pygame.K_RIGHT:
+                    self.logger.log_lick(2)
+                    probe = 2
         return probe
 
 
