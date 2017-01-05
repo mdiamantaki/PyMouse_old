@@ -1,0 +1,90 @@
+from Database import *
+import importlib, time, numpy
+from Timer import *
+from concurrent.futures import ThreadPoolExecutor
+
+# setup GPIO if exists
+if importlib.util.find_spec('RPi'):
+    from RPi import GPIO
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup([2, 9], GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.setup([3, 4, 10, 11], GPIO.OUT, initial=GPIO.LOW)
+    channels = {'air':    {1: 10, 2: 11},
+                'liquid': {1: 3,  2: 4},
+                'lick':   {1: 2,  2: 9}}
+
+
+class Licker:
+    """ this class handles the licks
+    """
+    def __init__(self, logger):
+        self.logger = logger
+        self.probe1 = False
+        self.probe2 = False
+        self.timer_probe1 = Timer()
+        self.timer_probe1.start()
+        self.timer_probe2 = Timer()
+        self.timer_probe2.start()
+        GPIO.add_event_detect(channels['lick'][1], GPIO.RISING, callback=self.probe1_licked, bouncetime=50)
+        GPIO.add_event_detect(channels['lick'][2], GPIO.RISING, callback=self.probe2_licked, bouncetime=50)
+
+    def probe1_licked(self):
+        self.probe1 = True
+        self.timer_probe1.start()
+        self.logger.log_lick(1)
+
+    def probe2_licked(self):
+        self.probe2 = True
+        self.timer_probe2.start()
+        self.logger.log_lick(2)
+
+    def lick(self):
+        if self.probe1:
+            self.probe1 = False
+            probe = 1
+        elif self.probe2:
+            self.probe2 = False
+            probe = 2
+        else:
+            probe = 0
+        return probe
+
+
+class ValveControl:
+    """ This class handles the control of the valves for air & liquid delivery
+    """
+    def __init__(self, logger):
+        self.thread = ThreadPoolExecutor(max_workers=2)
+        self.logger = logger
+
+    def give_air(self, probe, duration, log=True):
+        self.thread.submit(self.__pulse_out, channels['air'][probe], duration)
+        if log:
+            self.logger.log_air()
+
+    def give_liquid(self, probe, duration=False, log=True):
+        if not duration:
+            duration = self.liquid_dur[probe]
+        self.thread.submit(self.__pulse_out, channels['liquid'][probe], duration)
+        if log:
+            self.logger.log_liquid()
+
+    def __calc_pulse_dur(self, reward_amount):  # calculate pulse duration for the desired reward amount
+        self.liquid_dur = dict()
+        probes = (LiquidCalibration() & dict(setup=self.logger.setup)).fetch['probe']
+        for probe in list(set(probes)):
+            key = dict(setup=self.logger.setup, probe=probe)
+            dates = (LiquidCalibration() & key).fetch.order_by('date')['date']
+            key['date'] = dates[-1]  # use the most recent calibration
+            pulse_dur, pulse_num, weight = (LiquidCalibration.PulseWeight() & key).fetch['pulse_dur',
+                                                                                         'pulse_num',
+                                                                                         'weight']
+            self.liquid_dur[probe] = numpy.interp(reward_amount,
+                                                  weight/pulse_num,
+                                                  pulse_dur)
+
+    @staticmethod
+    def __pulse_out(channel, duration):
+        GPIO.output(channel, GPIO.HIGH)
+        time.sleep(duration/1000)
+        GPIO.output(channel, GPIO.LOW)

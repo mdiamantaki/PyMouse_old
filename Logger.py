@@ -1,6 +1,6 @@
 import numpy, socket
 from Timer import *
-from Behavior import *
+from Database import *
 from itertools import product
 from queue import Queue
 import time as systime
@@ -87,14 +87,16 @@ class Logger:
         self.last_trial += 1
         self.inserter()
 
-    def log_reward(self):
+    def log_liquid(self):
         timestamp = self.timer.elapsed_time()
         self.queue.put(dict(table=LiquidDelivery(), tuple=dict(self.session_key, time=timestamp)))
         self.inserter()
 
-    def log_lick(self):
+    def log_lick(self, probe):
         timestamp = self.timer.elapsed_time()
-        self.queue.put(dict(table=Lick(), tuple=dict(self.session_key, time=timestamp)))
+        self.queue.put(dict(table=Lick(), tuple=dict(self.session_key,
+                                                     time=timestamp,
+                                                     probe=probe)))
         self.inserter()
 
     def log_air(self):

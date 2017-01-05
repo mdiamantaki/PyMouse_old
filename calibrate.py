@@ -1,5 +1,6 @@
 from Logger import *
 from Stimulus import *
+from LickSpout import *
 import sys
 import time
 import numpy as np
@@ -27,7 +28,7 @@ def runner(args):
 
     # get objects
     logger = Logger()
-    resp = Calibrator()
+    valve = ValveControl(logger)
 
     # RUN
     print('Running calibration')
@@ -36,8 +37,8 @@ def runner(args):
 
         print('Pulse %d/%d' % (trial+1, pulsenum), end="\r", flush=True)
 
-        # trial period
-        resp.reward(probe, duration)
+        # release liquid
+        valve.give_liquid(probe, duration, False)
 
         # wait for next pulse
         time.sleep(duration/1000 + pulse_interval/1000)

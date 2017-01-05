@@ -4,6 +4,7 @@ import sys
 
 
 def runner(animal_id, task_idx):
+    """ Main experiment runner"""
 
     # start session
     logger = Logger()
@@ -18,7 +19,6 @@ def runner(animal_id, task_idx):
 
     # get objects
     timer = Timer()
-    licker = Licker(logger, params['response_interval'])
     resp = stim.get_responder()(logger, timer, params)
 
     # RUN
@@ -28,41 +28,28 @@ def runner(animal_id, task_idx):
 
         # trial period
         cond = stim.init_trial()
-        resp.prepare_response(cond)
+        resp.pre_trial(cond)
         timer.start()  # Start countdown for response
         while timer.elapsed_time() < params['trial_duration']*1000 and stim.isrunning:  # response period
 
             # Show Stimulus
             stim.show_trial()
 
-            # Check for licks
-            probe = licker.lick()
-            if probe > 0:
-                # appropriate response to a lick (reward/punish/break trial)
-                break_trial = resp.trial_lick(probe)
-                if break_trial:
-                    break
-
-        else:  # appropriate response to a no lick case
-            resp.trial_no_lick()
+            # get appropriate response
+            break_trial = resp.trial()
+            if break_trial:
+                break
 
         # stop stimulus when timeout
         stim.stop_trial()
 
+        # do stuff after trial ends
+        resp.post_trial(break_trial)
+
         # intertrial period
         timer.start()
         while timer.elapsed_time() < params['intertrial_duration']*1000:
-            probe = licker.lick()
-            if probe > 0:
-                resp.inter_trial_lick(probe)
-        else:
-            resp.inter_trial_no_lick()
-
-        # in case of an unresponsive animal add a pause
-        if licker.minutessincelastlick() > params['silence_thr'] > 0:
-            print('Sleeping...')
-            while licker.lick() == 0:
-                pass
+            resp.inter_trial()
 
         # update trial
         trial += 1
