@@ -1,5 +1,5 @@
 from Database import *
-import time as sleeptime
+from time import sleep
 import numpy
 from importlib import util
 from Timer import *
@@ -89,5 +89,5 @@ class ValveControl:
     @staticmethod
     def __pulse_out(channel, duration):
         GPIO.output(channel, GPIO.HIGH)
-        sleeptime.sleep(duration/1000)
+        sleep(duration/1000)
         GPIO.output(channel, GPIO.LOW)
