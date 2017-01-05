@@ -130,7 +130,7 @@ class Lick(dj.Manual):
     -> Session
     time	     	  	: int           	# time from session start (ms)
     ---
-    -> probe            :int         # probe number
+    probe               :int                # probe number
     """
 
 
