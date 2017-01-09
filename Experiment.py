@@ -2,7 +2,7 @@ from Behavior import *
 import pygame, time
 
 
-class Response:
+class Experiment:
     """ this class handles the response to the licks
     """
     def __init__(self, logger, timer, params):
@@ -37,8 +37,8 @@ class Response:
         pass
 
 
-class MultiProbeResponse(Response):
-    """2AFC & GoNOGo tasks"""
+class MultiProbe(Experiment):
+    """2AFC & GoNOGo tasks with lickspout"""
     def pre_trial(self, cond):
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1['probe']
         probe = self.beh.is_licking()
@@ -69,7 +69,7 @@ class MultiProbeResponse(Response):
         self.beh.water_reward(probe)
 
 
-class dummyResponse(Response):
+class Dummy(Experiment):
     """Testing"""
     def __init__(self, logger, timer, params):
         self.air_dur = params['airpuff_duration']
@@ -119,7 +119,7 @@ class dummyResponse(Response):
         return probe
 
 
-class FreeWater(Response):
+class FreeWater(Experiment):
     """Reward upon lick"""
     def trial(self):
         probe = self.beh.is_licking()

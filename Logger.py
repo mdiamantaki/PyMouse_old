@@ -51,7 +51,7 @@ class Logger:
     def log_conditions(self, condition_table):
 
         # generate factorial conditions
-        conditions = eval((Task() & self.task_idx).fetch1['conditions'])
+        conditions = eval((Task() & dict(task_idx=self.task_idx)).fetch1['conditions'])
         conditions = sum([list((dict(zip(conds, x)) for x in product(*conds.values()))) for conds in conditions], [])
 
         # iterate through all conditions and insert

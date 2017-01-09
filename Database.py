@@ -41,6 +41,7 @@ class ExperimentType(dj.Lookup):
         ('Movies', 'Typical movies stimulus'),
         ('RPMovies', 'Same as Movies but for Raspberry pi'),
         ('PassiveMovies', 'Movie presentation uncoupled with the licking behavior'),
+        ('Gratings', 'Orientation Gratings'),
         ('NoStimulus', 'Free water condition with no stimulus'),
     ]
 
@@ -198,6 +199,18 @@ class MovieClipCond(dj.Manual):
     -> Movie.Clip
     """
 
+@schema
+class GratingCond(dj.Manual):
+    definition = """
+    # Orientation gratings conditions
+    -> Condition
+    ---
+    direction                : int                    # in degrees (0-360)
+    spatial_period           : int                    # pixels/cycle
+    temporal_freq            : float                  # cycles/sec
+    contrast=100             : int                    # 0-100 Michelson contrast
+    phase=0                  : float                  # initial phase in rad
+    """
 
 @schema
 class RewardCond(dj.Manual):

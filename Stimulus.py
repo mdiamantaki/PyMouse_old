@@ -1,6 +1,6 @@
 from pygame.locals import *
 import io, imageio, pygame, os
-from Response import *
+from Experiment import *
 import numpy as np
 
 
@@ -21,6 +21,8 @@ class Stimulus:
         self.indexes = []
         self.unshow()
         self.logger = logger
+        self.fps = 30
+        self.frame = 0
         pygame.mouse.set_visible(0)
 
         pygame.display.toggle_fullscreen()
@@ -41,12 +43,28 @@ class Stimulus:
     def get_condition_table(self):
         pass
 
-    def get_responder(self):
-        return Response
+    def get_experiment(self):
+        return Experiment
 
     def unshow(self):  # updated background color
         self.screen.fill(self.color)
         self.flip()
+
+    def encode_photodiode(self):
+        """Encodes the flip number n in the flip amplitude.
+        Every 32 sequential flips encode 32 21-bit flip numbers.
+        Thus each n is a 21-bit flip number:
+        FFFFFFFFFFFFFFFFCCCCP
+        P = parity, only P=1 encode bits
+        C = the position within F
+        F = the current block of 32 flips
+        """
+        n = self.frame+1
+        amp = 127 * (n & 1) * (2 - (n & (1 << (((np.int64(np.floor(n / 2)) & 15) + 6) - 1)) != 0))
+        surf = pygame.Surface((50, 50))
+        surf.fill((amp, amp, amp))
+        self.screen.blit(surf, (0, 0))
+        self.frame += 1
 
     def _get_new_cond(self):  # get curr condition & create random block of all conditions,
         #  should be called within init_trial
@@ -110,8 +128,8 @@ class Movies(Stimulus):
     def get_condition_table(self):
         return MovieClipCond
 
-    def get_responder(self):
-        return dummyResponse
+    def get_experiment(self):
+        return Dummy
 
 
 class RPMovies(Stimulus):
@@ -159,12 +177,85 @@ class RPMovies(Stimulus):
     def get_condition_table(self):
         return MovieClipCond
 
-    def get_responder(self):
-        return MultiProbeResponse
+    def get_experiment(self):
+        return MultiProbe
+
+
+class Gratings(Stimulus):
+    def prepare(self):
+        self.conditions = self.logger.log_conditions(self.get_condition_table())
+        self.clock = pygame.time.Clock()
+        self.stim_conditions = dict()
+        for cond in self.conditions:
+            params = (GratingCond() & dict(cond_idx=cond) & self.logger.session_key).fetch1()
+            params['grating'] = self.__make_grating(params['spatial_period'],
+                                                    params['direction'],
+                                                    params['phase'])
+            self.stim_conditions[cond] = params
+
+
+    def init_trial(self):
+        cond = self._get_new_cond()
+
+        # get condition parameters
+        self.grating = self.stim_conditions[cond]['grating']
+        self.lamda = self.stim_conditions[cond]['spatial_period']
+        self.frame_step = self.lamda * (self.stim_conditions[cond]['temporal_freq'] / self.fps)
+        self.frame_idx = 0
+        self.xt = np.cos((self.stim_conditions[cond]['direction'] / 180) * np.pi)
+        self.yt = np.sin((self.stim_conditions[cond]['direction'] / 180) * np.pi)
+
+        # log start trial
+        self.logger.start_trial(cond)
+        self.isrunning = True
+        return cond
+
+    def show_trial(self):
+        displacement = np.mod(self.frame_idx * self.frame_step, self.lamda)
+        self.screen.blit(self.grating,
+                         (-self.lamda + self.yt * displacement,
+                          -self.lamda + self.xt * displacement))
+        self.encode_photodiode()
+        self.flip()
+        self.frame_idx += 1
+        self.clock.tick_busy_loop(self.fps)
+
+    def stop_trial(self):
+        self.unshow()
+        self.isrunning = False
+        self.logger.log_trial() # log trial
+
+    def get_condition_table(self):
+        return GratingCond
+
+    def __make_grating(self, lamda=50, theta=0, phase=0):
+        """ Makes an oriented grating
+        lamda: wavelength (number of pixels per cycle)
+        theta: grating orientation in degrees
+        phase: phase of the grating
+        """
+        w = np.max(self.size) + 2 * lamda
+
+        freq = w/lamda  # compute frequency from wavelength
+        # make linear ramp
+        x0 = np.linspace(0, 1, w) - .5
+        xm, ym = np.meshgrid(x0, x0)
+
+        # Change orientation by adding Xm and Ym together in different proportions
+        theta_rad = (theta/180) * np.pi
+        xt = xm * np.cos(theta_rad)
+        yt = ym * np.sin(theta_rad)
+
+        im = np.floor((np.sin(((xt + yt) * freq * 2 * np.pi) + phase)+1)*127)
+        grating = np.transpose(np.tile(im, [3, 1, 1]), (1, 2, 0))
+        return pygame.surfarray.make_surface(grating)
+
+    def get_experiment(self):
+        return Dummy
 
 
 class PassiveMovies(RPMovies):
-    def get_responder(self):
+    def get_experiment(self):
         return FreeWater
 
 
@@ -172,5 +263,5 @@ class NoStimulus(Stimulus):
     def init_trial(self):
         self.isrunning = True
 
-    def get_responder(self):
+    def get_experiment(self):
         return FreeWater
