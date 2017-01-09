@@ -8,6 +8,7 @@ import numpy as np
 
 # Inputs: duration, probe, pulsenum, pulse_interval
 def runner(args):
+    """ LickSpout calibration runner"""
 
     duration = int(args[0])  # has to be there
 

@@ -3,7 +3,7 @@ from Timer import *
 
 
 class Behavior:
-
+    """ This class handles the behavior variables """
     def __init__(self, logger, params):
         self.resp_int = params['response_interval']
         self.licker = Licker(logger)

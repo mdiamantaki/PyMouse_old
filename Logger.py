@@ -79,13 +79,14 @@ class Logger:
         # return condition key
         return dict(self.session_key, cond_idx=cond_idx)
 
-    def log_trial(self):
+    def log_trial(self, last_flip_count=0):
         timestamp = self.timer.elapsed_time()
         trial_key = dict(self.session_key,
                          trial_idx=self.last_trial+1,
                          cond_idx=self.curr_cond,
                          start_time=self.trial_start,
-                         end_time=timestamp)
+                         end_time=timestamp,
+                         last_flip_count=last_flip_count)
         self.queue.put(dict(table=Trial(), tuple=trial_key))
         self.last_trial += 1
         self.inserter()

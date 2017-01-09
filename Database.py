@@ -121,6 +121,7 @@ class Trial(dj.Manual):
     ---
     start_time               : int             # start time from session start (ms)
     end_time                 : int             # end time from session start (ms)
+    last_flip_count          : int             # the last flip number in this trial
     """
 
 

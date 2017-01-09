@@ -10,45 +10,66 @@ class Stimulus:
     """
 
     def __init__(self, logger):
-        pygame.init()
-        self.path = 'stimuli/'  # default path to copy local stimuli
-        self.size = (800, 480)
-        self.color = [88, 88, 88]
-        self.loc = (0, 0)
-        self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
+        # setup parameters
+        self.path = 'stimuli/'     # default path to copy local stimuli
+        self.size = (800, 480)     # window size
+        self.color = [88, 88, 88]  # default background color
+        self.loc = (0, 0)          # default starting location of stimulus surface
+        self.fps = 30              # default presentation framerate
+
+        # initilize parameters
+        self.logger = logger
         self.isrunning = False
+        self.flip_count = 0
         self.conditions = []
         self.indexes = []
-        self.unshow()
-        self.logger = logger
-        self.fps = 30
-        self.frame = 0
-        pygame.mouse.set_visible(0)
 
+        # setup pygame
+        pygame.init()
+        self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
+        self.unshow()
+        pygame.mouse.set_visible(0)
         pygame.display.toggle_fullscreen()
 
-    def prepare(self):  # prepares stuff for presentation before experiment starts
+    def prepare(self):
+        """prepares stuff for presentation before experiment starts"""
         # log conditions
         self.conditions = self.logger.log_conditions(self.get_condition_table())
 
-    def init_trial(self):  # initialize stuff for each trial
+    def init_trial(self):
+        """initialize stuff for each trial"""
         pass
 
-    def show_trial(self):  # start trial
+    def show_trial(self):
+        """trial presentation method"""
         pass
 
-    def stop_trial(self):  # stop trial
+    def stop_trial(self):
+        """stop trial"""
         pass
 
     def get_condition_table(self):
+        """method to get the stimulus condition table"""
         pass
 
     def get_experiment(self):
+        """method to get the type of experiment"""
         return Experiment
 
-    def unshow(self):  # updated background color
+    def unshow(self):
+        """update background color"""
         self.screen.fill(self.color)
         self.flip()
+
+    def _get_new_cond(self):
+        """Get curr condition & create random block of all conditions
+        Should be called within init_trial
+        """
+        if np.size(self.indexes) == 0:
+            self.indexes = np.random.permutation(np.size(self.conditions))
+        cond = self.conditions[self.indexes[0]]
+        self.indexes = self.indexes[1:]
+        return cond
 
     def encode_photodiode(self):
         """Encodes the flip number n in the flip amplitude.
@@ -59,39 +80,31 @@ class Stimulus:
         C = the position within F
         F = the current block of 32 flips
         """
-        n = self.frame+1
+        n = self.flip_count + 1
         amp = 127 * (n & 1) * (2 - (n & (1 << (((np.int64(np.floor(n / 2)) & 15) + 6) - 1)) != 0))
         surf = pygame.Surface((50, 50))
         surf.fill((amp, amp, amp))
         self.screen.blit(surf, (0, 0))
-        self.frame += 1
 
-    def _get_new_cond(self):  # get curr condition & create random block of all conditions,
-        #  should be called within init_trial
-        if np.size(self.indexes) == 0:
-            self.indexes = np.random.permutation(np.size(self.conditions))
-
-        cond = self.conditions[self.indexes[0]]
-        self.indexes = self.indexes[1:]
-
-        return cond
-
-    @staticmethod
-    def flip():
+    def flip(self):
+        """ Main flip method"""
         pygame.display.update()
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
 
+        self.flip_count += 1
+
     @staticmethod
-    def close():  # exit
+    def close():
+        """Close stuff"""
         pygame.mouse.set_visible(1)
         pygame.display.quit()
         pygame.quit()
 
 
 class Movies(Stimulus):
-
+    """ This class handles the presentation of Movies"""
     def init_trial(self):
         cond = self._get_new_cond()
         self.curr_frame = 1
@@ -113,7 +126,7 @@ class Movies(Stimulus):
             self.screen.blit(py_image, self.pos)
             self.flip()
             self.curr_frame += 1
-            self.clock.tick_busy_loop(30)
+            self.clock.tick_busy_loop(self.fps)
         else:
             self.isrunning = False
 
@@ -133,6 +146,7 @@ class Movies(Stimulus):
 
 
 class RPMovies(Stimulus):
+    """ This class handles the presentation of Movies with an optimized library for Raspberry pi"""
     def prepare(self):
         from omxplayer import OMXPlayer
 
@@ -172,7 +186,7 @@ class RPMovies(Stimulus):
         self.isrunning = False
 
         # log trial
-        self.logger.log_trial()
+        self.logger.log_trial(self.flip_count)
 
     def get_condition_table(self):
         return MovieClipCond
@@ -182,6 +196,7 @@ class RPMovies(Stimulus):
 
 
 class Gratings(Stimulus):
+    """ This class handles the presentation orientations"""
     def prepare(self):
         self.conditions = self.logger.log_conditions(self.get_condition_table())
         self.clock = pygame.time.Clock()
@@ -223,7 +238,7 @@ class Gratings(Stimulus):
     def stop_trial(self):
         self.unshow()
         self.isrunning = False
-        self.logger.log_trial() # log trial
+        self.logger.log_trial(self.flip_count)  # log trial
 
     def get_condition_table(self):
         return GratingCond
@@ -255,11 +270,13 @@ class Gratings(Stimulus):
 
 
 class PassiveMovies(RPMovies):
+    """ This class handles the presentation of Movies as a pasive task"""
     def get_experiment(self):
         return FreeWater
 
 
 class NoStimulus(Stimulus):
+    """ This class does not present any stimulus and water is delivered upon a lick"""
     def init_trial(self):
         self.isrunning = True
 
