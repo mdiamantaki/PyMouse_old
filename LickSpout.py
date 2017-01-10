@@ -32,6 +32,7 @@ class Licker:
         GPIO.add_event_detect(channels['lick'][2], GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
 
     def probe1_licked(self, foo):
+        print(foo)
         print('Probe1_licked')
         self.probe1 = True
         self.timer_probe1.start()
