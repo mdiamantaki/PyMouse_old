@@ -143,6 +143,7 @@ class LiquidDelivery(dj.Manual):
     -> Session
     time			    : int 	            # time from session start (ms)
     ---
+    probe               :int                # probe number
     """
 
 
