@@ -39,6 +39,7 @@ class Licker:
         self.logger.log_lick(1)
 
     def probe2_licked(self, foo):
+        print(foo)
         print('Probe2_licked')
         self.probe2 = True
         self.timer_probe2.start()
