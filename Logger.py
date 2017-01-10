@@ -91,9 +91,9 @@ class Logger:
         self.last_trial += 1
         self.inserter()
 
-    def log_liquid(self):
+    def log_liquid(self, probe):
         timestamp = self.timer.elapsed_time()
-        self.queue.put(dict(table=LiquidDelivery(), tuple=dict(self.session_key, time=timestamp)))
+        self.queue.put(dict(table=LiquidDelivery(), tuple=dict(self.session_key, time=timestamp, probe=probe)))
         self.inserter()
 
     def log_lick(self, probe):
@@ -103,9 +103,9 @@ class Logger:
                                                      probe=probe)))
         self.inserter()
 
-    def log_air(self):
+    def log_air(self, probe):
         timestamp = self.timer.elapsed_time()
-        self.queue.put(dict(table=AirpuffDelivery(), tuple=dict(self.session_key, time=timestamp)))
+        self.queue.put(dict(table=AirpuffDelivery(), tuple=dict(self.session_key, time=timestamp, probe=probe)))
         self.inserter()
 
     def log_pulse_weight(self, pulse_dur, probe, pulse_num, weight):

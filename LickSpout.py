@@ -66,14 +66,14 @@ class ValveControl:
     def give_air(self, probe, duration, log=True):
         #self.thread.submit(self.__pulse_out, channels['air'][probe], duration)
         if log:
-            self.logger.log_air()
+            self.logger.log_air(probe)
 
     def give_liquid(self, probe, duration=False, log=True):
         if not duration:
             duration = self.liquid_dur[probe]
         #self.thread.submit(self.__pulse_out, channels['liquid'][probe], duration)
         if log:
-            self.logger.log_liquid()
+            self.logger.log_liquid(probe)
 
     def __calc_pulse_dur(self, reward_amount):  # calculate pulse duration for the desired reward amount
         self.liquid_dur = dict()
