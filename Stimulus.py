@@ -24,7 +24,8 @@ class Stimulus:
         self.conditions = []
         self.indexes = []
 
-        # setup pygame
+    def setup(self):
+        """ Pygame setup"""
         pygame.init()
         self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
         self.unshow()
@@ -277,6 +278,11 @@ class PassiveMovies(RPMovies):
 
 class NoStimulus(Stimulus):
     """ This class does not present any stimulus and water is delivered upon a lick"""
+
+    def __init__(self, logger):
+        super().__init__(logger)
+        self.size = (100, 100)
+
     def init_trial(self):
         self.isrunning = True
 

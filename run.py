@@ -15,6 +15,7 @@ def runner(animal_id, task_idx):
 
     # Start stimulus
     stim = eval(params['exp_type'])(logger)
+    stim.setup()
     stim.prepare()
 
     # get experiment
