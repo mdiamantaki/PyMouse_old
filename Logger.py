@@ -101,7 +101,7 @@ class Logger:
         self.queue.put(dict(table=Lick(), tuple=dict(self.session_key,
                                                      time=timestamp,
                                                      probe=probe)))
-        #self.inserter()
+        #self.inserter()  # threading fails with pymysql
 
     def log_air(self, probe):
         timestamp = self.timer.elapsed_time()
