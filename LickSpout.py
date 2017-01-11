@@ -64,22 +64,19 @@ class ValveControl:
     """ This class handles the control of the valves for air & liquid delivery
     """
     def __init__(self, logger):
-        self.pulse = False
         self.thread = ThreadPoolExecutor(max_workers=1)
         self.logger = logger
         self.__calc_pulse_dur(logger.reward_amount)
 
     def give_air(self, probe, duration, log=True):
-        if not self.pulse:
-            self.thread.submit(self.__pulse_out, channels['air'][probe], duration)
+        self.thread.submit(self.__pulse_out, channels['air'][probe], duration)
         if log:
             self.logger.log_air(probe)
 
     def give_liquid(self, probe, duration=False, log=True):
         if not duration:
             duration = self.liquid_dur[probe]
-        if not self.pulse:
-            self.thread.submit(self.__pulse_out, channels['liquid'][probe], duration)
+        self.thread.submit(self.__pulse_out, channels['liquid'][probe], duration)
         if log:
             self.logger.log_liquid(probe)
 
@@ -98,8 +95,6 @@ class ValveControl:
                                                   pulse_dur)
 
     def __pulse_out(self, channel, duration):
-        self.pulse = True
         GPIO.output(channel, GPIO.HIGH)
         sleep(duration/1000)
         GPIO.output(channel, GPIO.LOW)
-        self.pulse = False
