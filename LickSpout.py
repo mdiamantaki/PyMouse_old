@@ -22,6 +22,7 @@ class Licker:
     """
     def __init__(self, logger):
         self.logger = logger
+        self.pulse = False
         self.probe1 = False
         self.probe2 = False
         self.timer_probe1 = Timer()
