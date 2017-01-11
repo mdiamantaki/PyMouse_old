@@ -154,6 +154,7 @@ class AirpuffDelivery(dj.Manual):
     -> Session
     time		    	: int 	            # time from session start (ms)
     ---
+    probe=0        :int         # probe number
     """
 
 
