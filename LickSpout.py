@@ -69,14 +69,16 @@ class ValveControl:
         self.__calc_pulse_dur(logger.reward_amount)
 
     def give_air(self, probe, duration, log=True):
-        self.thread.submit(self.__pulse_out, channels['air'][probe], duration)
+        if not self.pulse:
+            self.thread.submit(self.__pulse_out, channels['air'][probe], duration)
         if log:
             self.logger.log_air(probe)
 
     def give_liquid(self, probe, duration=False, log=True):
         if not duration:
             duration = self.liquid_dur[probe]
-        self.thread.submit(self.__pulse_out, channels['liquid'][probe], duration)
+        if not self.pulse:
+            self.thread.submit(self.__pulse_out, channels['liquid'][probe], duration)
         if log:
             self.logger.log_liquid(probe)
 
@@ -94,8 +96,9 @@ class ValveControl:
                                                   weight/pulse_num,
                                                   pulse_dur)
 
-    @staticmethod
-    def __pulse_out(channel, duration):
+    def __pulse_out(self, channel, duration):
+        self.pulse = True
         GPIO.output(channel, GPIO.HIGH)
         sleep(duration/1000)
         GPIO.output(channel, GPIO.LOW)
+        self.pulse = False
