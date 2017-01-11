@@ -10,8 +10,8 @@ from importlib import util
 if util.find_spec('RPi'):
     from RPi import GPIO
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup([2, 9], GPIO.IN)
-    GPIO.setup([3, 4, 10, 11], GPIO.OUT, initial=GPIO.LOW)
+    GPIO.setup([2, 19], GPIO.IN)
+    GPIO.setup([3, 4, 13, 26], GPIO.OUT, initial=GPIO.LOW)
     channels = {'air':    {1: 13, 2: 26},
                 'liquid': {1: 3,  2: 4},
                 'lick':   {1: 2,  2: 19}}
