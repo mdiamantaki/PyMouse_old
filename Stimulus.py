@@ -289,5 +289,5 @@ class NoStimulus(Stimulus):
         self.isrunning = True
 
     def get_experiment(self):
-        return FreeWater
-        #return Experiment
+        #return FreeWater
+        return TestExp

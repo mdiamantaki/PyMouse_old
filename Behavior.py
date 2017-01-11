@@ -25,7 +25,7 @@ class Behavior:
     def water_reward(self, probe):
         self.valves.give_liquid(probe)
 
-    def punish_with_air(self, probe, air_dur):
+    def punish_with_air(self, probe, air_dur=400):
         self.valves.give_air(probe, air_dur)
 
     def inactivity_time(self):  # in minutes

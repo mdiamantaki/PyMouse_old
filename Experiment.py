@@ -126,5 +126,14 @@ class FreeWater(Experiment):
         if probe:
             self.beh.water_reward(probe)
 
+class TestExp(Experiment):
+    """Reward upon lick"""
+    def trial(self):
+        probe = self.beh.is_licking()
+        if probe:
+            self.beh.water_reward(1)
+            self.beh.water_reward(2)
+            self.beh.punish_with_air(1)
+            self.beh.punish_with_air(2)
 
 
