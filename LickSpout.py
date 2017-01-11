@@ -22,7 +22,6 @@ class Licker:
     """
     def __init__(self, logger):
         self.logger = logger
-        self.pulse = False
         self.probe1 = False
         self.probe2 = False
         self.timer_probe1 = Timer()
@@ -65,6 +64,7 @@ class ValveControl:
     """ This class handles the control of the valves for air & liquid delivery
     """
     def __init__(self, logger):
+        self.pulse = False
         self.thread = ThreadPoolExecutor(max_workers=1)
         self.logger = logger
         self.__calc_pulse_dur(logger.reward_amount)
