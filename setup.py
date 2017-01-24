@@ -4,7 +4,7 @@ from os import path
 
 here = path.abspath(path.dirname(__file__))
 
-long_description = "State system for mouse behavior"
+long_description = "Behavioral conditioning with mice"
 
 
 setup(
@@ -18,7 +18,8 @@ setup(
     url='https://github.com/olakiril/PyMouse',
     keywords='mouse behavior control',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-    install_requires=['numpy', 'sh', 'concurrent', 'pygame', 'imageio'],
+    install_requires=['numpy', 'sh', 'concurrent', 'pygame', 'imageio', 'importlib',
+                      'time', 'sys', 'queue', 'itertools', 'socket', 'io', 'os', 'sys', 'datajoint'],
     classifiers=[
         'Development Status :: 1 - Beta',
         'Intended Audience :: Science/Research',
