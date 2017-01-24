@@ -18,8 +18,8 @@ setup(
     url='https://github.com/olakiril/PyMouse',
     keywords='mouse behavior control',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-    install_requires=['numpy', 'sh', 'concurrent', 'pygame', 'imageio', 'importlib',
-                      'time', 'sys', 'queue', 'itertools', 'socket', 'io', 'os', 'sys', 'datajoint'],
+    install_requires=['numpy', 'concurrent', 'pygame', 'imageio', 'importlib',
+                      'time', 'queue', 'itertools', 'socket', 'io', 'datajoint'],
     classifiers=[
         'Development Status :: 1 - Beta',
         'Intended Audience :: Science/Research',
