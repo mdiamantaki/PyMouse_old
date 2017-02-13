@@ -9,6 +9,19 @@ def erd():
 
 
 @schema
+class SetupInfo(dj.Manual):
+    definition = """
+    #
+    setup              : varchar(256)   # Setup name
+    ---
+    ip                 : varchar(16)    # setup IP address
+    state              : enum('ready','running','stopped')  #
+    animal_id          : int # animal id
+    task_idx           : int             # task identification number
+    """
+
+
+@schema
 class LiquidCalibration(dj.Manual):
     definition = """
     # Liquid delivery calibration sessions for each probe
@@ -165,7 +178,7 @@ class Movie(dj.Lookup):
     movie_name           : char(8)                      # short movie title
     ---
     path                 : varchar(255)                 #
-    movie_class          : enum('mousecam','object3d','madmax') #
+    movie_class          : enum('mousecam','object3d','madmax','multiobject') #
     original_file        : varchar(255)                 #
     file_template        : varchar(255)                 # filename template with full path
     file_duration        : float                        # (s) duration of each file (must be equal)

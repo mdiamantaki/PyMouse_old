@@ -16,6 +16,7 @@ class Stimulus:
         self.color = [88, 88, 88]  # default background color
         self.loc = (0, 0)          # default starting location of stimulus surface
         self.fps = 30              # default presentation framerate
+        self.phd_size = (50, 50)    # default photodiode signal size in pixels
 
         # initilize parameters
         self.logger = logger
@@ -41,7 +42,7 @@ class Stimulus:
         """initialize stuff for each trial"""
         pass
 
-    def show_trial(self):
+    def start_trial(self):
         """trial presentation method"""
         pass
 
@@ -83,7 +84,7 @@ class Stimulus:
         """
         n = self.flip_count + 1
         amp = 127 * (n & 1) * (2 - (n & (1 << (((np.int64(np.floor(n / 2)) & 15) + 6) - 1)) != 0))
-        surf = pygame.Surface((50, 50))
+        surf = pygame.Surface(self.phd_size)
         surf.fill((amp, amp, amp))
         self.screen.blit(surf, (0, 0))
 
@@ -121,7 +122,7 @@ class Movies(Stimulus):
 
         return cond
 
-    def show_trial(self):
+    def start_trial(self):
         if self.curr_frame < (self.vid.get_length()):
             py_image = pygame.image.frombuffer(self.vid.get_next_data(), self.vsize, "RGB")
             self.screen.blit(py_image, self.pos)
@@ -226,7 +227,7 @@ class Gratings(Stimulus):
         self.isrunning = True
         return cond
 
-    def show_trial(self):
+    def start_trial(self):
         displacement = np.mod(self.frame_idx * self.frame_step, self.lamda)
         self.screen.blit(self.grating,
                          (-self.lamda + self.yt * displacement,
@@ -289,5 +290,5 @@ class NoStimulus(Stimulus):
         self.isrunning = True
 
     def get_experiment(self):
-        #return FreeWater
-        return TestExp
+        return FreeWater
+        #return TestExp

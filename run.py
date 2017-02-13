@@ -13,7 +13,7 @@ def runner(animal_id, task_idx):
     # get parameters
     params = (Task() & dict(task_idx=task_idx)).fetch1()
 
-    # Start stimulus
+    # prepare stimulus
     stim = eval(params['exp_type'])(logger)
     stim.setup()
     stim.prepare()
@@ -33,8 +33,8 @@ def runner(animal_id, task_idx):
         timer.start()  # Start countdown for response
         while timer.elapsed_time() < params['trial_duration']*1000 and stim.isrunning:  # response period
 
-            # Show Stimulus
-            stim.show_trial()
+            # Start Stimulus
+            stim.start_trial()
 
             # get appropriate response
             break_trial = exprmt.trial()
