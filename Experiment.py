@@ -57,7 +57,7 @@ class MultiProbe(Experiment):
     def inter_trial(self):
         if self.beh.is_licking():
             self.timer.start()
-        self.timer.add_delay(self.timeout)
+            self.timer.add_delay(self.timeout)
         elif self.beh.inactivity_time() > self.silence:
             while not self.beh.is_licking():
                 time.sleep(1)
