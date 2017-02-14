@@ -131,9 +131,6 @@ class TestExp(Experiment):
     def trial(self):
         probe = self.beh.is_licking()
         if probe:
-            self.beh.water_reward(1)
-            self.beh.water_reward(2)
-            self.beh.punish_with_air(1)
-            self.beh.punish_with_air(2)
-
+            self.beh.water_reward(probe)
+            self.beh.punish_with_air(probe)
 
