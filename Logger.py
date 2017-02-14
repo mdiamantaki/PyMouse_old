@@ -12,6 +12,7 @@ class Logger:
     def __init__(self):
         self.session_key = dict()
         self.setup = socket.gethostname()
+        self.ip = socket.gethostbyname(socket.gethostname())
         self.last_trial = 0
         self.queue = Queue()
         self.timer = Timer()
@@ -116,6 +117,28 @@ class Logger:
                                                      pulse_dur=pulse_dur,
                                                      pulse_num=pulse_num,
                                                      weight=weight))
+
+    def log_setup(self):
+        key = dict(setup=self.setup)
+
+        # update values in case they exist
+        if numpy.size((SetupInfo() & dict(setup=self.setup)).fetch()):
+            key = (SetupInfo() & dict(setup=self.setup)).fetch1()
+            (SetupInfo() & dict(setup=self.setup)).delete_quick()
+
+        # insert new setup
+        key['ip'] = self.ip
+        key['state'] = 'ready'
+        SetupInfo().insert1(key)
+
+    def update_setup_state(self, state):
+        key = (SetupInfo() & dict(setup=self.setup)).fetch1()
+        in_state = key['state'] == state
+        if not in_state:
+            (SetupInfo() & dict(setup=self.setup)).delete_quick()
+            key['state'] = state
+            SetupInfo().insert1(key)
+        return in_state
 
     def get_session_key(self):
         return self.session_key

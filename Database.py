@@ -12,12 +12,12 @@ def erd():
 class SetupInfo(dj.Manual):
     definition = """
     #
-    setup              : varchar(256)   # Setup name
+    setup                  : varchar(256)   # Setup name
     ---
-    ip                 : varchar(16)    # setup IP address
-    state              : enum('ready','running','stopped')  #
-    animal_id          : int # animal id
-    task_idx           : int             # task identification number
+    ip                     : varchar(16)    # setup IP address
+    state="ready"          : enum('ready','running','stopped','sleeping')  #
+    animal_id=null         : int # animal id
+    task_idx=null          : int             # task identification number
     """
 
 
