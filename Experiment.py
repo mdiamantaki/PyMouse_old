@@ -48,6 +48,7 @@ class MultiProbe(Experiment):
 
     def pre_trial(self, cond):
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1['probe']
+        self.beh.is_licking()
 
     def trial(self):
         probe = self.beh.is_licking()
