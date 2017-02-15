@@ -9,7 +9,7 @@ def erd():
 
 
 @schema
-class SetupInfo(dj.Manual):
+class SetupInfo(dj.Lookup):
     definition = """
     #
     setup                  : varchar(256)   # Setup name

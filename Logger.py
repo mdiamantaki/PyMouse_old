@@ -22,8 +22,9 @@ class Logger:
         self.date = systime.strftime("%Y-%m-%d")
         self.reward_amount = []
 
-    def log_session(self, animal_id, task_idx):
+    def log_session(self):
 
+        animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1['animal_id', 'task_idx']
         self.task_idx = task_idx
 
         # create session key
@@ -139,6 +140,10 @@ class Logger:
             key['state'] = state
             SetupInfo().insert1(key)
         return in_state
+
+    def get_setup_state(self):
+        state = (SetupInfo() & dict(setup=self.setup)).fetch1['state']
+        return state
 
     def get_session_key(self):
         return self.session_key

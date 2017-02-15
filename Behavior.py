@@ -1,13 +1,15 @@
 from LickSpout import *
 from Timer import *
+import pygame
 
 
 class Behavior:
     """ This class handles the behavior variables """
     def __init__(self, logger, params):
         self.resp_int = params['response_interval']
-        self.lick_timer = Timer()
-        self.lick_timer.start()
+        self.resp_timer = Timer()
+        self.resp_timer.start()
+        self.logger = logger
 
     def is_licking(self):
         return False
@@ -22,12 +24,11 @@ class Behavior:
         print('Punishing with Air!')
 
     def inactivity_time(self):  # in minutes
-        return numpy.minimum(self.licker.timer_probe1.elapsed_time(),
-                             self.licker.timer_probe2.elapsed_time())/1000/60
+        return 0
 
 
 class RPBehavior(Behavior):
-    """ This class handles the behavior variables """
+    """ This class handles the behavior variables for RP """
     def __init__(self, logger, params):
         self.licker = Licker(logger)
         self.valves = ValveControl(logger)
@@ -35,8 +36,7 @@ class RPBehavior(Behavior):
 
     def is_licking(self):
         probe = self.licker.lick()
-
-        if self.lick_timer.elapsed_time() < self.resp_int:
+        if self.resp_timer.elapsed_time() < self.resp_int:
             probe = 0
         return probe
 
@@ -49,5 +49,29 @@ class RPBehavior(Behavior):
     def inactivity_time(self):  # in minutes
         return numpy.minimum(self.licker.timer_probe1.elapsed_time(),
                              self.licker.timer_probe2.elapsed_time()) / 1000 / 60
+
+
+class DummyProbe(Behavior):
+    def __init__(self, logger, params):
+        self.lick_timer = Timer()
+        self.lick_timer.start()
+        super(DummyProbe, self).__init__(logger, params)
+
+    def is_licking(self):
+        probe = 0
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    self.logger.log_lick(1)
+                    probe = 1
+                    self.lick_timer.start()
+                if event.key == pygame.K_RIGHT:
+                    self.logger.log_lick(2)
+                    probe = 2
+        return probe
+
+    def inactivity_time(self):  # in minutes
+        return self.lick_timer.elapsed_time() / 1000 / 60
 
 

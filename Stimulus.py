@@ -144,7 +144,7 @@ class Movies(Stimulus):
         return MovieClipCond
 
     def get_experiment(self):
-        return Dummy
+        return DummyMultiProbe
 
 
 class RPMovies(Stimulus):
@@ -268,7 +268,7 @@ class Gratings(Stimulus):
         return pygame.surfarray.make_surface(grating)
 
     def get_experiment(self):
-        return Dummy
+        return DummyMultiProbe
 
 
 class PassiveMovies(RPMovies):
@@ -290,5 +290,5 @@ class NoStimulus(Stimulus):
         self.isrunning = True
 
     def get_experiment(self):
-        #return FreeWater
-        return TestExp
+        return FreeWater
+        #return ProbeTest
