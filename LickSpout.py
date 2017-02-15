@@ -55,7 +55,7 @@ class Licker:
             probe = 0
         return probe
 
-    def cleaup(self):
+    def cleanup(self):
         GPIO.cleanup()
         GPIO.remove_event_detect(channels['lick'][1])
         GPIO.remove_event_detect(channels['lick'][2])
@@ -100,5 +100,5 @@ class ValveControl:
         sleep(duration/1000)
         GPIO.output(channel, GPIO.LOW)
 
-    def cleaup(self):
+    def cleanup(self):
         GPIO.cleanup()
