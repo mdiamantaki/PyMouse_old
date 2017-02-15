@@ -37,7 +37,7 @@ class Experiment:
         pass
 
     def cleanup(self):
-        pass
+        self.beh.cleanup()
 
     def get_behavior(self):
         return RPBehavior
@@ -83,9 +83,6 @@ class MultiProbe(Experiment):
 
     def reward(self, probe):
         self.beh.water_reward(probe)
-
-    def cleanup(self):
-        self.beh.cleanup()
 
 
 class DummyMultiProbe(MultiProbe):
