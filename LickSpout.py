@@ -9,6 +9,7 @@ from importlib import util
 # setup GPIO
 if util.find_spec('RPi'):
     from RPi import GPIO
+    GPIO.cleanup()
     GPIO.setmode(GPIO.BCM)
     GPIO.setup([2, 5], GPIO.IN)
     GPIO.setup([3, 4, 6, 7], GPIO.OUT, initial=GPIO.LOW)
