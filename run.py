@@ -62,6 +62,7 @@ def calibrate(logger=logg):
         valve.give_liquid(probe, duration, False)  # release liquid
         time.sleep(duration/1000 + pulse_interval/1000)  # wait for next pulse
         trial += 1  # update trial
+    print('Done calibrating')
     logger.log_pulse_weight(duration, probe, pulsenum)  # insert
 
 

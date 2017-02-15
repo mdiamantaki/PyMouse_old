@@ -35,15 +35,11 @@ class Licker:
     def probe1_licked(self, channel):
         #c = list(channels['lick'].items())
         #probe = c[0][c[1].index(channel)]
-        print(channel)
-        print('Probe1_licked')
         self.probe1 = True
         self.timer_probe1.start()
         self.logger.log_lick(1)
 
     def probe2_licked(self, channel):
-        print(channel)
-        print('Probe2_licked')
         self.probe2 = True
         self.timer_probe2.start()
         self.logger.log_lick(2)

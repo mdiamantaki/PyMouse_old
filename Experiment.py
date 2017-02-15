@@ -101,6 +101,7 @@ class ProbeTest(Experiment):
     def trial(self):
         probe = self.beh.is_licking()
         if probe:
+            print(probe)
             self.beh.water_reward(probe)
             self.beh.punish_with_air(probe)
 
