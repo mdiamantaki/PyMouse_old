@@ -3,16 +3,12 @@ from Stimulus import *
 import sys
 
 # setup loger & timer
-logger = Logger()
-logger.log_setup()  # publish IP and make setup available
-timer = Timer()  # main timer for trials
+logg = Logger()
+logg.log_setup()  # publish IP and make setup available
 
-while not logger.get_setup_state() == 'stopped':
 
-    # wait for remote start
-    while logger.get_setup_state() == 'ready':
-        time.sleep(1)
-
+def train(logger=logg):
+    print('test')
     # start session
     logger.log_session()
 
@@ -25,6 +21,7 @@ while not logger.get_setup_state() == 'stopped':
     stim.prepare()
 
     # get experiment
+    timer = Timer()  # main timer for trials
     exprmt = stim.get_experiment()(logger, timer, params)
 
     # RUN
@@ -49,9 +46,38 @@ while not logger.get_setup_state() == 'stopped':
         while timer.elapsed_time() < params['intertrial_duration']*1000:
             exprmt.inter_trial()
 
-    # close everything
+    # update setup state
     logger.update_setup_state('ready')
 
-# stim.close()
+
+def calibrate(logger=logg):
+    """ LickSpout calibration runner"""
+    task_idx = (SetupInfo() & dict(setup=logger.setup)).fetch1['task_idx']
+    duration, probe, pulsenum, pulse_interval = \
+        (CalibrationTask() & dict(task_idx=task_idx)).fetch1['pulse_dur', 'probe', 'pulse_num', 'pulse_interval']
+    valve = ValveControl(logger)  # get valve object
+    print('Running calibration')
+    trial = 0
+    while trial < pulsenum:
+        print('Pulse %d/%d' % (trial+1, pulsenum), end="\r", flush=True)
+        valve.give_liquid(probe, duration, False)  # release liquid
+        time.sleep(duration/1000 + pulse_interval/1000)  # wait for next pulse
+        trial += 1  # update trial
+    logger.log_pulse_weight(duration, probe, pulsenum)  # insert
+
+
+while not logg.get_setup_state() == 'stopped':
+    # wait for remote start
+    while logg.get_setup_state() == 'ready':
+        time.sleep(1)
+
+    # run experiment unless stopped
+    if not logg.get_setup_state() == 'stopped':
+        print('test2')
+        eval(logg.get_setup_task())(logg)
+        logg.update_setup_state('ready')  # update setup state
+
+# close everything
 sys.exit(0)
+
 

@@ -18,6 +18,7 @@ class SetupInfo(dj.Lookup):
     state="ready"          : enum('ready','running','stopped','sleeping')  #
     animal_id=null         : int # animal id
     task_idx=null          : int             # task identification number
+    task="train"           : enum('train','calibrate')
     """
 
 
@@ -83,6 +84,20 @@ class Task(dj.Lookup):
          {'probe':[1], 'clip_number':list(range(1,3)), 'movie_name':['obj2v4']}]",
          '3d object experiment'),
     ]
+
+
+@schema
+class CalibrationTask(dj.Lookup):
+    definition = """
+    # Calibration parameters
+    task_idx                     : int             # task identification number
+    ---
+    probe                        : int            # probe number
+    pulse_dur                    : int            # duration of pulse in ms
+    pulse_num                    : int            # number of pulses
+    pulse_interval               : int            # interval between pulses in ms
+    """
+
 
 @schema
 class MouseWeight(dj.Manual):

@@ -110,7 +110,7 @@ class Logger:
         self.queue.put(dict(table=AirpuffDelivery(), tuple=dict(self.session_key, time=timestamp, probe=probe)))
         self.inserter()
 
-    def log_pulse_weight(self, pulse_dur, probe, pulse_num, weight):
+    def log_pulse_weight(self, pulse_dur, probe, pulse_num, weight=0):
         cal_key = dict(setup=self.setup, probe=probe, date=self.date)
         LiquidCalibration().insert1(cal_key, skip_duplicates=True)
         (LiquidCalibration.PulseWeight() & dict(cal_key, pulse_dur=pulse_dur)).delete_quick()
@@ -144,6 +144,10 @@ class Logger:
     def get_setup_state(self):
         state = (SetupInfo() & dict(setup=self.setup)).fetch1['state']
         return state
+
+    def get_setup_task(self):
+        task = (SetupInfo() & dict(setup=self.setup)).fetch1['task']
+        return task
 
     def get_session_key(self):
         return self.session_key
