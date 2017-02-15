@@ -56,9 +56,9 @@ class Licker:
         return probe
 
     def cleanup(self):
-        GPIO.cleanup()
-        #GPIO.remove_event_detect(channels['lick'][1])
-        #GPIO.remove_event_detect(channels['lick'][2])
+        #GPIO.cleanup()
+        GPIO.remove_event_detect(channels['lick'][1])
+        GPIO.remove_event_detect(channels['lick'][2])
 
 
 class ValveControl:
@@ -101,4 +101,4 @@ class ValveControl:
         GPIO.output(channel, GPIO.LOW)
 
     def cleanup(self):
-        GPIO.cleanup()
+        #GPIO.cleanup()
