@@ -54,7 +54,6 @@ class RPBehavior(Behavior):
 
     def cleanup(self):
         self.licker.cleanup()
-        self.valves.cleanup()
 
 
 class DummyProbe(Behavior):
