@@ -8,7 +8,6 @@ logg.log_setup()  # publish IP and make setup available
 
 
 def train(logger=logg):
-    print('test')
     # start session
     logger.log_session()
 
@@ -73,7 +72,6 @@ while not logg.get_setup_state() == 'stopped':
 
     # run experiment unless stopped
     if not logg.get_setup_state() == 'stopped':
-        print('test2')
         eval(logg.get_setup_task())(logg)
         logg.update_setup_state('ready')  # update setup state
 
