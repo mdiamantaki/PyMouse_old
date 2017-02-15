@@ -45,6 +45,9 @@ def train(logger=logg):
         while timer.elapsed_time() < params['intertrial_duration']*1000:
             exprmt.inter_trial()
 
+    # cleanup
+    exprmt.cleanup()
+
     # update setup state
     logger.update_setup_state('ready')
 

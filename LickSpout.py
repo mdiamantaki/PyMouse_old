@@ -9,12 +9,9 @@ from importlib import util
 # setup GPIO
 if util.find_spec('RPi'):
     from RPi import GPIO
-    GPIO.cleanup()
     GPIO.setmode(GPIO.BCM)
     GPIO.setup([2, 5], GPIO.IN)
     GPIO.setup([3, 4, 6, 7], GPIO.OUT, initial=GPIO.LOW)
-    GPIO.remove_event_detect(2)
-    GPIO.remove_event_detect(5)
     channels = {'air':    {1: 6,  2: 7},
                 'liquid': {1: 3,  2: 4},
                 'lick':   {1: 2,  2: 5}}
@@ -31,11 +28,8 @@ class Licker:
         self.timer_probe1.start()
         self.timer_probe2 = Timer()
         self.timer_probe2.start()
-        try:
-            GPIO.add_event_detect(channels['lick'][2], GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
-            GPIO.add_event_detect(channels['lick'][1], GPIO.RISING, callback=self.probe1_licked, bouncetime=200)
-        finally:
-            pass
+        GPIO.add_event_detect(channels['lick'][2], GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
+        GPIO.add_event_detect(channels['lick'][1], GPIO.RISING, callback=self.probe1_licked, bouncetime=200)
 
 
     def probe1_licked(self, channel):
@@ -60,6 +54,11 @@ class Licker:
         else:
             probe = 0
         return probe
+
+    def cleaup(self):
+        GPIO.cleanup()
+        GPIO.remove_event_detect(channels['lick'][1])
+        GPIO.remove_event_detect(channels['lick'][2])
 
 
 class ValveControl:
@@ -100,3 +99,6 @@ class ValveControl:
         GPIO.output(channel, GPIO.HIGH)
         sleep(duration/1000)
         GPIO.output(channel, GPIO.LOW)
+
+    def cleaup(self):
+        GPIO.cleanup()

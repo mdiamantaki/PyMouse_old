@@ -26,6 +26,8 @@ class Behavior:
     def inactivity_time(self):  # in minutes
         return 0
 
+    def cleanup(self):
+        pass
 
 class RPBehavior(Behavior):
     """ This class handles the behavior variables for RP """
@@ -49,6 +51,10 @@ class RPBehavior(Behavior):
     def inactivity_time(self):  # in minutes
         return numpy.minimum(self.licker.timer_probe1.elapsed_time(),
                              self.licker.timer_probe2.elapsed_time()) / 1000 / 60
+
+    def cleanup(self):
+        self.licker.cleanup()
+        self.valves.cleanup()
 
 
 class DummyProbe(Behavior):
