@@ -57,8 +57,8 @@ class Licker:
 
     def cleanup(self):
         GPIO.cleanup()
-        GPIO.remove_event_detect(channels['lick'][1])
-        GPIO.remove_event_detect(channels['lick'][2])
+        #GPIO.remove_event_detect(channels['lick'][1])
+        #GPIO.remove_event_detect(channels['lick'][2])
 
 
 class ValveControl:
