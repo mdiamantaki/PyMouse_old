@@ -13,6 +13,8 @@ if util.find_spec('RPi'):
     GPIO.setmode(GPIO.BCM)
     GPIO.setup([2, 5], GPIO.IN)
     GPIO.setup([3, 4, 6, 7], GPIO.OUT, initial=GPIO.LOW)
+    GPIO.remove_event_detect(2)
+    GPIO.remove_event_detect(5)
     channels = {'air':    {1: 6,  2: 7},
                 'liquid': {1: 3,  2: 4},
                 'lick':   {1: 2,  2: 5}}
