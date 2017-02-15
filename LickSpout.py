@@ -101,4 +101,5 @@ class ValveControl:
         GPIO.output(channel, GPIO.LOW)
 
     def cleanup(self):
+        pass
         #GPIO.cleanup()
