@@ -1,6 +1,6 @@
 from pygame.locals import *
 import io, imageio, pygame, os
-from Experiment import *
+from Database import *
 import numpy as np
 
 
@@ -54,8 +54,10 @@ class Stimulus:
         """method to get the stimulus condition table"""
         pass
 
-    def unshow(self, color = [88,88,88]):
+    def unshow(self, color=False):
         """update background color"""
+        if not color:
+            color = self.color
         self.screen.fill(color)
         self.flip()
 
