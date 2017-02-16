@@ -52,9 +52,26 @@ class ExperimentType(dj.Lookup):
     """
 
     contents = [
+        ('MultiProbe', '2AFC & GoNOGo tasks with lickspout'),
+        ('DummyMultiProbe', 'Same as Multiprobe but with a dummy probe'),
+        ('FreeWater', 'Reward upon lick'),
+        ('ProbeTest', 'Testing probes'),
+        ('Pasive', 'No reward/punishment'),
+    ]
+
+
+@schema
+class StimulusType(dj.Lookup):
+    definition = """
+    # Stimulus type
+    stim_type : char(128) # stimulus schema
+    ---
+    description = '' : varchar(2048) # some description of the experiment
+    """
+
+    contents = [
         ('Movies', 'Typical movies stimulus'),
         ('RPMovies', 'Same as Movies but for Raspberry pi'),
-        ('PassiveMovies', 'Movie presentation uncoupled with the licking behavior'),
         ('Gratings', 'Orientation Gratings'),
         ('NoStimulus', 'Free water condition with no stimulus'),
     ]
@@ -67,6 +84,7 @@ class Task(dj.Lookup):
     task_idx                     : int             # task identification number
     ---
     -> ExperimentType
+    -> StimulusType
     intertrial_duration = 30     : int  # time in between trials (s)
     trial_duration = 30          : int  # trial time (s)
     timeout_duration = 180       : int  # timeout punishment delay (s)
@@ -79,9 +97,9 @@ class Task(dj.Lookup):
     """
 
     contents = [
-        (1, 'Movies', 30, 30, 180, 400, 1000, 8, 30,
-         "[{'probe':[0], 'clip_number':list(range(1,3)), 'movie_name':['obj1v4']},\
-         {'probe':[1], 'clip_number':list(range(1,3)), 'movie_name':['obj2v4']}]",
+        (1,'MultiProbe','RPMovies', 30, 30, 180, 400, 1000, 8, 30,
+         "[{'probe':[1], 'clip_number':list(range(1,3)), 'movie_name':['obj1v4']},\
+         {'probe':[2], 'clip_number':list(range(1,3)), 'movie_name':['obj2v4']}]",
          '3d object experiment'),
     ]
 

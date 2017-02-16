@@ -1,5 +1,5 @@
 from Logger import *
-from Stimulus import *
+from Experiment import *
 import sys
 
 # setup loger & timer
@@ -8,37 +8,28 @@ logg.log_setup()  # publish IP and make setup available
 
 
 def train(logger=logg):
-    # start session
-    logger.log_session()
 
-    # get parameters
-    params = (Task() & dict(task_idx=logger.task_idx)).fetch1()
-
-    # prepare stimulus
-    stim = eval(params['exp_type'])(logger)
-    stim.setup()
-    stim.prepare()
-
-    # get experiment
+    # # # # # Prepare # # # # #
+    logger.log_session()  # start session
+    params = (Task() & dict(task_idx=logger.task_idx)).fetch1()  # get parameters
     timer = Timer()  # main timer for trials
-    exprmt = stim.get_experiment()(logger, timer, params)
+    exprmt = eval(params['exp_type'])(logger, timer, params)  # get experiment
+    exprmt.prepare()
 
-    # RUN
+    # # # # # RUN # # # # #
     while logger.get_setup_state() == 'running':
+
         # # # # # pre-Trial period # # # # #
-        cond = stim.init_trial()
-        exprmt.pre_trial(cond)
+        exprmt.pre_trial()
 
         # # # # # Trial period # # # # #
         timer.start()  # Start countdown for response
-        while timer.elapsed_time() < params['trial_duration']*1000 and stim.isrunning:  # response period
-            stim.start_trial()  # Start Stimulus
+        while timer.elapsed_time() < params['trial_duration']*1000:  # response period
             break_trial = exprmt.trial()  # get appropriate response
             if break_trial: break  # break if experiment calls for it
-        stim.stop_trial()  # stop stimulus when timeout
 
         # # # # # Post-Trial Period # # # # #
-        exprmt.post_trial(break_trial)
+        exprmt.post_trial()
 
         # # # # # Intertrial period # # # # #
         timer.start()
@@ -47,9 +38,7 @@ def train(logger=logg):
 
     # cleanup
     exprmt.cleanup()
-
-    # update setup state
-    logger.update_setup_state('ready')
+    logger.update_setup_state('ready')  # update setup state
 
 
 def calibrate(logger=logg):

@@ -79,4 +79,7 @@ class DummyProbe(Behavior):
     def inactivity_time(self):  # in minutes
         return self.lick_timer.elapsed_time() / 1000 / 60
 
+    def cleanup(self):
+        pass
+
 

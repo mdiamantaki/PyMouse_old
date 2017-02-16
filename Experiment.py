@@ -1,4 +1,5 @@
 from Behavior import *
+from Stimulus import *
 import time
 
 
@@ -13,34 +14,35 @@ class Experiment:
         self.timer = timer
         self.reward_probe = []
         self.beh = self.get_behavior()(logger, params)
+        self.stim = eval(params['stim_type'])(logger)
 
-    def pre_trial(self, cond):
+    def prepare(self):
+        """Prepare things before experiment starts"""
+        self.stim.prepare()  # prepare stimulus
+
+    def pre_trial(self):
         """Prepare things before trial starts"""
-        pass
+        self.stim.init_trial()  # initialize stimulus
 
     def trial(self):
         """Do stuff in trial, returns break condition"""
+        self.stim.present_trial()  # Start Stimulus
         return False
 
-    def post_trial(self, trial_broke=False):
+    def post_trial(self):
         """Handle events after trial ends"""
-        pass
+        self.stim.stop_trial()  # stop stimulus
 
     def inter_trial(self):
         """Handle intertrial period events"""
-        pass
-
-    def punish(self, probe):
-        pass
-
-    def reward(self, probe):
         pass
 
     def cleanup(self):
         self.beh.cleanup()
 
     def get_behavior(self):
-        return RPBehavior
+        return RPBehavior  # default is raspberry pi
+
 
 class MultiProbe(Experiment):
     """2AFC & GoNOGo tasks with lickspout"""
@@ -49,11 +51,13 @@ class MultiProbe(Experiment):
         self.post_wait = 0
         super(MultiProbe, self).__init__(logger, timer, params)
 
-    def pre_trial(self, cond):
+    def pre_trial(self):
+        cond = self.stim.init_trial()
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1['probe']
         self.beh.is_licking()
 
     def trial(self):
+        self.stim.present_trial()  # Start Stimulus
         probe = self.beh.is_licking()
         if probe > 0:
             if self.reward_probe == probe:
@@ -64,8 +68,11 @@ class MultiProbe(Experiment):
         else:
             return False
 
-    def post_trial(self, trial_broke):
-        time.sleep(self.post_wait)
+    def post_trial(self):
+        self.stim.stop_trial()  # stop stimulus when timeout
+        self.timer.start()
+        while self.timer.elapsed_time() < self.post_wait and self.logger.get_setup_state() == 'running':
+            time.sleep(0.5)
         self.post_wait = 0
 
     def inter_trial(self):
@@ -73,8 +80,10 @@ class MultiProbe(Experiment):
             self.timer.start()
         elif self.beh.inactivity_time() > self.silence:
             self.logger.update_setup_state('sleeping')
+            self.stim.unshow([0, 0, 0])
             while not self.beh.is_licking() and self.logger.get_setup_state() == 'sleeping':
                 time.sleep(1)
+            self.stim.unshow()
             self.logger.update_setup_state('running')
 
     def punish(self, probe):
@@ -91,12 +100,12 @@ class DummyMultiProbe(MultiProbe):
     def get_behavior(self):
         return DummyProbe
 
-    def cleanup(self):
-        pass
 
 class FreeWater(Experiment):
     """Reward upon lick"""
+
     def trial(self):
+        self.stim.present_trial()  # Start Stimulus
         probe = self.beh.is_licking()
         if probe:
             self.beh.water_reward(probe)
