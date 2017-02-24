@@ -18,6 +18,7 @@ class Experiment:
 
     def prepare(self):
         """Prepare things before experiment starts"""
+        self.stim.setup()
         self.stim.prepare()  # prepare stimulus
 
     def pre_trial(self):
@@ -113,6 +114,9 @@ class FreeWater(Experiment):
 
 class ProbeTest(Experiment):
     """Reward upon lick"""
+    def prepare(self):
+        pass
+    
     def trial(self):
         probe = self.beh.is_licking()
         if probe:
