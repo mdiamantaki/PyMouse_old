@@ -25,6 +25,7 @@ class Stimulus:
         self.conditions = []
         self.indexes = []
 
+    def setup(self):
         # setup pygame
         pygame.init()
         self.screen = pygame.display.set_mode(self.size)
