@@ -238,6 +238,9 @@ class Gratings(Stimulus):
 
 class NoStimulus(Stimulus):
     """ This class does not present any stimulus and water is delivered upon a lick"""
+    
+    def prepare(self):
+        pass
 
     def init_trial(self):
         self.isrunning = True
