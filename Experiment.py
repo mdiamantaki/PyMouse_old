@@ -79,13 +79,14 @@ class MultiProbe(Experiment):
     def inter_trial(self):
         if self.beh.is_licking():
             self.timer.start()
-        elif self.beh.inactivity_time() > self.silence:
+        elif self.beh.inactivity_time() > self.silence and self.logger.get_setup_state() == 'running':
             self.logger.update_setup_state('sleeping')
             self.stim.unshow([0, 0, 0])
             while not self.beh.is_licking() and self.logger.get_setup_state() == 'sleeping':
                 time.sleep(1)
             self.stim.unshow()
-            self.logger.update_setup_state('running')
+            if self.logger.get_setup_state() == 'sleeping':
+                self.logger.update_setup_state('running')
 
     def punish(self, probe):
         self.beh.punish_with_air(probe, self.air_dur)
