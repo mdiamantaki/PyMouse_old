@@ -12,7 +12,9 @@ class Logger:
     def __init__(self):
         self.session_key = dict()
         self.setup = socket.gethostname()
-        self.ip = socket.gethostbyname(socket.gethostname())
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        self.ip = s.getsockname()[0]
         self.last_trial = 0
         self.queue = Queue()
         self.timer = Timer()
