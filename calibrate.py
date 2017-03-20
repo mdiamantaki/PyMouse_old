@@ -56,5 +56,5 @@ def runner(args):
     quit()
 
 
-# input parameters: duration, probe, # of pulses, puse interval
+# input parameters: duration, probe, # of pulses, pulse interval
 runner(sys.argv[1:])

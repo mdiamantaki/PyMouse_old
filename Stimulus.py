@@ -1,6 +1,6 @@
 from pygame.locals import *
 import io, imageio, pygame, os
-from Experiment import *
+from Database import *
 import numpy as np
 
 
@@ -16,6 +16,7 @@ class Stimulus:
         self.color = [88, 88, 88]  # default background color
         self.loc = (0, 0)          # default starting location of stimulus surface
         self.fps = 30              # default presentation framerate
+        self.phd_size = (50, 50)    # default photodiode signal size in pixels
 
         # initilize parameters
         self.logger = logger
@@ -25,9 +26,10 @@ class Stimulus:
         self.indexes = []
 
     def setup(self):
-        """ Pygame setup"""
+        # setup pygame
         pygame.init()
-        self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
+        self.screen = pygame.display.set_mode(self.size)
+        # self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
         self.unshow()
         pygame.mouse.set_visible(0)
         pygame.display.toggle_fullscreen()
@@ -41,7 +43,7 @@ class Stimulus:
         """initialize stuff for each trial"""
         pass
 
-    def show_trial(self):
+    def present_trial(self):
         """trial presentation method"""
         pass
 
@@ -53,13 +55,11 @@ class Stimulus:
         """method to get the stimulus condition table"""
         pass
 
-    def get_experiment(self):
-        """method to get the type of experiment"""
-        return Experiment
-
-    def unshow(self):
+    def unshow(self, color=False):
         """update background color"""
-        self.screen.fill(self.color)
+        if not color:
+            color = self.color
+        self.screen.fill(color)
         self.flip()
 
     def _get_new_cond(self):
@@ -83,7 +83,7 @@ class Stimulus:
         """
         n = self.flip_count + 1
         amp = 127 * (n & 1) * (2 - (n & (1 << (((np.int64(np.floor(n / 2)) & 15) + 6) - 1)) != 0))
-        surf = pygame.Surface((50, 50))
+        surf = pygame.Surface(self.phd_size)
         surf.fill((amp, amp, amp))
         self.screen.blit(surf, (0, 0))
 
@@ -115,13 +115,10 @@ class Movies(Stimulus):
         self.vsize = (clip_info['frame_width'], clip_info['frame_height'])
         self.pos = np.divide(self.size, 2) - np.divide(self.vsize, 2)
         self.isrunning = True
-
-        # log start trial
-        self.logger.start_trial(cond)
-
+        self.logger.start_trial(cond)  # log start trial
         return cond
 
-    def show_trial(self):
+    def present_trial(self):
         if self.curr_frame < (self.vid.get_length()):
             py_image = pygame.image.frombuffer(self.vid.get_next_data(), self.vsize, "RGB")
             self.screen.blit(py_image, self.pos)
@@ -135,26 +132,18 @@ class Movies(Stimulus):
         self.vid.close()
         self.unshow()
         self.isrunning = False
-
-        # log trial
-        self.logger.log_trial()
+        self.logger.log_trial()  # log trial
 
     def get_condition_table(self):
         return MovieClipCond
-
-    def get_experiment(self):
-        return Dummy
 
 
 class RPMovies(Stimulus):
     """ This class handles the presentation of Movies with an optimized library for Raspberry pi"""
     def prepare(self):
         from omxplayer import OMXPlayer
-
         self.player = OMXPlayer
-        # log conditions
-        self.conditions = self.logger.log_conditions(self.get_condition_table())
-
+        self.conditions = self.logger.log_conditions(self.get_condition_table())  # log conditions
         # store local copy of files
         if not os.path.isdir(self.path):  # create path if necessary
             os.makedirs(self.path)
@@ -169,32 +158,20 @@ class RPMovies(Stimulus):
     def init_trial(self):
         cond = self._get_new_cond()
         self.isrunning = True
-
         filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) &
                                      self.logger.session_key).fetch1['file_name']
-
-        # log start trial
-        self.logger.start_trial(cond)
-
-        # start video
-        self.vid = self.player(filename)
-
+        self.logger.start_trial(cond)  # log start trial
+        self.vid = self.player(filename)  # start video
         return cond
 
     def stop_trial(self):
         self.vid.quit()
         self.unshow()
         self.isrunning = False
-
-        # log trial
-        self.logger.log_trial(self.flip_count)
+        self.logger.log_trial(self.flip_count)  # log trial
 
     def get_condition_table(self):
         return MovieClipCond
-
-    def get_experiment(self):
-        return MultiProbe
-
 
 class Gratings(Stimulus):
     """ This class handles the presentation orientations"""
@@ -211,22 +188,18 @@ class Gratings(Stimulus):
 
 
     def init_trial(self):
-        cond = self._get_new_cond()
-
-        # get condition parameters
+        cond = self._get_new_cond()   # get condition parameters
         self.grating = self.stim_conditions[cond]['grating']
         self.lamda = self.stim_conditions[cond]['spatial_period']
         self.frame_step = self.lamda * (self.stim_conditions[cond]['temporal_freq'] / self.fps)
         self.frame_idx = 0
         self.xt = np.cos((self.stim_conditions[cond]['direction'] / 180) * np.pi)
         self.yt = np.sin((self.stim_conditions[cond]['direction'] / 180) * np.pi)
-
-        # log start trial
-        self.logger.start_trial(cond)
+        self.logger.start_trial(cond) # log start trial
         self.isrunning = True
         return cond
 
-    def show_trial(self):
+    def present_trial(self):
         displacement = np.mod(self.frame_idx * self.frame_step, self.lamda)
         self.screen.blit(self.grating,
                          (-self.lamda + self.yt * displacement,
@@ -251,42 +224,25 @@ class Gratings(Stimulus):
         phase: phase of the grating
         """
         w = np.max(self.size) + 2 * lamda
-
         freq = w/lamda  # compute frequency from wavelength
         # make linear ramp
         x0 = np.linspace(0, 1, w) - .5
         xm, ym = np.meshgrid(x0, x0)
-
         # Change orientation by adding Xm and Ym together in different proportions
         theta_rad = (theta/180) * np.pi
         xt = xm * np.cos(theta_rad)
         yt = ym * np.sin(theta_rad)
-
         im = np.floor((np.sin(((xt + yt) * freq * 2 * np.pi) + phase)+1)*127)
         grating = np.transpose(np.tile(im, [3, 1, 1]), (1, 2, 0))
         return pygame.surfarray.make_surface(grating)
 
-    def get_experiment(self):
-        return Dummy
-
-
-class PassiveMovies(RPMovies):
-    """ This class handles the presentation of Movies as a pasive task"""
-    def get_experiment(self):
-        return FreeWater
-
 
 class NoStimulus(Stimulus):
     """ This class does not present any stimulus and water is delivered upon a lick"""
-
-    def setup(self):
-        """ Pygame setup"""
-        pygame.init()
-        self.screen = pygame.display.set_mode((100, 100))
-        self.unshow()
+    
+    def prepare(self):
+        pass
 
     def init_trial(self):
         self.isrunning = True
 
-    def get_experiment(self):
-        return FreeWater

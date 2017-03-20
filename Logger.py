@@ -12,6 +12,9 @@ class Logger:
     def __init__(self):
         self.session_key = dict()
         self.setup = socket.gethostname()
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        self.ip = s.getsockname()[0]
         self.last_trial = 0
         self.queue = Queue()
         self.timer = Timer()
@@ -21,8 +24,9 @@ class Logger:
         self.date = systime.strftime("%Y-%m-%d")
         self.reward_amount = []
 
-    def log_session(self, animal_id, task_idx):
+    def log_session(self):
 
+        animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1['animal_id', 'task_idx']
         self.task_idx = task_idx
 
         # create session key
@@ -108,7 +112,7 @@ class Logger:
         self.queue.put(dict(table=AirpuffDelivery(), tuple=dict(self.session_key, time=timestamp, probe=probe)))
         self.inserter()
 
-    def log_pulse_weight(self, pulse_dur, probe, pulse_num, weight):
+    def log_pulse_weight(self, pulse_dur, probe, pulse_num, weight=0):
         cal_key = dict(setup=self.setup, probe=probe, date=self.date)
         LiquidCalibration().insert1(cal_key, skip_duplicates=True)
         (LiquidCalibration.PulseWeight() & dict(cal_key, pulse_dur=pulse_dur)).delete_quick()
@@ -116,6 +120,36 @@ class Logger:
                                                      pulse_dur=pulse_dur,
                                                      pulse_num=pulse_num,
                                                      weight=weight))
+
+    def log_setup(self):
+        key = dict(setup=self.setup)
+
+        # update values in case they exist
+        if numpy.size((SetupInfo() & dict(setup=self.setup)).fetch()):
+            key = (SetupInfo() & dict(setup=self.setup)).fetch1()
+            (SetupInfo() & dict(setup=self.setup)).delete_quick()
+
+        # insert new setup
+        key['ip'] = self.ip
+        key['state'] = 'ready'
+        SetupInfo().insert1(key)
+
+    def update_setup_state(self, state):
+        key = (SetupInfo() & dict(setup=self.setup)).fetch1()
+        in_state = key['state'] == state
+        if not in_state:
+            (SetupInfo() & dict(setup=self.setup)).delete_quick()
+            key['state'] = state
+            SetupInfo().insert1(key)
+        return in_state
+
+    def get_setup_state(self):
+        state = (SetupInfo() & dict(setup=self.setup)).fetch1['state']
+        return state
+
+    def get_setup_task(self):
+        task = (SetupInfo() & dict(setup=self.setup)).fetch1['task']
+        return task
 
     def get_session_key(self):
         return self.session_key

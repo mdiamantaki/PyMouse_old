@@ -10,11 +10,11 @@ from importlib import util
 if util.find_spec('RPi'):
     from RPi import GPIO
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup([2, 19], GPIO.IN)
-    GPIO.setup([3, 4, 13, 26], GPIO.OUT, initial=GPIO.LOW)
-    channels = {'air':    {1: 13, 2: 26},
+    GPIO.setup([2, 5], GPIO.IN)
+    GPIO.setup([3, 4, 6, 7], GPIO.OUT, initial=GPIO.LOW)
+    channels = {'air':    {1: 6,  2: 7},
                 'liquid': {1: 3,  2: 4},
-                'lick':   {1: 2,  2: 19}}
+                'lick':   {1: 2,  2: 5}}
 
 
 class Licker:
@@ -35,15 +35,11 @@ class Licker:
     def probe1_licked(self, channel):
         #c = list(channels['lick'].items())
         #probe = c[0][c[1].index(channel)]
-        print(channel)
-        print('Probe1_licked')
         self.probe1 = True
         self.timer_probe1.start()
         self.logger.log_lick(1)
 
     def probe2_licked(self, channel):
-        print(channel)
-        print('Probe2_licked')
         self.probe2 = True
         self.timer_probe2.start()
         self.logger.log_lick(2)
@@ -58,6 +54,10 @@ class Licker:
         else:
             probe = 0
         return probe
+
+    def cleanup(self):
+        GPIO.remove_event_detect(channels['lick'][1])
+        GPIO.remove_event_detect(channels['lick'][2])
 
 
 class ValveControl:
@@ -94,8 +94,8 @@ class ValveControl:
                                                   weight/pulse_num,
                                                   pulse_dur)
 
-    @staticmethod
-    def __pulse_out(channel, duration):
+    def __pulse_out(self, channel, duration):
         GPIO.output(channel, GPIO.HIGH)
         sleep(duration/1000)
         GPIO.output(channel, GPIO.LOW)
+

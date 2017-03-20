@@ -9,6 +9,20 @@ def erd():
 
 
 @schema
+class SetupInfo(dj.Lookup):
+    definition = """
+    #
+    setup                  : varchar(256)   # Setup name
+    ---
+    ip                     : varchar(16)    # setup IP address
+    state="ready"          : enum('ready','running','stopped','sleeping')  #
+    animal_id=null         : int # animal id
+    task_idx=null          : int             # task identification number
+    task="train"           : enum('train','calibrate')
+    """
+
+
+@schema
 class LiquidCalibration(dj.Manual):
     definition = """
     # Liquid delivery calibration sessions for each probe
@@ -38,9 +52,26 @@ class ExperimentType(dj.Lookup):
     """
 
     contents = [
+        ('MultiProbe', '2AFC & GoNOGo tasks with lickspout'),
+        ('DummyMultiProbe', 'Same as Multiprobe but with a dummy probe'),
+        ('FreeWater', 'Reward upon lick'),
+        ('ProbeTest', 'Testing probes'),
+        ('Pasive', 'No reward/punishment'),
+    ]
+
+
+@schema
+class StimulusType(dj.Lookup):
+    definition = """
+    # Stimulus type
+    stim_type : char(128) # stimulus schema
+    ---
+    description = '' : varchar(2048) # some description of the experiment
+    """
+
+    contents = [
         ('Movies', 'Typical movies stimulus'),
         ('RPMovies', 'Same as Movies but for Raspberry pi'),
-        ('PassiveMovies', 'Movie presentation uncoupled with the licking behavior'),
         ('Gratings', 'Orientation Gratings'),
         ('NoStimulus', 'Free water condition with no stimulus'),
     ]
@@ -53,6 +84,7 @@ class Task(dj.Lookup):
     task_idx                     : int             # task identification number
     ---
     -> ExperimentType
+    -> StimulusType
     intertrial_duration = 30     : int  # time in between trials (s)
     trial_duration = 30          : int  # trial time (s)
     timeout_duration = 180       : int  # timeout punishment delay (s)
@@ -65,11 +97,26 @@ class Task(dj.Lookup):
     """
 
     contents = [
-        (1, 'Movies', 30, 30, 180, 400, 1000, 8, 30,
-         "[{'probe':[0], 'clip_number':list(range(1,3)), 'movie_name':['obj1v4']},\
-         {'probe':[1], 'clip_number':list(range(1,3)), 'movie_name':['obj2v4']}]",
+        (1,'MultiProbe','RPMovies', 30, 30, 180, 400, 1000, 8, 30,
+         "[{'probe':[1], 'clip_number':list(range(1,3)), 'movie_name':['obj1v4']},\
+         {'probe':[2], 'clip_number':list(range(1,3)), 'movie_name':['obj2v4']}]",
          '3d object experiment'),
     ]
+
+
+@schema
+class CalibrationTask(dj.Lookup):
+    definition = """
+    # Calibration parameters
+    task_idx                     : int             # task identification number
+    ---
+    probe='[1,2]'                : varchar(128)    # probe number
+    pulse_dur                    : int             # duration of pulse in ms
+    pulse_num                    : int             # number of pulses
+    pulse_interval               : int             # interval between pulses in ms
+    save='yes'                   : enum('yes','no')# store calibration
+    """
+
 
 @schema
 class MouseWeight(dj.Manual):
@@ -154,6 +201,7 @@ class AirpuffDelivery(dj.Manual):
     -> Session
     time		    	: int 	            # time from session start (ms)
     ---
+    probe=0        :int         # probe number
     """
 
 
@@ -164,7 +212,7 @@ class Movie(dj.Lookup):
     movie_name           : char(8)                      # short movie title
     ---
     path                 : varchar(255)                 #
-    movie_class          : enum('mousecam','object3d','madmax') #
+    movie_class          : enum('mousecam','object3d','madmax','multiobject') #
     original_file        : varchar(255)                 #
     file_template        : varchar(255)                 # filename template with full path
     file_duration        : float                        # (s) duration of each file (must be equal)
