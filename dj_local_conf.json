@@ -1,0 +1,8 @@
+{
+    "display.limit": 7,
+    "database.reconnect": false,
+    "loglevel": "INFO",
+    "display.width": 14,
+    "connection.init_function": null,
+    "safemode": true
+}
