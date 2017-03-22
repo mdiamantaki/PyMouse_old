@@ -10,11 +10,16 @@ from importlib import util
 if util.find_spec('RPi'):
     from RPi import GPIO
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup([2, 5], GPIO.IN)
-    GPIO.setup([3, 4, 6, 7], GPIO.OUT, initial=GPIO.LOW)
-    channels = {'air':    {1: 6,  2: 7},
-                'liquid': {1: 3,  2: 4},
-                'lick':   {1: 2,  2: 5}}
+    #GPIO.setup([2, 5], GPIO.IN)
+    #GPIO.setup([3, 4, 6, 7], GPIO.OUT, initial=GPIO.LOW)
+    #channels = {'air':    {1: 6,  2: 7},
+    #            'liquid': {1: 3,  2: 4},
+    #            'lick':   {1: 2,  2: 5}}
+    GPIO.setup([17, 27], GPIO.IN)
+    GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
+    channels = {'air':    {1: 24,  2: 25},
+                'liquid': {1: 22,  2: 23},
+                'lick':   {1: 17,  2: 27}}
 
 
 class Licker:
