@@ -55,7 +55,7 @@ def calibrate(logger=logg):
     # prepare text
     stim = Stimulus(logger)
     stim.setup()
-    font = pygame.font.SysFont("comicsansms", 72)
+    font = pygame.font.SysFont("comicsansms", 94)
     while pulse < pulsenum:
         text = font.render('Pulse %d/%d' % (pulse + 1, pulsenum), True, (0, 128, 0))
         stim.screen.fill((255, 255, 255))
