@@ -52,8 +52,14 @@ def calibrate(logger=logg):
     valve = ValveControl(logger)                                    # get valve object
     print('Running calibration')
     pulse = 0
+    stim = Stimulus(logger)
+    stim.setup()
+    font = pygame.font.SysFont("comicsansms", 100)
     while pulse < pulsenum:
-        print('Pulse %d/%d' % (pulse + 1, pulsenum), end="\r", flush=True)
+        text = font.render('Pulse %d/%d' % (pulse + 1, pulsenum), True, (0, 128, 0))
+        stim.screen.fill((255, 255, 255))
+        stim.screen.blit(text, (stim.size[1]/4, stim.size[1]/2))
+        stim.flip()
         for probe in probes:
             valve.give_liquid(probe, duration, False)               # release liquid
         time.sleep(duration / 1000 + pulse_interval / 1000)         # wait for next pulse
@@ -61,8 +67,9 @@ def calibrate(logger=logg):
     if save == 'yes':
         for probe in probes:
             logger.log_pulse_weight(duration, probe, pulsenum)      # insert
-    print('Done calibrating')
-
+    stim.screen.fill((255, 255, 255))
+    stim.screen.blit(font.render('Done calibrating', True, (0, 128, 0)), (stim.size[1]/4, stim.size[1]/2))
+    stim.flip()
 
 # # # # Waiting for instructions loop # # # # #
 while not logg.get_setup_state() == 'stopped':
