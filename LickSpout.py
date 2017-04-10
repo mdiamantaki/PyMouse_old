@@ -96,7 +96,7 @@ class ValveControl:
                                                                                          'pulse_num',
                                                                                          'weight']
             self.liquid_dur[probe] = numpy.interp(reward_amount,
-                                                  weight/pulse_num,
+                                                  numpy.divide(weight, pulse_num),
                                                   pulse_dur)
 
     def __pulse_out(self, channel, duration):
