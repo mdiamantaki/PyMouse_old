@@ -178,8 +178,7 @@ class Lick(dj.Manual):
     # Lick timestamps
     -> Session
     time	     	  	: int           	# time from session start (ms)
-    ---
-    probe               :int                # probe number
+    probe               : int               # probe number
     """
 
 
@@ -189,8 +188,7 @@ class LiquidDelivery(dj.Manual):
     # Liquid delivery timestamps
     -> Session
     time			    : int 	            # time from session start (ms)
-    ---
-    probe               :int                # probe number
+    probe               : int               # probe number
     """
 
 
@@ -200,8 +198,7 @@ class AirpuffDelivery(dj.Manual):
     # Air puff delivery timestamps
     -> Session
     time		    	: int 	            # time from session start (ms)
-    ---
-    probe=0        :int         # probe number
+    probe=0             : int               # probe number
     """
 
 
