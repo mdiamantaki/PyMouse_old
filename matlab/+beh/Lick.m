@@ -47,7 +47,7 @@ classdef Lick < dj.Relvar
                 L = [];P = [];
                 for iTrial = 1 : length(wtimes)
                     if iTrial ~= length(wtimes)
-                        idx = ltimes > (wtimes(iTrial) + params.time_lim(1)) & ltimes < wtimes(iTrial1);
+                        idx = ltimes > (wtimes(iTrial) + params.time_lim(1)) & ltimes < wtimes(iTrial + 1);
                     else
                         idx = (ltimes > wtimes(iTrial));
                     end
