@@ -28,6 +28,8 @@ classdef Lick < dj.Relvar
             params.time_lim = [-0.5 5];
             params.prob = 0;
             
+            params = getParams(params, varargin);
+            
             for key=fetch(beh.Session & obj)'
                 figure
                 set(gcf,'name',sprintf('Licks Animal:%d Session:%d',key.animal_id,key.session_id))
