@@ -27,6 +27,7 @@ classdef Lick < dj.Relvar
             params.bin = 0.5;
             params.time_lim = [-0.5 5];
             params.prob = 0;
+            params.response = 0;
             
             params = getParams(params, varargin);
             
@@ -34,34 +35,57 @@ classdef Lick < dj.Relvar
                 figure
                 set(gcf,'name',sprintf('Licks Animal:%d Session:%d',key.animal_id,key.session_id))
                 colors = [0 0 1; 1 0 0];
-                conds = fetch(beh.Condition & key);
+                conds = fetch(beh.Condition & key); sub = [];
                 for icond = 1:length(conds)
                     if params.sub > 1
-                        subplot(params.sub,length(conds),icond:length(conds):length(conds)*(params.sub-1));  hold on
+                        sub(icond) = subplot(params.sub,length(conds),icond:length(conds):length(conds)*(params.sub-1));  hold on
                     else
-                        subplot(1,length(conds),icond);  hold on
+                        sub(icond) = subplot(1,length(conds),icond);  hold on
                     end
                     
+                    % get data
                     tdur = fetch1(beh.Session & key,'trial_duration')/60;
                     wtimes = fetchn(beh.Trial & key & conds(icond),'start_time')/1000/60;
                     [ltimes, probes] = ...
                         (fetchn(beh.Lick & key & conds(icond),'time','probe'));
-                    ltimes = ltimes/1000/60;
-                    L = [];P = [];
-                    for iTrial = 1 : length(wtimes)
-                        if iTrial ~= length(wtimes)
-                            idx = ltimes > (wtimes(iTrial) + params.time_lim(1)) & ltimes < wtimes(iTrial + 1);
-                        else
-                            idx = (ltimes > wtimes(iTrial));
-                        end
-                        licks = ltimes(idx);
-                        cols = colors(probes(idx),:);
-                        L{iTrial} = licks - wtimes(iTrial);
-                        P{iTrial} = probes(idx);
-                        for ilick = 1:length(licks)
-                            plot(licks(ilick)-wtimes(iTrial),iTrial,'.','color',cols(ilick,:))
+                    ltimes = ltimes/1000/60; % convert to minutes
+                    
+                    % calculate start and stop times
+                    start = (wtimes + params.time_lim(1));
+                    stop = [wtimes(2:end); wtimes(end)+(wtimes(end)-wtimes(end-1))];
+                    [LickIdx,trialIdx] = find(bsxfun(@gt,ltimes,start') & bsxfun(@lt,ltimes,stop'));
+                    Ltimes = ltimes(LickIdx)-wtimes(trialIdx);
+                    
+                    % plot Licks
+                    for iprobe = unique(probes(LickIdx))'
+                        idx = probes(LickIdx)==iprobe;
+                        plot(Ltimes(idx),trialIdx(idx),'.','color',colors(iprobe,:))
+                    end
+                    
+                    % show reward &  punishment
+                    if params.response 
+                        [rtimes, rprobes] = ...
+                            (fetchn(beh.LiquidDelivery & key & conds(icond),'time','probe'));
+                        [ptimes, pprobes] = ...
+                            (fetchn(beh.AirpuffDelivery & key & conds(icond),'time','probe'));
+                        rtimes = rtimes/1000/60; ptimes = ptimes/1000/60; % convert to minutes
+                        
+                        % calculate indexes
+                        [RewIdx,rtrialIdx] = find(bsxfun(@gt,rtimes,start') & bsxfun(@lt,rtimes,stop'));
+                        Rtimes = rtimes(RewIdx)-wtimes(rtrialIdx);
+                        [PunIdx,ptrialIdx] = find(bsxfun(@gt,ptimes,start') & bsxfun(@lt,ptimes,stop'));
+                        Ptimes = ptimes(PunIdx)-wtimes(ptrialIdx);
+
+                        % plot Reward & punishment
+                        for iprobe = unique(probes)'
+                            idx = rprobes(RewIdx)==iprobe;
+                            plot(Rtimes(idx),rtrialIdx(idx),'o','color',colors(iprobe,:))
+                            idx = pprobes(PunIdx)==iprobe;
+                            plot(Ptimes(idx),ptrialIdx(idx),'*','color',colors(iprobe,:))
                         end
                     end
+                    
+                    % adjust plot settings
                     set(gca,'ydir','reverse','box','off')
                     xlim(params.time_lim)
                     ylim([0 length(wtimes)+ 1])
@@ -73,29 +97,30 @@ classdef Lick < dj.Relvar
                     else
                         set(gca,'ytick',[])
                     end
-                    
                     [mov, clip] = fetch1(beh.MovieClipCond & key & conds(icond),'movie_name','clip_number');
                     rprob = fetch1(beh.RewardCond & key & conds(icond),'probe');
                     title(sprintf('Movie: %s  Clip: %d \n Reward Probe:%d',mov, clip, rprob))
                     
+                    % average licking plots
                     if params.average
                         set(gca,'xtick',[],'XColor',[1 1 1])
                         s(icond) = subplot(params.sub,length(conds),length(conds)*(params.sub-1) + icond);  hold on
                         
+                        P = probes(LickIdx);
                         if ~params.prob
-                            LL = cell2mat(L');
-                            PP = cell2mat(P');
-                            [N, bins] = histcounts(LL(PP==1),params.time_lim(1):params.bin:params.time_lim(2) + params.bin,...
+                            [N, ~] = histcounts(Ltimes(P==1),params.time_lim(1):params.bin:params.time_lim(2) + params.bin,...
                                 'normalization','probability');
-                            [N2, bins] = histcounts(LL(PP==2),params.time_lim(1):params.bin:params.time_lim(2) + params.bin,...
+                            [N2, bins] = histcounts(Ltimes(P==2),params.time_lim(1):params.bin:params.time_lim(2) + params.bin,...
                                 'normalization','probability');
                         else
                             bins = params.time_lim(1)-params.bin:params.bin:params.time_lim(2) + params.bin;
-                            N = nan(length(L),length(bins)-1);
-                            N2 = nan(length(L),length(bins)-1);
-                            for ibin = 2:length(bins)
-                                N(:,ibin-1) = cellfun(@(y,yp) any(y<bins(ibin) & y>=bins(ibin-1) & yp==1),L,P);
-                                N2(:,ibin-1) = cellfun(@(y,yp) any(y<bins(ibin) & y>=bins(ibin-1) & yp==2),L,P);
+                            N = zeros(size(wtimes,1),size(bins,2)-1); N2 = N;
+                            for itrial = 1:length(wtimes)
+                                idx = trialIdx==itrial;
+                                for ibin = 2:length(bins)
+                                    N(itrial,ibin-1) = any(Ltimes(idx)<bins(ibin) & Ltimes(idx)>=bins(ibin-1) & P(idx)==1);
+                                    N2(itrial,ibin-1) = any(Ltimes(idx)<bins(ibin) & Ltimes(idx)>=bins(ibin-1) & P(idx)==2);
+                                end
                             end
                             N = mean(N);
                             N2 = mean(N2);
@@ -114,7 +139,6 @@ classdef Lick < dj.Relvar
                         else
                             set(gca,'ytick',[])
                         end
-                        
                     else
                         if icond==1; xlabel('Time (min)');end
                     end
@@ -124,6 +148,7 @@ classdef Lick < dj.Relvar
                 linkaxes(s,'xy')
                 ylim([0 max(MX)])
             end
+            linkaxes(sub,'xy')
         end
     end
 end
