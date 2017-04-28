@@ -21,7 +21,6 @@ class Logger:
         self.trial_start = 0
         self.curr_cond = []
         self.task_idx = []
-        self.date = systime.strftime("%Y-%m-%d")
         self.reward_amount = []
 
     def log_session(self):
@@ -113,7 +112,7 @@ class Logger:
         self.inserter()
 
     def log_pulse_weight(self, pulse_dur, probe, pulse_num, weight=0):
-        cal_key = dict(setup=self.setup, probe=probe, date=self.date)
+        cal_key = dict(setup=self.setup, probe=probe, date=systime.strftime("%Y-%m-%d"))
         LiquidCalibration().insert1(cal_key, skip_duplicates=True)
         (LiquidCalibration.PulseWeight() & dict(cal_key, pulse_dur=pulse_dur)).delete_quick()
         LiquidCalibration.PulseWeight().insert1(dict(cal_key,

@@ -1,6 +1,6 @@
 from Database import *
 from time import sleep
-import numpy
+import numpy, socket
 from Timer import *
 from concurrent.futures import ThreadPoolExecutor
 from importlib import util
@@ -9,17 +9,20 @@ from importlib import util
 # setup GPIO
 if util.find_spec('RPi'):
     from RPi import GPIO
+    setup = int(''.join(list(filter(str.isdigit, socket.gethostname()))))
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup([2, 5], GPIO.IN)
-    GPIO.setup([3, 4, 6, 7], GPIO.OUT, initial=GPIO.LOW)
-    channels = {'air':    {1: 7,  2: 6},
-                'liquid': {1: 4,  2: 3},
-                'lick':   {1: 2,  2: 5}}
-    #GPIO.setup([17, 27], GPIO.IN)
-    #GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
-    #channels = {'air':    {1: 24,  2: 25},
-    #            'liquid': {1: 22,  2: 23},
-    #            'lick':   {1: 17,  2: 27}}
+    if 0 < setup < 6:
+        GPIO.setup([2, 5], GPIO.IN)
+        GPIO.setup([3, 4, 6, 7], GPIO.OUT, initial=GPIO.LOW)
+        channels = {'air':    {1: 7,  2: 6},
+                    'liquid': {1: 4,  2: 3},
+                    'lick':   {1: 2,  2: 5}}
+    else:
+        GPIO.setup([17, 27], GPIO.IN)
+        GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
+        channels = {'air':    {1: 24,  2: 25},
+                    'liquid': {1: 22,  2: 23},
+                    'lick':   {1: 17,  2: 27}}
 
 
 class Licker:
