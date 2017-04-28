@@ -72,7 +72,7 @@ class MultiProbe(Experiment):
     def post_trial(self):
         self.stim.stop_trial()  # stop stimulus when timeout
         self.timer.start()
-        while self.timer.elapsed_time() < self.post_wait and self.logger.get_setup_state() == 'running':
+        while self.timer.elapsed_time()/1000 < self.post_wait and self.logger.get_setup_state() == 'running':
             time.sleep(0.5)
         self.post_wait = 0
 
