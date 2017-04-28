@@ -77,7 +77,7 @@ classdef Lick < dj.Relvar
                         Ptimes = ptimes(PunIdx)-wtimes(ptrialIdx);
 
                         % plot Reward & punishment
-                        for iprobe = unique(probes)'
+                        for iprobe = unique(probes)' 
                             idx = rprobes(RewIdx)==iprobe;
                             plot(Rtimes(idx),rtrialIdx(idx),'o','color',colors(iprobe,:))
                             idx = pprobes(PunIdx)==iprobe;
