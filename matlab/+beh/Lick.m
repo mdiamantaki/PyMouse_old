@@ -20,7 +20,7 @@ classdef Lick < dj.Relvar
             plot(times,ones(size(times)) * params.factor,'.','color',params.color)
         end
         
-        function plotTrial(obj, varargin)
+        function plotTrial(obj, restrict, varargin)
             
             params.average = 1;
             params.sub = 8;
@@ -29,13 +29,33 @@ classdef Lick < dj.Relvar
             params.prob = 0;
             params.response = 0;
             
+            
             params = getParams(params, varargin);
             
-            for key=fetch(beh.Session & obj)'
+            if isempty(restrict) || ~isstruct(restrict)
+                mice = fetchn(beh.SetupInfo & 'animal_id>0','animal_id');
+                keys = [];
+                for imouse=1:length(mice)
+                    keys(imouse).animal_id = mice(imouse);
+                    k.animal_id = mice(imouse);
+                    if strcmp(restrict,'full')
+                        sessions = fetch(beh.Session & k & (beh.MovieClipCond & 'movie_name="obj1v4"') & (beh.MovieClipCond & 'movie_name="obj2v4"'),'ORDER BY session_id DESC');
+                    else
+                        sessions = fetch(beh.Session & k ,'ORDER BY session_id DESC');
+                    end
+                    keys(imouse).session_id = sessions(1).session_id;
+                end
+                keys = keys';
+                assert(~isempty(keys),'no keys specified!')
+            else
+                keys = fetch(beh.Session & restrict);
+            end
+            
+            for key=keys'
                 figure
                 set(gcf,'name',sprintf('Licks Animal:%d Session:%d',key.animal_id,key.session_id))
                 colors = [0 0 1; 1 0 0];
-                conds = fetch(beh.Condition & key); sub = [];
+                conds = fetch(beh.Condition & key); sub = nan(length(conds),1);s = sub;
                 for icond = 1:length(conds)
                     if params.sub > 1
                         sub(icond) = subplot(params.sub,length(conds),icond:length(conds):length(conds)*(params.sub-1));  hold on
@@ -63,7 +83,7 @@ classdef Lick < dj.Relvar
                     end
                     
                     % show reward &  punishment
-                    if params.response 
+                    if params.response
                         [rtimes, rprobes] = ...
                             (fetchn(beh.LiquidDelivery & key & conds(icond),'time','probe'));
                         [ptimes, pprobes] = ...
@@ -75,7 +95,7 @@ classdef Lick < dj.Relvar
                         Rtimes = rtimes(RewIdx)-wtimes(rtrialIdx);
                         [PunIdx,ptrialIdx] = find(bsxfun(@gt,ptimes,start') & bsxfun(@lt,ptimes,stop'));
                         Ptimes = ptimes(PunIdx)-wtimes(ptrialIdx);
-
+                        
                         % plot Reward & punishment
                         for iprobe = unique(probes)' 
                             idx = rprobes(RewIdx)==iprobe;
@@ -112,6 +132,7 @@ classdef Lick < dj.Relvar
                                 'normalization','probability');
                             [N2, bins] = histcounts(Ltimes(P==2),params.time_lim(1):params.bin:params.time_lim(2) + params.bin,...
                                 'normalization','probability');
+                            label = 'Lick rate';
                         else
                             bins = params.time_lim(1)-params.bin:params.bin:params.time_lim(2) + params.bin;
                             N = zeros(size(wtimes,1),size(bins,2)-1); N2 = N;
@@ -124,6 +145,7 @@ classdef Lick < dj.Relvar
                             end
                             N = mean(N);
                             N2 = mean(N2);
+                            label = 'P(lick)';
                         end
                         plot(bins(2:end-1)-params.bin/2,N(1:end-1),'b')
                         plot(bins(2:end-1)-params.bin/2,N2(1:end-1),'r')
@@ -133,7 +155,7 @@ classdef Lick < dj.Relvar
                         MX(icond) = max([N N2]);
                         if icond==1
                             xlabel('Time (min)')
-                            ylabel('P(lick)')
+                            ylabel(label)
                             l = legend('Probe #1','Probe #2');
                             set(l,'box','off')
                         else
@@ -143,12 +165,102 @@ classdef Lick < dj.Relvar
                         if icond==1; xlabel('Time (min)');end
                     end
                 end
+                linkaxes(sub,'xy')
+                if params.average
+                    linkaxes(s,'xy')
+                    ylim([0 max([MX eps])])
+                end
             end
-            if params.average
-                linkaxes(s,'xy')
-                ylim([0 max(MX)])
+        end
+        
+        function plotDelay(obj, varargin)
+            
+            params.type = 'all';
+            
+            params = getParams(params,varargin);
+            
+            % function to convert times to days
+            daytimeFunc = @(sesstime, times) datenum(sesstime,'YYYY-mm-dd HH:MM:SS') - 18/24 + times/1000/3600/24;
+        
+            mice = fetch(beh.SetupInfo & 'animal_id>0','animal_id');
+            colors = cbrewer('qual','Dark2',length(mice));
+            figure
+            for imouse = 1:length(mice)
+                key = fetch(beh.Session & mice(imouse) & beh.MovieClipCond,'ORDER BY session_id');
+                [start_times, end_times, session_times] = fetchn(beh.Trial * beh.Session & key, 'start_time','end_time','session_tmst');
+                start_times = daytimeFunc(session_times, start_times);
+                end_times = daytimeFunc(session_times, end_times);
+                [days, IA, IC]= unique(floor(start_times),'rows');
+                
+                [rew_times, rProbe, session_timesR] = fetchn(beh.LiquidDelivery * beh.Session & key,'time','probe','session_tmst');
+                resp_times = daytimeFunc(session_timesR, rew_times);
+                [pun_times, pProbe, session_times] = fetchn(beh.AirpuffDelivery * beh.Session & key,'time','probe','session_tmst');
+                resp_times(end+1:end+length(pun_times)) = daytimeFunc(session_times, pun_times);
+                probes = [rProbe; pProbe];
+                delays = nan(length(days),2);
+                for iday = unique(IC)'
+                    
+                    switch params.type
+                        case 'all' % All responses
+                            stimes = start_times(IC==iday)';
+                            stimes = repmat(stimes,[size(resp_times,1),1]);
+                            etimes = end_times(IC==iday)';
+                            etimes = repmat(etimes,[size(resp_times,1),1]);
+                            probesM = repmat(probes,[1, size(stimes,2)]);
+                            rtimesM = repmat(resp_times,[1 size(stimes,2)]);
+                            
+                            idx = rtimesM>=stimes & rtimesM <= etimes ;
+                            val = (rtimesM(idx) - stimes(idx))*24*3600;
+                            delays(iday,1) = mean(val);
+                            delays(iday,2) = std(val)/sqrt(length(val));
+                            
+                        case 'probe' % Probe 1 vs probe 2
+                            stimes = start_times(IC==iday)';
+                            stimes = repmat(stimes,[size(resp_times,1),1]);
+                            etimes = end_times(IC==iday)';
+                            etimes = repmat(etimes,[size(resp_times,1),1]);
+                            probesM = repmat(probes,[1, size(stimes,2)]);
+                            rtimesM = repmat(resp_times,[1 size(stimes,2)]);
+                            
+                            idx = rtimesM>=stimes & rtimesM <= etimes & probesM==1;
+                            delays(iday,1) = mean(rtimesM(idx) - stimes(idx))*24*3600;
+                            
+                            idx = rtimesM>=stimes & rtimesM <= etimes & probesM==2;
+                            delays(iday,2) = mean(rtimesM(idx) - stimes(idx))*24*3600;
+                            
+                        case 'value' % Correct vs wrong          
+                            resp_times = daytimeFunc(session_timesR, rew_times);
+                            stimes = start_times(IC==iday)';
+                            stimes = repmat(stimes,[size(resp_times,1),1]);
+                            etimes = end_times(IC==iday)';
+                            etimes = repmat(etimes,[size(resp_times,1),1]);
+                            rtimesM = repmat(resp_times,[1 size(stimes,2)]);
+                            idx = rtimesM>=stimes & rtimesM <= etimes;
+                            delays(iday,1) = mean(rtimesM(idx) - stimes(idx))*24*3600;
+                            
+                            resp_times = daytimeFunc(session_times, pun_times);
+                            stimes = start_times(IC==iday)';
+                            stimes = repmat(stimes,[size(resp_times,1),1]);
+                            etimes = end_times(IC==iday)';
+                            etimes = repmat(etimes,[size(resp_times,1),1]);
+                            rtimesM = repmat(resp_times,[1 size(stimes,2)]);
+                            idx = rtimesM>=stimes & rtimesM <= etimes;
+                            delays(iday,2) = mean(rtimesM(idx) - stimes(idx))*24*3600;
+                    end
+                end
+                % plot
+                switch params.type
+                    case 'all'
+                        errorPlot(1:size(delays,1),[],'manual',delays','errorColor',colors(imouse,:))
+                        hold on
+                    otherwise
+                end
             end
-            linkaxes(sub,'xy')
+            grid on
+            l = legend(arrayfun(@num2str,[mice.animal_id],'uni',0));
+            set(l,'box','off')
+            ylabel('Lick delay (s)')
+            xlabel('Time (days)')
         end
     end
 end
