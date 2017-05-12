@@ -66,10 +66,9 @@ class Logger:
                 probes[cond_idx-1] = cond.pop('probe')
                 self.queue.put(dict(table=RewardCond(), tuple=dict(self.session_key,
                                                                    cond_idx=cond_idx,
-                                                                   probe=probes[-1])))
+                                                                   probe=probes[cond_idx-1])))
             self.queue.put(dict(table=condition_table(), tuple=dict(cond.items() | self.session_key.items(),
                                                                     cond_idx=cond_idx)))
-
         self.inserter()
 
         # outputs all the condition indexes of the session
