@@ -43,8 +43,7 @@ class Logger:
         del task_params['task_idx']
         key = dict(self.session_key.items() | task_params.items())
         key['setup'] = self.setup
-        self.queue.put(dict(table=Session(), tuple=key))
-
+        self.queue.put(dict(table=Session(), tuple = key))
         self.reward_amount = task_params['reward_amount']/1000  # convert to ml
 
         # start session time
@@ -59,21 +58,23 @@ class Logger:
 
         # iterate through all conditions and insert
         cond_idx = 0
+        probes = numpy.empty(numpy.size(conditions))
         for cond in conditions:
             cond_idx += 1
             self.queue.put(dict(table=Condition(), tuple=dict(self.session_key, cond_idx=cond_idx)))
             if 'probe' in cond:
+                probes[cond_idx-1] = cond.pop('probe')
                 self.queue.put(dict(table=RewardCond(), tuple=dict(self.session_key,
                                                                    cond_idx=cond_idx,
-                                                                   probe=cond.pop('probe'))))
+                                                                   probe=probes[-1])))
             self.queue.put(dict(table=condition_table(), tuple=dict(cond.items() | self.session_key.items(),
                                                                     cond_idx=cond_idx)))
-        # outputs all the condition indexes of the session
-        cond_indexes = list(range(1, cond_idx+1))  # assumes continuous & complete indexes for each session
 
         self.inserter()
 
-        return cond_indexes
+        # outputs all the condition indexes of the session
+        cond_indexes = list(range(1, cond_idx + 1))  # assumes continuous & complete indexes for each session
+        return numpy.array(cond_indexes), numpy.array(probes)
 
     def start_trial(self, cond_idx):
         self.curr_cond = cond_idx

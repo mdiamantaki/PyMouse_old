@@ -19,6 +19,10 @@ classdef LiquidDelivery < dj.Relvar
             times = msec2tmst(fetch(beh.Session & obj),fetchn(obj,'time'));
             plot(times,ones(size(times)) * params.factor,'.','color',params.color)
         end
+        
+        function 
+            
+        end
      end
     
 end
