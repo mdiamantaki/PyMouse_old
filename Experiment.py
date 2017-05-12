@@ -1,6 +1,6 @@
 from Behavior import *
 from Stimulus import *
-import time
+import time, numpy
 
 
 class Experiment:
@@ -13,13 +13,17 @@ class Experiment:
         self.silence = params['silence_thr']
         self.timer = timer
         self.reward_probe = []
+        self.conditions = []
+        self.probes = []
+        self.indexes = []
         self.beh = self.get_behavior()(logger, params)
         self.stim = eval(params['stim_type'])(logger)
 
     def prepare(self):
         """Prepare things before experiment starts"""
+        self.conditions, self.probes = self.logger.log_conditions(self.stim.get_condition_table())  # log conditions
         self.stim.setup()
-        self.stim.prepare()  # prepare stimulus
+        self.stim.prepare(self.conditions)  # prepare stimulus
 
     def pre_trial(self):
         """Prepare things before trial starts"""
@@ -44,16 +48,30 @@ class Experiment:
     def get_behavior(self):
         return RPBehavior  # default is raspberry pi
 
+    def _get_new_cond(self):
+        """Get curr condition & create random block of all conditions
+        Should be called within init_trial
+        """
+        if numpy.size(self.indexes) == 0:
+            self.indexes = numpy.random.permutation(numpy.size(self.conditions))
+        cond = self.conditions[self.indexes[0]]
+        self.indexes = self.indexes[1:]
+        return cond
+
 
 class MultiProbe(Experiment):
     """2AFC & GoNOGo tasks with lickspout"""
 
     def __init__(self, logger, timer, params):
         self.post_wait = 0
+        bias_array = np.empty(10)  # History term for bias calculation
+        bias_array[:] = np.NAN
+        self.probe_bias = bias_array
         super(MultiProbe, self).__init__(logger, timer, params)
 
     def pre_trial(self):
-        cond = self.stim.init_trial()
+        cond = self._get_new_cond()
+        self.stim.init_trial(cond)
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1['probe']
         self.beh.is_licking()
 
@@ -61,6 +79,7 @@ class MultiProbe(Experiment):
         self.stim.present_trial()  # Start Stimulus
         probe = self.beh.is_licking()
         if probe > 0:
+            self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
             if self.reward_probe == probe:
                 self.reward(probe)
             else:
@@ -94,6 +113,19 @@ class MultiProbe(Experiment):
 
     def reward(self, probe):
         self.beh.water_reward(probe)
+
+    def _get_new_cond(self):
+        """Get curr condition with bias correction
+        """
+        if numpy.all(numpy.isnan(self.probe_bias)):
+            cond = super(MultiProbe, self)._get_new_cond()
+            return cond
+        else:
+            np.nanmean(self.probe_bias - 1)
+            bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
+            conds = self.conditions[self.probes == bias_probe]
+            conds = conds[numpy.random.permutation(numpy.size(conds))]
+            return conds[0]
 
 
 class DummyMultiProbe(MultiProbe):
