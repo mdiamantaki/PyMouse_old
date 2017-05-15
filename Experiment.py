@@ -106,6 +106,7 @@ class MultiProbe(Experiment):
             self.stim.unshow()
             if self.logger.get_setup_state() == 'sleeping':
                 self.logger.update_setup_state('running')
+                self.timer.start()
 
     def punish(self, probe):
         self.beh.punish_with_air(probe, self.air_dur)

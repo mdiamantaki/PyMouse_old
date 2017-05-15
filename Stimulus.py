@@ -27,7 +27,7 @@ class Stimulus:
         # setup pygame
         pygame.init()
         self.screen = pygame.display.set_mode(self.size)
-        # self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
+        self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
         self.unshow()
         pygame.mouse.set_visible(0)
         pygame.display.toggle_fullscreen()
@@ -186,7 +186,7 @@ class Gratings(Stimulus):
         self.screen.blit(self.grating,
                          (-self.lamda + self.yt * displacement,
                           -self.lamda + self.xt * displacement))
-        self.encode_photodiode()
+        #self.encode_photodiode()
         self.flip()
         self.frame_idx += 1
         self.clock.tick_busy_loop(self.fps)
