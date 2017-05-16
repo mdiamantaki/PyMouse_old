@@ -22,24 +22,22 @@ class Stimulus:
         self.logger = logger
         self.isrunning = False
         self.flip_count = 0
-        self.conditions = []
-        self.indexes = []
 
     def setup(self):
         # setup pygame
         pygame.init()
-        self.screen = pygame.display.set_mode(self.size)
+        #self.screen = pygame.display.set_mode(self.size)
         # self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
+        self.screen = pygame.display.set_mode(self.size, HWSURFACE)
         self.unshow()
         pygame.mouse.set_visible(0)
         pygame.display.toggle_fullscreen()
 
-    def prepare(self):
+    def prepare(self, conditions):
         """prepares stuff for presentation before experiment starts"""
-        # log conditions
-        self.conditions = self.logger.log_conditions(self.get_condition_table())
+        pass
 
-    def init_trial(self):
+    def init_trial(self, cond):
         """initialize stuff for each trial"""
         pass
 
@@ -61,16 +59,6 @@ class Stimulus:
             color = self.color
         self.screen.fill(color)
         self.flip()
-
-    def _get_new_cond(self):
-        """Get curr condition & create random block of all conditions
-        Should be called within init_trial
-        """
-        if np.size(self.indexes) == 0:
-            self.indexes = np.random.permutation(np.size(self.conditions))
-        cond = self.conditions[self.indexes[0]]
-        self.indexes = self.indexes[1:]
-        return cond
 
     def encode_photodiode(self):
         """Encodes the flip number n in the flip amplitude.
@@ -106,8 +94,7 @@ class Stimulus:
 
 class Movies(Stimulus):
     """ This class handles the presentation of Movies"""
-    def init_trial(self):
-        cond = self._get_new_cond()
+    def init_trial(self, cond):
         self.curr_frame = 1
         self.clock = pygame.time.Clock()
         clip_info = (Movie() * Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) & self.logger.session_key).fetch1()
@@ -140,14 +127,13 @@ class Movies(Stimulus):
 
 class RPMovies(Stimulus):
     """ This class handles the presentation of Movies with an optimized library for Raspberry pi"""
-    def prepare(self):
+    def prepare(self, conditions):
         from omxplayer import OMXPlayer
         self.player = OMXPlayer
-        self.conditions = self.logger.log_conditions(self.get_condition_table())  # log conditions
         # store local copy of files
         if not os.path.isdir(self.path):  # create path if necessary
             os.makedirs(self.path)
-        for cond_idx in self.conditions:
+        for cond_idx in conditions:
             filename = self.path + \
                        (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1[
                            'file_name']
@@ -155,8 +141,7 @@ class RPMovies(Stimulus):
                 (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1[
                     'clip'].tofile(filename)
 
-    def init_trial(self):
-        cond = self._get_new_cond()
+    def init_trial(self, cond):
         self.isrunning = True
         filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) &
                                      self.logger.session_key).fetch1['file_name']
@@ -173,22 +158,20 @@ class RPMovies(Stimulus):
     def get_condition_table(self):
         return MovieClipCond
 
+
 class Gratings(Stimulus):
     """ This class handles the presentation orientations"""
-    def prepare(self):
-        self.conditions = self.logger.log_conditions(self.get_condition_table())
+    def prepare(self, conditions):
         self.clock = pygame.time.Clock()
         self.stim_conditions = dict()
-        for cond in self.conditions:
+        for cond in conditions:
             params = (GratingCond() & dict(cond_idx=cond) & self.logger.session_key).fetch1()
             params['grating'] = self.__make_grating(params['spatial_period'],
                                                     params['direction'],
                                                     params['phase'])
             self.stim_conditions[cond] = params
 
-
-    def init_trial(self):
-        cond = self._get_new_cond()   # get condition parameters
+    def init_trial(self, cond):
         self.grating = self.stim_conditions[cond]['grating']
         self.lamda = self.stim_conditions[cond]['spatial_period']
         self.frame_step = self.lamda * (self.stim_conditions[cond]['temporal_freq'] / self.fps)
@@ -204,7 +187,7 @@ class Gratings(Stimulus):
         self.screen.blit(self.grating,
                          (-self.lamda + self.yt * displacement,
                           -self.lamda + self.xt * displacement))
-        self.encode_photodiode()
+        #self.encode_photodiode()
         self.flip()
         self.frame_idx += 1
         self.clock.tick_busy_loop(self.fps)
@@ -240,9 +223,9 @@ class Gratings(Stimulus):
 class NoStimulus(Stimulus):
     """ This class does not present any stimulus and water is delivered upon a lick"""
     
-    def prepare(self):
+    def prepare(self, conditions):
         pass
 
-    def init_trial(self):
+    def init_trial(self, cond):
         self.isrunning = True
 

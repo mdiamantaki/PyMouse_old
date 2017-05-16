@@ -39,7 +39,8 @@ classdef Lick < dj.Relvar
                     keys(imouse).animal_id = mice(imouse);
                     k.animal_id = mice(imouse);
                     if strcmp(restrict,'full')
-                        sessions = fetch(beh.Session & k & (beh.MovieClipCond & 'movie_name="obj1v4"') & (beh.MovieClipCond & 'movie_name="obj2v4"'),'ORDER BY session_id DESC');
+                        sessions = fetch(beh.Session & k & (beh.MovieClipCond & 'movie_name="obj1v4"') & ...
+                            (beh.MovieClipCond & 'movie_name="obj2v4"'),'ORDER BY session_id DESC');
                     else
                         sessions = fetch(beh.Session & k ,'ORDER BY session_id DESC');
                     end
@@ -59,7 +60,7 @@ classdef Lick < dj.Relvar
                 conds = fetch(beh.Condition & key); sub = nan(length(conds),1);s = sub;
                 for icond = 1:length(conds)
                     if params.sub > 1
-                        sub(icond) = subplot(params.sub,length(conds),icond:length(conds):length(conds)*(params.sub-1));  hold on
+                        sub(icond) = subplot(params.sub,length(conds),icond:length(conds):length(conds)*(params.sub-1)); hold on
                     else
                         sub(icond) = subplot(1,length(conds),icond);  hold on
                     end
@@ -191,7 +192,7 @@ classdef Lick < dj.Relvar
             
             mice = fetch(beh.SetupInfo & 'animal_id>0','animal_id');
             colors = cbrewer('qual','Dark2',length(mice));
-            figure
+            figure; hold on
             for imouse = 1:length(mice)
                 key = fetch(beh.Session & mice(imouse) & beh.MovieClipCond,'ORDER BY session_id');
                 [start_times, end_times, session_times] = fetchn(beh.Trial * beh.Session & key, 'start_time','end_time','session_tmst');
@@ -259,8 +260,9 @@ classdef Lick < dj.Relvar
                 switch params.type
                     case 'all'
                         errorPlot(1:size(delays,1),[],'manual',delays','errorColor',colors(imouse,:))
-                        hold on
                     otherwise
+                        plot(delays(:,1),'color',colors(imouse,:))
+                        plot(delays(:,2),'color',colors(imouse,:))
                 end
             end
             grid on
