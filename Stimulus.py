@@ -226,6 +226,6 @@ class NoStimulus(Stimulus):
     def prepare(self, conditions):
         pass
 
-    def init_trial(self, cond):
+    def init_trial(self):
         self.isrunning = True
 
