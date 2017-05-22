@@ -18,6 +18,9 @@ class Experiment:
         self.indexes = []
         self.beh = self.get_behavior()(logger, params)
         self.stim = eval(params['stim_type'])(logger)
+        bias_array = np.empty(10)  # History term for bias calculation
+        bias_array[:] = np.NAN
+        self.probe_bias = bias_array
 
     def prepare(self):
         """Prepare things before experiment starts"""
@@ -48,15 +51,24 @@ class Experiment:
     def get_behavior(self):
         return RPBehavior  # default is raspberry pi
 
-    def _get_new_cond(self):
+    def _get_new_cond(self, seq_gen='block'):
         """Get curr condition & create random block of all conditions
         Should be called within init_trial
         """
-        if numpy.size(self.indexes) == 0:
-            self.indexes = numpy.random.permutation(numpy.size(self.conditions))
-        cond = self.conditions[self.indexes[0]]
-        self.indexes = self.indexes[1:]
-        return cond
+        if seq_gen == 'block':
+            if numpy.size(self.indexes) == 0:
+                self.indexes = numpy.random.permutation(numpy.size(self.conditions))
+            cond = self.conditions[self.indexes[0]]
+            self.indexes = self.indexes[1:]
+            return cond
+        elif seq_gen == 'random' or numpy.any(self.probes == 0):
+            return numpy.random.choice(self.conditions)
+        elif seq_gen == 'bias':
+            if numpy.all(numpy.isnan(self.probe_bias)):
+                return numpy.random.choice(self.conditions)
+            else:
+                bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
+                return numpy.random.choice(self.conditions[self.probes == bias_probe])
 
 
 class MultiProbe(Experiment):
@@ -64,13 +76,10 @@ class MultiProbe(Experiment):
 
     def __init__(self, logger, timer, params):
         self.post_wait = 0
-        bias_array = np.empty(10)  # History term for bias calculation
-        bias_array[:] = np.NAN
-        self.probe_bias = bias_array
         super(MultiProbe, self).__init__(logger, timer, params)
 
     def pre_trial(self):
-        cond = self._get_new_cond()
+        cond = self._get_new_cond('bias')
         self.stim.init_trial(cond)
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1['probe']
         self.beh.is_licking()
@@ -114,19 +123,6 @@ class MultiProbe(Experiment):
 
     def reward(self, probe):
         self.beh.water_reward(probe)
-
-    def _get_new_cond(self):
-        """Get curr condition with bias correction
-        """
-        if numpy.all(numpy.isnan(self.probe_bias)) or numpy.any(self.probes == 0):  # First run / Single probe
-            cond = super(MultiProbe, self)._get_new_cond()
-            return cond
-        else:  # Bias correction
-            np.nanmean(self.probe_bias - 1)
-            bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
-            conds = self.conditions[self.probes == bias_probe]
-            conds = conds[numpy.random.permutation(numpy.size(conds))]
-            return conds[0]
 
 
 class DummyMultiProbe(MultiProbe):
