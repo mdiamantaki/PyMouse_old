@@ -53,6 +53,7 @@ classdef Lick < dj.Relvar
             end
             
             for key=keys'
+                
                 figure
                 set(gcf,'name',sprintf('Licks Animal:%d Session:%d',key.animal_id,key.session_id))
                 colors = [0 0 1; 1 0 0];
@@ -98,7 +99,7 @@ classdef Lick < dj.Relvar
                         Ptimes = ptimes(PunIdx)-wtimes(ptrialIdx);
                         
                         % plot Reward & punishment
-                        for iprobe = unique(probes)' 
+                        for iprobe = unique(probes)'
                             idx = rprobes(RewIdx)==iprobe;
                             plot(Rtimes(idx),rtrialIdx(idx),'o','color',colors(iprobe,:))
                             idx = pprobes(PunIdx)==iprobe;
@@ -118,9 +119,14 @@ classdef Lick < dj.Relvar
                     else
                         set(gca,'ytick',[])
                     end
-                    [mov, clip] = fetch1(beh.MovieClipCond & key & conds(icond),'movie_name','clip_number');
                     rprob = fetch1(beh.RewardCond & key & conds(icond),'probe');
-                    title(sprintf('Movie: %s  Clip: %d \n Reward Probe:%d',mov, clip, rprob))
+                    if count(beh.MovieClipCond & conds(1))>0
+                        [mov, clip] = fetch1(beh.MovieClipCond & key & conds(icond),'movie_name','clip_number');
+                        title(sprintf('Movie: %s  Clip: %d \n Reward Probe:%d',mov, clip, rprob))
+                    elseif count(beh.GratingCond & conds(1))
+                        direction = fetch1( beh.GratingCond & key & conds(icond),'direction');
+                        title(sprintf('Direction: %d \n Reward Probe:%d',direction, rprob))
+                    end
                     
                     % average licking plots
                     if params.average
@@ -172,6 +178,7 @@ classdef Lick < dj.Relvar
                     ylim([0 max([MX eps])])
                 end
             end
+            
         end
         
         function plotDelay(obj, varargin)
@@ -182,7 +189,7 @@ classdef Lick < dj.Relvar
             
             % function to convert times to days
             daytimeFunc = @(sesstime, times) datenum(sesstime,'YYYY-mm-dd HH:MM:SS') - 18/24 + times/1000/3600/24;
-        
+            
             mice = fetch(beh.SetupInfo & 'animal_id>0','animal_id');
             colors = cbrewer('qual','Dark2',length(mice));
             figure; hold on
@@ -229,7 +236,7 @@ classdef Lick < dj.Relvar
                             idx = rtimesM>=stimes & rtimesM <= etimes & probesM==2;
                             delays(iday,2) = mean(rtimesM(idx) - stimes(idx))*24*3600;
                             
-                        case 'value' % Correct vs wrong          
+                        case 'value' % Correct vs wrong
                             resp_times = daytimeFunc(session_timesR, rew_times);
                             stimes = start_times(IC==iday)';
                             stimes = repmat(stimes,[size(resp_times,1),1]);

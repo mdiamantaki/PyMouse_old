@@ -118,10 +118,10 @@ class MultiProbe(Experiment):
     def _get_new_cond(self):
         """Get curr condition with bias correction
         """
-        if numpy.all(numpy.isnan(self.probe_bias)):
+        if numpy.all(numpy.isnan(self.probe_bias)) or numpy.any(self.probes == 0):  # First run / Single probe
             cond = super(MultiProbe, self)._get_new_cond()
             return cond
-        else:
+        else:  # Bias correction
             np.nanmean(self.probe_bias - 1)
             bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
             conds = self.conditions[self.probes == bias_probe]

@@ -21,6 +21,11 @@ classdef Trial < dj.Relvar
             
             times = msec2tmst(fetch(beh.Session & obj),fetchn(obj, params.time));
             plot(times,ones(size(times))* params.factor,'.','color',params.color)
+            
+            if strcmp(params.time,'start_time')
+                times = msec2tmst(fetch(beh.Session & obj),fetchn(obj, params.time)-30000);
+                plot(times,ones(size(times))* params.factor,'.','color',[0.9 0.9 .9])
+            end
         end
     end
 end
