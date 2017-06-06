@@ -28,9 +28,12 @@ class Experiment:
         self.stim.setup()
         self.stim.prepare(self.conditions)  # prepare stimulus
 
+    def run(self):
+        return self.logger.get_setup_state() == 'running'
+
     def pre_trial(self):
         """Prepare things before trial starts"""
-        self.stim.init_trial()  # initialize stimulus
+        self.stim.init_trial(self._get_new_cond)  # initialize stimulus
 
     def trial(self):
         """Do stuff in trial, returns break condition"""
@@ -47,6 +50,7 @@ class Experiment:
 
     def cleanup(self):
         self.beh.cleanup()
+        self.logger.update_setup_state('ready')  # update setup state
 
     def get_behavior(self):
         return RPBehavior  # default is raspberry pi
@@ -90,10 +94,15 @@ class MultiProbe(Experiment):
         if probe > 0:
             self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
             if self.reward_probe == probe:
+                print('Correct!')
                 self.reward(probe)
+                self.timer.start()
+                while self.timer.elapsed_time() < 5000:
+                    self.stim.present_trial()
+                return True
             else:
                 self.punish(probe)
-            return True  # break trial
+                return False  # break trial
         else:
             return False
 
@@ -155,3 +164,18 @@ class ProbeTest(Experiment):
             self.beh.punish_with_air(probe)
 
 
+class PassiveMatlab(Experiment):
+    """ this class handles the response to the licks
+    """
+    def __init__(self, logger, timer, params):
+        self.stim = eval(params['stim_type'])(logger)
+
+    def prepare(self):
+        self.stim.setup()
+        self.stim.prepare()  # prepare stimulus
+
+    def pre_trial(self):
+        self.stim.init_trial()  # initialize stimulus
+
+    def trial(self):
+        return self.stim.trial.done()
