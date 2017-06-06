@@ -33,11 +33,11 @@ class Stimulus:
         pygame.mouse.set_visible(0)
         pygame.display.toggle_fullscreen()
 
-    def prepare(self, conditions):
+    def prepare(self, conditions=False):
         """prepares stuff for presentation before experiment starts"""
         pass
 
-    def init_trial(self, cond):
+    def init_trial(self, cond=False):
         """initialize stuff for each trial"""
         pass
 
@@ -222,10 +222,10 @@ class Gratings(Stimulus):
 class NoStimulus(Stimulus):
     """ This class does not present any stimulus and water is delivered upon a lick"""
     
-    def prepare(self, conditions):
+    def prepare(self, conditions=False):
         pass
 
-    def init_trial(self):
+    def init_trial(self, cond=False):
         self.isrunning = True
 
 
