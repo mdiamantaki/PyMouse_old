@@ -24,16 +24,14 @@ class Experiment:
 
     def prepare(self):
         """Prepare things before experiment starts"""
-        self.conditions, self.probes = self.logger.log_conditions(self.stim.get_condition_table())  # log conditions
         self.stim.setup()
-        self.stim.prepare(self.conditions)  # prepare stimulus
 
     def run(self):
         return self.logger.get_setup_state() == 'running'
 
     def pre_trial(self):
         """Prepare things before trial starts"""
-        self.stim.init_trial(self._get_new_cond)  # initialize stimulus
+        self.stim.init_trial()  # initialize stimulus
 
     def trial(self):
         """Do stuff in trial, returns break condition"""
@@ -81,6 +79,11 @@ class MultiProbe(Experiment):
     def __init__(self, logger, timer, params):
         self.post_wait = 0
         super(MultiProbe, self).__init__(logger, timer, params)
+
+    def prepare(self):
+        self.conditions, self.probes = self.logger.log_conditions(self.stim.get_condition_table())  # log conditions
+        self.stim.setup()
+        self.stim.prepare(self.conditions)  # prepare stimulus
 
     def pre_trial(self):
         cond = self._get_new_cond('bias')
