@@ -2,7 +2,7 @@ from Logger import *
 from Experiment import *
 import sys
 
-logg = Logger()                                                     # setup loger & timer
+logg = Logger()                                                     # setup logger & timer
 logg.log_setup()                                                    # publish IP and make setup available
 
 
@@ -10,14 +10,15 @@ def train(logger=logg):
     """ Run training experiment """
 
     # # # # # Prepare # # # # #
+    logger.init_params()                                            # clear settings from previous session
     logger.log_session()                                            # start session
     params = (Task() & dict(task_idx=logger.task_idx)).fetch1()     # get parameters
     timer = Timer()                                                 # main timer for trials
-    exprmt = eval(params['exp_type'])(logger, timer, params)        # get experiment
-    exprmt.prepare()
+    exprmt = eval(params['exp_type'])(logger, timer, params)        # get experiment & init
+    exprmt.prepare()                                                # prepare stuff
 
     # # # # # Run # # # # #
-    while logger.get_setup_state() == 'running':
+    while exprmt.run():
 
         # # # # # Pre-Trial period # # # # #
         exprmt.pre_trial()
@@ -39,7 +40,6 @@ def train(logger=logg):
 
     # # # # # Cleanup # # # # #
     exprmt.cleanup()
-    logger.update_setup_state('ready')                               # update setup state
 
 
 def calibrate(logger=logg):

@@ -15,6 +15,9 @@ class Logger:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         self.ip = s.getsockname()[0]
+        self.init_params()
+
+    def init_params(self):
         self.last_trial = 0
         self.queue = Queue()
         self.timer = Timer()

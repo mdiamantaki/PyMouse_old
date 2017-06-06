@@ -26,9 +26,9 @@ class Stimulus:
     def setup(self):
         # setup pygame
         pygame.init()
-        #self.screen = pygame.display.set_mode(self.size)
+        self.screen = pygame.display.set_mode(self.size)
         # self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
-        self.screen = pygame.display.set_mode(self.size, HWSURFACE)
+        #self.screen = pygame.display.set_mode(self.size, HWSURFACE)
         self.unshow()
         pygame.mouse.set_visible(0)
         pygame.display.toggle_fullscreen()
@@ -84,8 +84,7 @@ class Stimulus:
 
         self.flip_count += 1
 
-    @staticmethod
-    def close():
+    def close(self):
         """Close stuff"""
         pygame.mouse.set_visible(1)
         pygame.display.quit()
@@ -228,4 +227,33 @@ class NoStimulus(Stimulus):
 
     def init_trial(self):
         self.isrunning = True
+
+
+class Psychtoolbox(Stimulus):
+    """ Psychtoolbox through matlab"""
+
+    def __init__(self, logger):
+        import matlab.engine as eng
+        self.mat = eng.start_matlab()
+        self.trial = []
+
+    def setup(self):
+        self.mat.stimulus.open(nargout=0)
+
+    def prepare(self):
+        self.mat.stimulus.conf.matisse3(nargout=0)
+        self.mat.stimulus.prepare(dict(animal_id=0, session=0, scan_idx=0), nargout=0)
+
+    def init_trial(self):
+        self.isrunning = True
+        self.trial = self.mat.stimulus.run(nargout=0, async=True)
+
+    def stop_trial(self):
+        self.trial.cancel()
+        self.isrunning = False
+
+    def close(self):
+        self.mat.stimulus.close(nargout=0)
+
+
 
