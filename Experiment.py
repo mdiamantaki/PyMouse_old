@@ -172,6 +172,7 @@ class PassiveMatlab(Experiment):
     """
     def __init__(self, logger, timer, params):
         self.stim = eval(params['stim_type'])(logger)
+        super(PassiveMatlab, self).__init__(logger, timer, params)
 
     def prepare(self):
         self.stim.setup()
@@ -182,3 +183,6 @@ class PassiveMatlab(Experiment):
 
     def trial(self):
         return self.stim.trial.done()
+
+    def get_behavior(self):
+        return DummyProbe
