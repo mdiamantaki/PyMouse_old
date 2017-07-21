@@ -17,11 +17,17 @@ class Behavior:
     def is_running(self):
         return False
 
+    def is_ready(self):
+        return False, 0
+
     def water_reward(self, probe):
-        print('Giving Water!')
+        print('Giving Water at probe:%1d' % probe)
 
     def punish_with_air(self, probe, air_dur=200):
-        print('Punishing with Air!')
+        print('Punishing with Air at probe:%1d' % probe)
+
+    def give_odor(self, odor_idx, odor_dur):
+        print('Odor %1d presentation for %d' % (odor_idx, odor_dur))
 
     def inactivity_time(self):  # in minutes
         return 0
@@ -43,6 +49,10 @@ class RPBehavior(Behavior):
             probe = 0
         return probe
 
+    def is_ready(self):
+        ready, ready_time = self.licker.is_ready()
+        return ready, ready_time
+
     def water_reward(self, probe):
         self.valves.give_liquid(probe)
 
@@ -61,6 +71,9 @@ class DummyProbe(Behavior):
     def __init__(self, logger, params):
         self.lick_timer = Timer()
         self.lick_timer.start()
+        self.ready_timer = Timer()
+        self.ready_timer.start()
+        self.ready = False
         super(DummyProbe, self).__init__(logger, params)
 
     def is_licking(self):
@@ -76,6 +89,20 @@ class DummyProbe(Behavior):
                     self.logger.log_lick(2)
                     probe = 2
         return probe
+
+    def is_ready(self):
+        events = pygame.event.get()
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE and self.ready:
+                    self.ready = False
+                    print('Not Ready!')
+                elif event.key == pygame.K_SPACE and not self.ready:
+                    self.lick_timer.start()
+                    self.ready = True
+                    print('Ready!')
+        return self.ready, self.ready_timer.elapsed_time()
+
 
     def inactivity_time(self):  # in minutes
         return self.lick_timer.elapsed_time() / 1000 / 60

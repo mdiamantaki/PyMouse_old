@@ -15,9 +15,10 @@ class Experiment:
         self.reward_probe = []
         self.conditions = []
         self.probes = []
+        self.post_wait = 0
         self.indexes = []
         self.beh = self.get_behavior()(logger, params)
-        self.stim = eval(params['stim_type'])(logger)
+        self.stim = eval(params['stim_type'])(logger, self.beh)
         bias_array = np.empty(10)  # History term for bias calculation
         bias_array[:] = np.NAN
         self.probe_bias = bias_array
@@ -186,3 +187,63 @@ class PassiveMatlab(Experiment):
 
     def get_behavior(self):
         return DummyProbe
+
+
+class CenterPort(Experiment):
+    """2AFC with center init position"""
+
+    def __init__(self, logger, timer, params):
+        self.post_wait = 0
+        self.ready_wait = 2000
+        super(CenterPort, self).__init__(logger, timer, params)
+
+    def prepare(self):
+        self.conditions, self.probes = self.logger.log_conditions(self.stim.get_condition_table())  # log conditions
+        self.stim.setup()
+        self.stim.prepare(self.conditions)  # prepare stimulus
+
+    def pre_trial(self):
+        cond = self._get_new_cond('bias')
+        self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1['probe']
+        is_ready, ready_time = self.beh.is_ready()
+        while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
+            #print('Waiting for init...')
+            time.sleep(.1)
+            is_ready, ready_time = self.beh.is_ready()
+
+        print('Init detected!')
+        self.stim.init_trial(cond)
+        self.beh.is_licking()
+
+    def trial(self):
+        self.stim.present_trial()  # Start Stimulus
+        probe = self.beh.is_licking()
+        if probe > 0:
+            self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
+            if self.reward_probe == probe:
+                print('Correct!')
+                self.reward(probe)
+                return True
+            else:
+                self.punish(probe)
+                return True  # break trial
+        else:
+            return False
+
+    def post_trial(self):
+        self.stim.stop_trial()  # stop stimulus when timeout
+        self.timer.start()
+        while self.timer.elapsed_time()/1000 < self.post_wait and self.logger.get_setup_state() == 'running':
+            time.sleep(0.5)
+        self.post_wait = 0
+
+    def inter_trial(self):
+        if self.beh.is_licking():
+            self.timer.start()
+
+    def punish(self, probe):
+        self.post_wait = self.timeout
+
+    def reward(self, probe):
+        self.beh.water_reward(probe)
+

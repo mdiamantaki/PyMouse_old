@@ -268,3 +268,12 @@ class RewardCond(dj.Manual):
     probe=0        :int         # probe number
     """
 
+@schema
+class OdorCond(dj.Manual):
+    definition = """
+    # reward probe conditions
+    -> Condition
+    ---
+    odor_dur=2000     :int         # odor duration (ms)
+    odor_idx=0        :int         # odor index for channel mapping
+    """

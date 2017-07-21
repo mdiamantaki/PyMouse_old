@@ -17,6 +17,13 @@ if util.find_spec('RPi'):
         channels = {'air':    {1: 7,  2: 6},
                     'liquid': {1: 4,  2: 3},
                     'lick':   {1: 2,  2: 5}}
+    elif 3000 < setup < 3100:
+        GPIO.setup([17, 27, 2], GPIO.IN)
+        GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
+        channels = {'odor': {1: 24, 2: 25},
+                    'liquid': {1: 22, 2: 23},
+                    'lick': {1: 17, 2: 27},
+                    'start': {1: 2}}
     else:
         GPIO.setup([17, 27], GPIO.IN)
         GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
@@ -36,9 +43,13 @@ class Licker:
         self.timer_probe1.start()
         self.timer_probe2 = Timer()
         self.timer_probe2.start()
+        self.timer_ready = Timer()
+        self.timer_ready.start()
         GPIO.add_event_detect(channels['lick'][2], GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
         GPIO.add_event_detect(channels['lick'][1], GPIO.RISING, callback=self.probe1_licked, bouncetime=200)
-
+        if 3000 < setup < 3100:
+            GPIO.add_event_detect(channels['start'][1], GPIO.RISING, callback=self.in_position, bouncetime=200)
+            GPIO.add_event_detect(channels['start'][1], GPIO.FALLING, callback=self.off_position, bouncetime=200)
 
     def probe1_licked(self, channel):
         #c = list(channels['lick'].items())
@@ -51,6 +62,16 @@ class Licker:
         self.probe2 = True
         self.timer_probe2.start()
         self.logger.log_lick(2)
+
+    def in_position(self, channel):
+        self.timer_ready.start()
+        self.ready = True
+
+    def off_position(self, channel):
+        self.ready = False
+
+    def is_ready(self):
+        return self.ready, self.timer_ready
 
     def lick(self):
         if self.probe1:
@@ -87,6 +108,9 @@ class ValveControl:
         self.thread.submit(self.__pulse_out, channels['liquid'][probe], duration)
         if log:
             self.logger.log_liquid(probe)
+
+    def give_odor(self, odor_idx, duration):
+        self.thread.submit(self.__pulse_out, channels['odor'][odor_idx], duration)
 
     def __calc_pulse_dur(self, reward_amount):  # calculate pulse duration for the desired reward amount
         self.liquid_dur = dict()

@@ -9,7 +9,14 @@ class Stimulus:
     use function overrides for each stimulus class
     """
 
-    def __init__(self, logger):
+    def __init__(self, logger, beh):
+        # initilize parameters
+        self.logger = logger
+        self.beh = beh
+        self.isrunning = False
+        self.flip_count = 0
+
+    def setup(self):
         # setup parameters
         self.path = 'stimuli/'     # default path to copy local stimuli
         self.size = (800, 480)     # window size
@@ -18,12 +25,6 @@ class Stimulus:
         self.fps = 30              # default presentation framerate
         self.phd_size = (50, 50)    # default photodiode signal size in pixels
 
-        # initilize parameters
-        self.logger = logger
-        self.isrunning = False
-        self.flip_count = 0
-
-    def setup(self):
         # setup pygame
         pygame.init()
         self.screen = pygame.display.set_mode(self.size)
@@ -232,10 +233,11 @@ class NoStimulus(Stimulus):
 class Psychtoolbox(Stimulus):
     """ Psychtoolbox through matlab"""
 
-    def __init__(self, logger):
+    def __init__(self, logger, beh):
         import matlab.engine as eng
         self.mat = eng.start_matlab()
         self.trial = []
+        super(Psychtoolbox, self).__init__(logger, beh)
 
     def setup(self):
         self.mat.stimulus.open(nargout=0)
@@ -256,5 +258,34 @@ class Psychtoolbox(Stimulus):
     def close(self):
         self.mat.stimulus.close(nargout=0)
 
+
+class Odors(Stimulus):
+    """ This class handles the presentation of Odors"""
+
+    #def setup(self):
+        # setup pygame
+        #pygame.init()
+
+    def prepare(self, conditions):
+        self.clock = pygame.time.Clock()
+        self.stim_conditions = dict()
+        for cond in conditions:
+            params = (OdorCond() & dict(cond_idx=cond) & self.logger.session_key).fetch1()
+            self.stim_conditions[cond] = params
+
+    def init_trial(self, cond):
+        odor_idx = self.stim_conditions[cond]['odor_idx']
+        odor_dur = self.stim_conditions[cond]['odor_dur']
+        self.beh.give_odor(odor_idx, odor_dur)
+        self.isrunning = True
+        self.logger.start_trial(cond)  # log start trial
+        return cond
+
+    def stop_trial(self):
+        self.isrunning = False
+        self.logger.log_trial(self.flip_count)  # log trial
+
+    def get_condition_table(self):
+        return OdorCond
 
 
