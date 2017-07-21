@@ -39,6 +39,7 @@ class Licker:
         self.logger = logger
         self.probe1 = False
         self.probe2 = False
+        self.ready = False
         self.timer_probe1 = Timer()
         self.timer_probe1.start()
         self.timer_probe2 = Timer()
@@ -48,8 +49,7 @@ class Licker:
         GPIO.add_event_detect(channels['lick'][2], GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
         GPIO.add_event_detect(channels['lick'][1], GPIO.RISING, callback=self.probe1_licked, bouncetime=200)
         if 3000 < setup < 3100:
-            GPIO.add_event_detect(channels['start'][1], GPIO.RISING, callback=self.in_position, bouncetime=200)
-            GPIO.add_event_detect(channels['start'][1], GPIO.FALLING, callback=self.off_position, bouncetime=200)
+            GPIO.add_event_detect(channels['start'][1], GPIO.BOTH, callback=self.position_change, bouncetime=200)
 
     def probe1_licked(self, channel):
         #c = list(channels['lick'].items())
@@ -63,12 +63,12 @@ class Licker:
         self.timer_probe2.start()
         self.logger.log_lick(2)
 
-    def in_position(self, channel):
-        self.timer_ready.start()
-        self.ready = True
-
-    def off_position(self, channel):
-        self.ready = False
+    def position_change(self, channel):
+        if GPIO.input(channel):
+            self.timer_ready.start()
+            self.ready = True
+        else:
+            self.ready = False
 
     def is_ready(self):
         return self.ready, self.timer_ready
