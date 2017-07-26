@@ -11,6 +11,7 @@ class Experiment:
         self.air_dur = params['airpuff_duration']
         self.timeout = params['timeout_duration']
         self.silence = params['silence_thr']
+        self.ready_wait = params['init_duration']
         self.timer = timer
         self.reward_probe = []
         self.conditions = []
@@ -194,7 +195,6 @@ class CenterPort(Experiment):
 
     def __init__(self, logger, timer, params):
         self.post_wait = 0
-        self.ready_wait = 2000
         super(CenterPort, self).__init__(logger, timer, params)
 
     def prepare(self):
@@ -210,6 +210,7 @@ class CenterPort(Experiment):
             #print('Waiting for init...')
             time.sleep(.1)
             is_ready, ready_time = self.beh.is_ready()
+            print(ready_time)
 
         print('Init detected!')
         self.stim.init_trial(cond)
@@ -225,6 +226,7 @@ class CenterPort(Experiment):
                 self.reward(probe)
                 return True
             else:
+                print('Wrong!')
                 self.punish(probe)
                 return True  # break trial
         else:
