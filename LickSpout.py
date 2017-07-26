@@ -73,7 +73,7 @@ class Licker:
             print('off position')
 
     def is_ready(self):
-        return self.ready, self.timer_ready
+        return self.ready, self.timer_ready.elapsed_time()
 
     def lick(self):
         if self.probe1:
