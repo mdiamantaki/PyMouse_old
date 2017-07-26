@@ -67,8 +67,10 @@ class Licker:
         if GPIO.input(channel):
             self.timer_ready.start()
             self.ready = True
+            print('in position')
         else:
             self.ready = False
+            print('off position')
 
     def is_ready(self):
         return self.ready, self.timer_ready

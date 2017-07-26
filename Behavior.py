@@ -101,7 +101,8 @@ class DummyProbe(Behavior):
                     self.lick_timer.start()
                     self.ready = True
                     print('Ready!')
-        return self.ready, self.ready_timer.elapsed_time()
+        eltime = self.ready_timer.elapsed_time()
+        return self.ready, eltime
 
 
     def inactivity_time(self):  # in minutes
