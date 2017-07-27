@@ -49,7 +49,7 @@ class Licker:
         GPIO.add_event_detect(channels['lick'][2], GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
         GPIO.add_event_detect(channels['lick'][1], GPIO.RISING, callback=self.probe1_licked, bouncetime=200)
         if 3000 < setup < 3100:
-            GPIO.add_event_detect(channels['start'][1], GPIO.BOTH, callback=self.position_change, bouncetime=200)
+            GPIO.add_event_detect(channels['start'][1], GPIO.BOTH, callback=self.position_change)
 
     def probe1_licked(self, channel):
         #c = list(channels['lick'].items())
@@ -73,6 +73,10 @@ class Licker:
             print('off position')
 
     def is_ready(self):
+        ready = GPIO.input(channels['start'][1])
+        if self.ready != ready:
+            self.position_change(channels['start'][1])
+
         return self.ready, self.timer_ready.elapsed_time()
 
     def lick(self):
