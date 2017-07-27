@@ -207,12 +207,10 @@ class CenterPort(Experiment):
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1['probe']
         is_ready, ready_time = self.beh.is_ready()
         while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
-            #print('Waiting for init...')
             time.sleep(.1)
             is_ready, ready_time = self.beh.is_ready()
-            print(ready_time)
 
-        print('Init detected!')
+        print('Starting trial!')
         self.stim.init_trial(cond)
         self.beh.is_licking()
 

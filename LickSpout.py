@@ -73,6 +73,7 @@ class Licker:
             print('off position')
 
     def is_ready(self):
+        # handle missed events
         ready = GPIO.input(channels['start'][1])
         if self.ready != ready:
             self.position_change(channels['start'][1])
@@ -116,6 +117,7 @@ class ValveControl:
             self.logger.log_liquid(probe)
 
     def give_odor(self, odor_idx, duration):
+        print('giving odor ')
         self.thread.submit(self.__pulse_out, channels['odor'][odor_idx], duration)
 
     def __calc_pulse_dur(self, reward_amount):  # calculate pulse duration for the desired reward amount

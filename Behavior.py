@@ -59,6 +59,9 @@ class RPBehavior(Behavior):
     def punish_with_air(self, probe, air_dur=200):
         self.valves.give_air(probe, air_dur)
 
+    def give_odor(self, odor_idx, odor_dur):
+        self.valves.give_odor(odor_idx, odor_dur)
+
     def inactivity_time(self):  # in minutes
         return numpy.minimum(self.licker.timer_probe1.elapsed_time(),
                              self.licker.timer_probe2.elapsed_time()) / 1000 / 60
