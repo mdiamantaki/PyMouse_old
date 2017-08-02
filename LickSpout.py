@@ -126,14 +126,14 @@ class ValveControl:
 
     def __calc_pulse_dur(self, reward_amount):  # calculate pulse duration for the desired reward amount
         self.liquid_dur = dict()
-        probes = (LiquidCalibration() & dict(setup=self.logger.setup)).fetch['probe']
+        probes = (LiquidCalibration() & dict(setup=self.logger.setup)).fetch('probe')
         for probe in list(set(probes)):
             key = dict(setup=self.logger.setup, probe=probe)
             dates = (LiquidCalibration() & key).fetch.order_by('date')['date']
             key['date'] = dates[-1]  # use the most recent calibration
-            pulse_dur, pulse_num, weight = (LiquidCalibration.PulseWeight() & key).fetch['pulse_dur',
+            pulse_dur, pulse_num, weight = (LiquidCalibration.PulseWeight() & key).fetch('pulse_dur',
                                                                                          'pulse_num',
-                                                                                         'weight']
+                                                                                         'weight')
             self.liquid_dur[probe] = numpy.interp(reward_amount,
                                                   numpy.divide(weight, pulse_num),
                                                   pulse_dur)
