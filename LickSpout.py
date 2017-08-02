@@ -94,6 +94,8 @@ class Licker:
     def cleanup(self):
         GPIO.remove_event_detect(channels['lick'][1])
         GPIO.remove_event_detect(channels['lick'][2])
+        if 3000 < setup < 3100:
+            GPIO.remove_event_detect(channels['start'][1])
 
 
 class ValveControl:
@@ -116,9 +118,11 @@ class ValveControl:
         if log:
             self.logger.log_liquid(probe)
 
-    def give_odor(self, odor_idx, duration):
+    def give_odor(self, odor_idx, duration, log=True):
         print('Odor %1d presentation for %d' % (odor_idx, duration))
         self.thread.submit(self.__pulse_out, channels['odor'][odor_idx], duration)
+        if log:
+            self.logger.log_odor(odor_idx)
 
     def __calc_pulse_dur(self, reward_amount):  # calculate pulse duration for the desired reward amount
         self.liquid_dur = dict()

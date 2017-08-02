@@ -201,6 +201,14 @@ class AirpuffDelivery(dj.Manual):
     probe=0             : int               # probe number
     """
 
+@schema
+class OdorDelivery(dj.Manual):
+    definition = """
+    # Odor delivery timestamps
+    -> Session
+    time		    	: int 	            # time from session start (ms)
+    odor_idx=0             : int            # odor number
+    """
 
 @schema
 class Movie(dj.Lookup):
@@ -274,6 +282,7 @@ class OdorCond(dj.Manual):
     # reward probe conditions
     -> Condition
     ---
-    odor_dur=2000     :int         # odor duration (ms)
-    odor_idx=0        :int         # odor index for channel mapping
+    odor_dur=1000     :int          # odor duration (ms)
+    odor_idx=0        :int          # odor index for channel mapping
+    odor_name=""      :varchar(255) # name of the odor
     """

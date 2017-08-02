@@ -102,6 +102,11 @@ class Logger:
         self.queue.put(dict(table=LiquidDelivery(), tuple=dict(self.session_key, time=timestamp, probe=probe)))
         self.inserter()
 
+    def log_odor(self, odor_idx):
+        timestamp = self.timer.elapsed_time()
+        self.queue.put(dict(table=OdorDelivery(), tuple=dict(self.session_key, time=timestamp, odor_idx=odor_idx)))
+        self.inserter()
+
     def log_lick(self, probe):
         timestamp = self.timer.elapsed_time()
         self.queue.put(dict(table=Lick(), tuple=dict(self.session_key,
