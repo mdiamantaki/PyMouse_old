@@ -80,6 +80,18 @@ class DummyProbe(Behavior):
         super(DummyProbe, self).__init__(logger, params)
 
     def is_licking(self):
+        probe = self.__get_events()
+        return probe
+
+    def is_ready(self):
+        self.__get_events()
+        eltime = self.ready_timer.elapsed_time()
+        return self.ready, eltime
+
+    def inactivity_time(self):  # in minutes
+        return self.lick_timer.elapsed_time() / 1000 / 60
+
+    def __get_events(self):
         probe = 0
         events = pygame.event.get()
         for event in events:
@@ -88,28 +100,17 @@ class DummyProbe(Behavior):
                     self.logger.log_lick(1)
                     probe = 1
                     self.lick_timer.start()
-                if event.key == pygame.K_RIGHT:
+                elif event.key == pygame.K_RIGHT:
                     self.logger.log_lick(2)
                     probe = 2
-        return probe
-
-    def is_ready(self):
-        events = pygame.event.get()
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and self.ready:
+                elif event.key == pygame.K_SPACE and self.ready:
                     self.ready = False
-                    print('Not Ready!')
+                    print('off position')
                 elif event.key == pygame.K_SPACE and not self.ready:
                     self.lick_timer.start()
                     self.ready = True
-                    print('Ready!')
-        eltime = self.ready_timer.elapsed_time()
-        return self.ready, eltime
-
-
-    def inactivity_time(self):  # in minutes
-        return self.lick_timer.elapsed_time() / 1000 / 60
+                    print('in position')
+        return probe
 
 
 

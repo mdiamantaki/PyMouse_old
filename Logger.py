@@ -4,6 +4,7 @@ from Database import *
 from itertools import product
 from queue import Queue
 import time as systime
+from threading import Thread
 
 
 class Logger:
@@ -16,6 +17,9 @@ class Logger:
         s.connect(("8.8.8.8", 80))
         self.ip = s.getsockname()[0]
         self.init_params()
+        self.thread = Thread(target=self.inserter)
+        self.thread.daemon = True
+        self.thread.start()
 
     def init_params(self):
         self.last_trial = 0
@@ -28,12 +32,12 @@ class Logger:
 
     def log_session(self):
 
-        animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1['animal_id', 'task_idx']
+        animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1('animal_id', 'task_idx')
         self.task_idx = task_idx
 
         # create session key
         self.session_key['animal_id'] = animal_id
-        last_sessions = (Session() & self.session_key).fetch['session_id']
+        last_sessions = (Session() & self.session_key).fetch('session_id')
         if numpy.size(last_sessions) == 0:
             last_session = 0
         else:
@@ -46,7 +50,7 @@ class Logger:
         del task_params['task_idx']
         key = dict(self.session_key.items() | task_params.items())
         key['setup'] = self.setup
-        self.queue.put(dict(table=Session(), tuple = key))
+        self.queue.put(dict(table=Session(), tuple=key))
         self.reward_amount = task_params['reward_amount']/1000  # convert to ml
 
         # start session time
@@ -56,7 +60,7 @@ class Logger:
     def log_conditions(self, condition_table):
 
         # generate factorial conditions
-        conditions = eval((Task() & dict(task_idx=self.task_idx)).fetch1['conditions'])
+        conditions = eval((Task() & dict(task_idx=self.task_idx)).fetch1('conditions'))
         conditions = sum([list((dict(zip(conds, x)) for x in product(*conds.values()))) for conds in conditions], [])
 
         # iterate through all conditions and insert
@@ -112,7 +116,7 @@ class Logger:
         self.queue.put(dict(table=Lick(), tuple=dict(self.session_key,
                                                      time=timestamp,
                                                      probe=probe)))
-        #self.inserter()  # threading fails with pymysql
+        self.inserter()
 
     def log_air(self, probe):
         timestamp = self.timer.elapsed_time()
@@ -141,21 +145,22 @@ class Logger:
         key['state'] = 'ready'
         SetupInfo().insert1(key)
 
-    def update_setup_state(self, state):
+    def update_setup_state(self, state, notes=''):
         key = (SetupInfo() & dict(setup=self.setup)).fetch1()
         in_state = key['state'] == state
         if not in_state:
             (SetupInfo() & dict(setup=self.setup)).delete_quick()
             key['state'] = state
+            key['notes'] = notes
             SetupInfo().insert1(key)
         return in_state
 
     def get_setup_state(self):
-        state = (SetupInfo() & dict(setup=self.setup)).fetch1['state']
+        state = (SetupInfo() & dict(setup=self.setup)).fetch1('state')
         return state
 
     def get_setup_task(self):
-        task = (SetupInfo() & dict(setup=self.setup)).fetch1['task']
+        task = (SetupInfo() & dict(setup=self.setup)).fetch1('task')
         return task
 
     def get_session_key(self):
