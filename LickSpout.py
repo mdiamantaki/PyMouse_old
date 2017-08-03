@@ -129,7 +129,7 @@ class ValveControl:
         probes = (LiquidCalibration() & dict(setup=self.logger.setup)).fetch('probe')
         for probe in list(set(probes)):
             key = dict(setup=self.logger.setup, probe=probe)
-            dates = (LiquidCalibration() & key).fetch.order_by('date')['date']
+            dates = (LiquidCalibration() & key).fetch.order_by('date')('date')
             key['date'] = dates[-1]  # use the most recent calibration
             pulse_dur, pulse_num, weight = (LiquidCalibration.PulseWeight() & key).fetch('pulse_dur',
                                                                                          'pulse_num',

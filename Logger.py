@@ -4,7 +4,7 @@ from Database import *
 from itertools import product
 from queue import Queue
 import time as systime
-from threading import Thread
+#from threading import Thread
 
 
 class Logger:
@@ -17,9 +17,9 @@ class Logger:
         s.connect(("8.8.8.8", 80))
         self.ip = s.getsockname()[0]
         self.init_params()
-        self.thread = Thread(target=self.inserter)
-        self.thread.daemon = True
-        self.thread.start()
+        #self.thread = Thread(target=self.inserter)
+        #self.thread.daemon = True
+        #self.thread.start()
 
     def init_params(self):
         self.last_trial = 0
