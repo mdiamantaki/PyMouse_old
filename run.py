@@ -76,12 +76,12 @@ while not logg.get_setup_state() == 'stopped':
     while logg.get_setup_state() == 'ready':                        # wait for remote start
         time.sleep(1)
     if not logg.get_setup_state() == 'stopped':                     # run experiment unless stopped
-        try:
-            eval(logg.get_setup_task())(logg)
-            logg.update_setup_state('ready')                            # update setup state
-        except:
-            print("Unexpected error:", sys.exc_info()[0])
-            logg.update_setup_state('stopped', sys.exc_info()[0])
+        #try:
+        eval(logg.get_setup_task())(logg)
+        logg.update_setup_state('ready')                            # update setup state
+        #except:
+        #    print("Unexpected error:", sys.exc_info()[0])
+        #    logg.update_setup_state('stopped', sys.exc_info()[0])
 
 # # # # # Exit # # # # #
 sys.exit(0)

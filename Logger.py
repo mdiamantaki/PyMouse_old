@@ -116,7 +116,7 @@ class Logger:
         self.queue.put(dict(table=Lick(), tuple=dict(self.session_key,
                                                      time=timestamp,
                                                      probe=probe)))
-        self.inserter()
+        #self.inserter()
 
     def log_air(self, probe):
         timestamp = self.timer.elapsed_time()
@@ -145,13 +145,12 @@ class Logger:
         key['state'] = 'ready'
         SetupInfo().insert1(key)
 
-    def update_setup_state(self, state, notes=''):
+    def update_setup_state(self, state):
         key = (SetupInfo() & dict(setup=self.setup)).fetch1()
         in_state = key['state'] == state
         if not in_state:
             (SetupInfo() & dict(setup=self.setup)).delete_quick()
             key['state'] = state
-            key['notes'] = notes
             SetupInfo().insert1(key)
         return in_state
 
