@@ -17,6 +17,13 @@ if util.find_spec('RPi'):
         channels = {'air':    {1: 7,  2: 6},
                     'liquid': {1: 4,  2: 3},
                     'lick':   {1: 2,  2: 5}}
+    elif 3000 < setup < 3100:
+        GPIO.setup([17, 27, 2], GPIO.IN)
+        GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
+        channels = {'odor': {1: 24, 2: 25},
+                    'liquid': {1: 22, 2: 23},
+                    'lick': {1: 17, 2: 27},
+                    'start': {1: 2}}
     else:
         GPIO.setup([17, 27], GPIO.IN)
         GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
@@ -32,13 +39,17 @@ class Licker:
         self.logger = logger
         self.probe1 = False
         self.probe2 = False
+        self.ready = False
         self.timer_probe1 = Timer()
         self.timer_probe1.start()
         self.timer_probe2 = Timer()
         self.timer_probe2.start()
+        self.timer_ready = Timer()
+        self.timer_ready.start()
         GPIO.add_event_detect(channels['lick'][2], GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
         GPIO.add_event_detect(channels['lick'][1], GPIO.RISING, callback=self.probe1_licked, bouncetime=200)
-
+        if 3000 < setup < 3100:
+            GPIO.add_event_detect(channels['start'][1], GPIO.BOTH, callback=self.position_change)
 
     def probe1_licked(self, channel):
         #c = list(channels['lick'].items())
@@ -51,6 +62,23 @@ class Licker:
         self.probe2 = True
         self.timer_probe2.start()
         self.logger.log_lick(2)
+
+    def position_change(self, channel):
+        if GPIO.input(channel):
+            self.timer_ready.start()
+            self.ready = True
+            print('in position')
+        else:
+            self.ready = False
+            print('off position')
+
+    def is_ready(self):
+        # handle missed events
+        ready = GPIO.input(channels['start'][1])
+        if self.ready != ready:
+            self.position_change(channels['start'][1])
+
+        return self.ready, self.timer_ready.elapsed_time()
 
     def lick(self):
         if self.probe1:
@@ -66,6 +94,8 @@ class Licker:
     def cleanup(self):
         GPIO.remove_event_detect(channels['lick'][1])
         GPIO.remove_event_detect(channels['lick'][2])
+        if 3000 < setup < 3100:
+            GPIO.remove_event_detect(channels['start'][1])
 
 
 class ValveControl:
@@ -88,16 +118,22 @@ class ValveControl:
         if log:
             self.logger.log_liquid(probe)
 
+    def give_odor(self, odor_idx, duration, log=True):
+        print('Odor %1d presentation for %d' % (odor_idx, duration))
+        self.thread.submit(self.__pulse_out, channels['odor'][odor_idx], duration)
+        if log:
+            self.logger.log_odor(odor_idx)
+
     def __calc_pulse_dur(self, reward_amount):  # calculate pulse duration for the desired reward amount
         self.liquid_dur = dict()
-        probes = (LiquidCalibration() & dict(setup=self.logger.setup)).fetch['probe']
+        probes = (LiquidCalibration() & dict(setup=self.logger.setup)).fetch('probe')
         for probe in list(set(probes)):
             key = dict(setup=self.logger.setup, probe=probe)
-            dates = (LiquidCalibration() & key).fetch.order_by('date')['date']
+            dates = (LiquidCalibration() & key).fetch.order_by('date')('date')
             key['date'] = dates[-1]  # use the most recent calibration
-            pulse_dur, pulse_num, weight = (LiquidCalibration.PulseWeight() & key).fetch['pulse_dur',
+            pulse_dur, pulse_num, weight = (LiquidCalibration.PulseWeight() & key).fetch('pulse_dur',
                                                                                          'pulse_num',
-                                                                                         'weight']
+                                                                                         'weight')
             self.liquid_dur[probe] = numpy.interp(reward_amount,
                                                   numpy.divide(weight, pulse_num),
                                                   pulse_dur)

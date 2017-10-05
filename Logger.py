@@ -4,6 +4,7 @@ from Database import *
 from itertools import product
 from queue import Queue
 import time as systime
+#from threading import Thread
 
 
 class Logger:
@@ -16,6 +17,58 @@ class Logger:
         s.connect(("8.8.8.8", 80))
         self.ip = s.getsockname()[0]
         self.init_params()
+        #self.thread = Thread(target=self.inserter)
+        #self.thread.daemon = True
+        #self.thread.start()
+
+    def init_params(self):
+        self.last_trial = 0
+        self.queue = Queue()
+        self.timer = Timer()
+        self.trial_start = 0
+        self.curr_cond = []
+        self.task_idx = []
+        self.reward_amount = []
+
+    def log_session(self):
+        """Logs session"""
+        pass
+
+    def log_conditions(self, condition_table):
+        """Logs conditions"""
+        pass
+
+    def start_trial(self, cond_idx):
+        self.trial_start = self.timer.elapsed_time()
+
+    def log_trial(self, last_flip_count=0):
+        """Log experiment trial"""
+        pass
+
+    def log_setup(self):
+        """Log setup information"""
+        pass
+
+    def update_setup_state(self, state):
+        pass
+
+    def get_setup_state(self):
+        pass
+
+    def get_setup_task(self):
+        pass
+
+    def get_session_key(self):
+        return self.session_key
+
+    def inserter(self):  # insert worker, in case we need threading
+        while not self.queue.empty():
+            item = self.queue.get()
+            item['table'].insert1(item['tuple'])
+
+
+class RPLogger(Logger):
+    """ This class handles the database logging for Raspberry pi"""
 
     def init_params(self):
         self.last_trial = 0
@@ -28,12 +81,12 @@ class Logger:
 
     def log_session(self):
 
-        animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1['animal_id', 'task_idx']
+        animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1('animal_id', 'task_idx')
         self.task_idx = task_idx
 
         # create session key
         self.session_key['animal_id'] = animal_id
-        last_sessions = (Session() & self.session_key).fetch['session_id']
+        last_sessions = (Session() & self.session_key).fetch('session_id')
         if numpy.size(last_sessions) == 0:
             last_session = 0
         else:
@@ -46,7 +99,7 @@ class Logger:
         del task_params['task_idx']
         key = dict(self.session_key.items() | task_params.items())
         key['setup'] = self.setup
-        self.queue.put(dict(table=Session(), tuple = key))
+        self.queue.put(dict(table=Session(), tuple=key))
         self.reward_amount = task_params['reward_amount']/1000  # convert to ml
 
         # start session time
@@ -56,7 +109,7 @@ class Logger:
     def log_conditions(self, condition_table):
 
         # generate factorial conditions
-        conditions = eval((Task() & dict(task_idx=self.task_idx)).fetch1['conditions'])
+        conditions = eval((Task() & dict(task_idx=self.task_idx)).fetch1('conditions'))
         conditions = sum([list((dict(zip(conds, x)) for x in product(*conds.values()))) for conds in conditions], [])
 
         # iterate through all conditions and insert
@@ -102,12 +155,17 @@ class Logger:
         self.queue.put(dict(table=LiquidDelivery(), tuple=dict(self.session_key, time=timestamp, probe=probe)))
         self.inserter()
 
+    def log_odor(self, odor_idx):
+        timestamp = self.timer.elapsed_time()
+        self.queue.put(dict(table=OdorDelivery(), tuple=dict(self.session_key, time=timestamp, odor_idx=odor_idx)))
+        self.inserter()
+
     def log_lick(self, probe):
         timestamp = self.timer.elapsed_time()
         self.queue.put(dict(table=Lick(), tuple=dict(self.session_key,
                                                      time=timestamp,
                                                      probe=probe)))
-        #self.inserter()  # threading fails with pymysql
+        #self.inserter()
 
     def log_air(self, probe):
         timestamp = self.timer.elapsed_time()
@@ -146,24 +204,37 @@ class Logger:
         return in_state
 
     def get_setup_state(self):
-        state = (SetupInfo() & dict(setup=self.setup)).fetch1['state']
+        state = (SetupInfo() & dict(setup=self.setup)).fetch1('state')
         return state
 
     def get_setup_task(self):
-        task = (SetupInfo() & dict(setup=self.setup)).fetch1['task']
+        task = (SetupInfo() & dict(setup=self.setup)).fetch1('task')
         return task
 
     def get_session_key(self):
         return self.session_key
 
-    def inserter(self):  # insert worker, in case we need threading
-        while not self.queue.empty():
-            item = self.queue.get()
-            item['table'].insert1(item['tuple'])
 
+class PCLogger(Logger):
+    """ This class handles the database logging for 2P systems"""
 
+    def log_setup(self):
+        """Log setup information"""
+        pass
 
+    def update_setup_state(self, state):
+        pass
 
+    def get_setup_state(self):
+        pass
 
+    def get_setup_task(self):
+        pass
+
+    def ping(self):
+        pass
+
+    def get_scan_key(self):
+        pass
 
 

@@ -19,6 +19,27 @@ class SetupInfo(dj.Lookup):
     animal_id=null         : int # animal id
     task_idx=null          : int             # task identification number
     task="train"           : enum('train','calibrate')
+    notes=""               : varchar        # notes of state
+    """
+
+
+@schema
+class SetupControl(dj.Lookup):
+    definition = """
+    #
+    setup                  : varchar(256)   # Setup name
+    ---
+    ip                     : varchar(16)    # setup IP address
+    state="ready"          : enum('systemReady','sessionRunning','stimRunning','stimPaused')  #
+    state_control="ready"  : enum('startSession','startStim','stopStim','stopSession','pauseStim','resumeStim','Initialize','')  #
+    animal_id=null         : int # animal id
+    session=null           : int # session number
+    scan_idx=null          : int             # 
+    stimulus=""            : varchar   #
+    next_trial=null        : int  #
+    last_ping=null         : timestamp
+    task_idx=null          : int             # task identification number
+    task="train"           : enum('train','calibrate')
     """
 
 
@@ -201,6 +222,14 @@ class AirpuffDelivery(dj.Manual):
     probe=0             : int               # probe number
     """
 
+@schema
+class OdorDelivery(dj.Manual):
+    definition = """
+    # Odor delivery timestamps
+    -> Session
+    time		    	: int 	            # time from session start (ms)
+    odor_idx=0             : int            # odor number
+    """
 
 @schema
 class Movie(dj.Lookup):
@@ -268,3 +297,13 @@ class RewardCond(dj.Manual):
     probe=0        :int         # probe number
     """
 
+@schema
+class OdorCond(dj.Manual):
+    definition = """
+    # reward probe conditions
+    -> Condition
+    ---
+    odor_dur=1000     :int          # odor duration (ms)
+    odor_idx=0        :int          # odor index for channel mapping
+    odor_name=""      :varchar(255) # name of the odor
+    """
