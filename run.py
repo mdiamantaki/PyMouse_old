@@ -2,7 +2,7 @@ from Logger import *
 from Experiment import *
 import sys
 
-logg = Logger()                                                     # setup logger & timer
+logg = RPLogger()                                                     # setup logger & timer
 logg.log_setup()                                                    # publish IP and make setup available
 
 

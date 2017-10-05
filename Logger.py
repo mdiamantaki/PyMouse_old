@@ -234,4 +234,7 @@ class PCLogger(Logger):
     def ping(self):
         pass
 
+    def get_scan_key(self):
+        pass
+
 

@@ -243,8 +243,8 @@ class Psychtoolbox(Stimulus):
         self.mat.stimulus.open(nargout=0)
 
     def prepare(self):
-        self.mat.stimulus.conf.matisse3(nargout=0)
-        self.mat.stimulus.prepare(dict(animal_id=0, session=0, scan_idx=0), nargout=0)
+        eval('self.mat.stimulus.conf'+self.logger.get_stim)(nargout=0)
+        self.mat.stimulus.prepare(self.logger.get_scan_key(), nargout=0)
         #elf.mat.stimulus.prepare(self.logger.session_key, nargout=0)
 
     def init_trial(self):
