@@ -31,6 +31,55 @@ class Logger:
         self.reward_amount = []
 
     def log_session(self):
+        """Logs session"""
+        pass
+
+    def log_conditions(self, condition_table):
+        """Logs conditions"""
+        pass
+
+    def start_trial(self, cond_idx):
+        self.trial_start = self.timer.elapsed_time()
+
+    def log_trial(self, last_flip_count=0):
+        """Log experiment trial"""
+        pass
+
+    def log_setup(self):
+        """Log setup information"""
+        pass
+
+    def update_setup_state(self, state):
+        pass
+
+    def get_setup_state(self):
+        pass
+
+    def get_setup_task(self):
+        pass
+
+    def get_session_key(self):
+        return self.session_key
+
+    def inserter(self):  # insert worker, in case we need threading
+        while not self.queue.empty():
+            item = self.queue.get()
+            item['table'].insert1(item['tuple'])
+
+
+class RPLogger(Logger):
+    """ This class handles the database logging for Raspberry pi"""
+
+    def init_params(self):
+        self.last_trial = 0
+        self.queue = Queue()
+        self.timer = Timer()
+        self.trial_start = 0
+        self.curr_cond = []
+        self.task_idx = []
+        self.reward_amount = []
+
+    def log_session(self):
 
         animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1('animal_id', 'task_idx')
         self.task_idx = task_idx
@@ -165,14 +214,24 @@ class Logger:
     def get_session_key(self):
         return self.session_key
 
-    def inserter(self):  # insert worker, in case we need threading
-        while not self.queue.empty():
-            item = self.queue.get()
-            item['table'].insert1(item['tuple'])
 
+class PCLogger(Logger):
+    """ This class handles the database logging for 2P systems"""
 
+    def log_setup(self):
+        """Log setup information"""
+        pass
 
+    def update_setup_state(self, state):
+        pass
 
+    def get_setup_state(self):
+        pass
 
+    def get_setup_task(self):
+        pass
+
+    def ping(self):
+        pass
 
 

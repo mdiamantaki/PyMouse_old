@@ -24,6 +24,26 @@ class SetupInfo(dj.Lookup):
 
 
 @schema
+class SetupControl(dj.Lookup):
+    definition = """
+    #
+    setup                  : varchar(256)   # Setup name
+    ---
+    ip                     : varchar(16)    # setup IP address
+    state="ready"          : enum('systemReady','sessionRunning','stimRunning','stimPaused')  #
+    state_control="ready"  : enum('startSession','startStim','stopStim','stopSession','pauseStim','resumeStim','Initialize','')  #
+    animal_id=null         : int # animal id
+    session=null           : int # session number
+    scan_idx=null          : int             # 
+    stimulus=""            : varchar   #
+    next_trial=null        : int  #
+    last_ping=null         : timestamp
+    task_idx=null          : int             # task identification number
+    task="train"           : enum('train','calibrate')
+    """
+
+
+@schema
 class LiquidCalibration(dj.Manual):
     definition = """
     # Liquid delivery calibration sessions for each probe

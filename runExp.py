@@ -2,7 +2,7 @@ from Logger import *
 from Experiment import *
 import sys
 
-logger = Logger()                                                     # setup logger & timer
+logger = PCLogger()                                                     # setup logger & timer
 logger.log_setup()                                                    # publish IP and make setup available
 
 
@@ -25,10 +25,11 @@ while not logger.get_setup_state() == 'stopped':
         while exprmt.run():
 
             # # # # # Pre-Trial period # # # # #
+            logger.ping()
             exprmt.pre_trial()
 
             # # # # # Trial period # # # # #
-            timer.start()  # Start countdown for response
+            timer.start()  # Start countdown for response]
             while timer.elapsed_time() < params['trial_duration'] * 1000:  # response period
                 break_trial = exprmt.trial()  # get appropriate response
                 if break_trial:
