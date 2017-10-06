@@ -11,13 +11,13 @@ if util.find_spec('RPi'):
     from RPi import GPIO
     setup = int(''.join(list(filter(str.isdigit, socket.gethostname()))))
     GPIO.setmode(GPIO.BCM)
-    if 0 < setup < 6:
-        GPIO.setup([2, 5], GPIO.IN)
-        GPIO.setup([3, 4, 6, 7], GPIO.OUT, initial=GPIO.LOW)
-        channels = {'air':    {1: 7,  2: 6},
-                    'liquid': {1: 4,  2: 3},
-                    'lick':   {1: 2,  2: 5}}
-    elif 3000 < setup < 3100:
+    #if 0 < setup < 6:
+    #    GPIO.setup([2, 5], GPIO.IN)
+    #    GPIO.setup([3, 4, 6, 7], GPIO.OUT, initial=GPIO.LOW)
+    #    channels = {'air':    {1: 7,  2: 6},
+    #                'liquid': {1: 4,  2: 3},
+    #                'lick':   {1: 2,  2: 5}}
+    if 3000 < setup < 3100:
         GPIO.setup([17, 27, 2], GPIO.IN)
         GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
         channels = {'odor': {1: 24, 2: 25},
