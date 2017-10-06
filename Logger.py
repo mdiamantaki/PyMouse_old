@@ -81,7 +81,7 @@ class RPLogger(Logger):
 
     def log_session(self):
 
-        animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1('animal_id', 'task_idx')
+        animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1['animal_id', 'task_idx']
         self.task_idx = task_idx
 
         # create session key
@@ -109,7 +109,7 @@ class RPLogger(Logger):
     def log_conditions(self, condition_table):
 
         # generate factorial conditions
-        conditions = eval((Task() & dict(task_idx=self.task_idx)).fetch1('conditions'))
+        conditions = eval((Task() & dict(task_idx=self.task_idx)).fetch1['conditions'])
         conditions = sum([list((dict(zip(conds, x)) for x in product(*conds.values()))) for conds in conditions], [])
 
         # iterate through all conditions and insert
@@ -204,11 +204,11 @@ class RPLogger(Logger):
         return in_state
 
     def get_setup_state(self):
-        state = (SetupInfo() & dict(setup=self.setup)).fetch1('state')
+        state = (SetupInfo() & dict(setup=self.setup)).fetch1['state']
         return state
 
     def get_setup_task(self):
-        task = (SetupInfo() & dict(setup=self.setup)).fetch1('task')
+        task = (SetupInfo() & dict(setup=self.setup)).fetch1['task']
         return task
 
     def get_session_key(self):
