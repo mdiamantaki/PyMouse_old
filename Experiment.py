@@ -90,7 +90,7 @@ class MultiProbe(Experiment):
     def pre_trial(self):
         cond = self._get_new_cond('bias')
         self.stim.init_trial(cond)
-        self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
+        self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1['probe']
         self.beh.is_licking()
 
     def trial(self):
@@ -204,7 +204,7 @@ class CenterPort(Experiment):
 
     def pre_trial(self):
         cond = self._get_new_cond('bias')
-        self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
+        self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1['probe']
         is_ready, ready_time = self.beh.is_ready()
         while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
             time.sleep(.1)
