@@ -53,8 +53,7 @@ def calibrate(logger=logg):
     valve = ValveControl(logger)                                    # get valve object
     print('Running calibration')
     pulse = 0
-    beh = Behavior()
-    stim = Stimulus(logger, beh)
+    stim = Stimulus(logger)
     stim.setup()
     font = pygame.font.SysFont("comicsansms", 100)
     while pulse < pulsenum:
