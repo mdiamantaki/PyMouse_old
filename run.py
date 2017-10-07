@@ -1,5 +1,6 @@
 from Logger import *
 from Experiment import *
+from Stimulus import *
 import sys
 
 logg = RPLogger()                                                     # setup logger & timer
