@@ -9,7 +9,7 @@ class Stimulus:
     use function overrides for each stimulus class
     """
 
-    def __init__(self, logger, beh):
+    def __init__(self, logger, beh=False):
         # initilize parameters
         self.logger = logger
         self.beh = beh
