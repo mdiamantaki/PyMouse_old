@@ -4,6 +4,7 @@ from Database import *
 from itertools import product
 from queue import Queue
 import time as systime
+import datetime
 #from threading import Thread
 
 
@@ -150,6 +151,9 @@ class RPLogger(Logger):
         self.last_trial += 1
         self.inserter()
 
+        # insert ping
+        self.ping()
+
     def log_liquid(self, probe):
         timestamp = self.timer.elapsed_time()
         self.queue.put(dict(table=LiquidDelivery(), tuple=dict(self.session_key, time=timestamp, probe=probe)))
@@ -213,6 +217,12 @@ class RPLogger(Logger):
 
     def get_session_key(self):
         return self.session_key
+
+    def ping(self):
+        key = (SetupInfo() & dict(setup=self.setup)).fetch1()
+        (SetupInfo() & dict(setup=self.setup)).delete_quick()
+        key['last_ping'] = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        SetupInfo().insert1(key)
 
 
 class PCLogger(Logger):
