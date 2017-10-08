@@ -196,7 +196,6 @@ class RPLogger(Logger):
         # insert new setup
         key['ip'] = self.ip
         key['state'] = 'ready'
-        key['last_ping'] = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         SetupInfo().insert1(key)
 
     def update_setup_state(self, state):
