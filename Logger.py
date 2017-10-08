@@ -196,6 +196,7 @@ class RPLogger(Logger):
         # insert new setup
         key['ip'] = self.ip
         key['state'] = 'ready'
+        key['last_ping'] = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         SetupInfo().insert1(key)
 
     def update_setup_state(self, state):
@@ -219,8 +220,10 @@ class RPLogger(Logger):
         return self.session_key
 
     def ping(self):
-        key = (SetupInfo() & dict(setup=self.setup)).fetch1()
-        (SetupInfo() & dict(setup=self.setup)).delete_quick()
+        key = dict(setup=self.setup)
+        if numpy.size((SetupInfo() & dict(setup=self.setup)).fetch()):
+            key = (SetupInfo() & dict(setup=self.setup)).fetch1()
+            (SetupInfo() & dict(setup=self.setup)).delete_quick()
         key['last_ping'] = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         SetupInfo().insert1(key)
 
