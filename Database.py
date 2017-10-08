@@ -19,6 +19,7 @@ class SetupInfo(dj.Lookup):
     animal_id=null         : int # animal id
     task_idx=null          : int             # task identification number
     task="train"           : enum('train','calibrate')
+    last_ping=null         : timestamp
     notes=""               : varchar        # notes of state
     """
 
