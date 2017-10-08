@@ -4,6 +4,7 @@ from Database import *
 from itertools import product
 from queue import Queue
 import time as systime
+import datetime
 #from threading import Thread
 
 
@@ -217,22 +218,47 @@ class RPLogger(Logger):
 
 class PCLogger(Logger):
     """ This class handles the database logging for 2P systems"""
+    def init_params(self):
+        self.queue = Queue()
+        self.timer = Timer()
+        self.task_idx = []
+
+    def log_session(self):
+        task_idx = (SetupControl() & dict(setup=self.setup)).fetch1['task_idx']
+        self.task_idx = task_idx
+        # start session time
+        self.timer.start()
 
     def log_setup(self):
         """Log setup information"""
         pass
 
     def update_setup_state(self, state):
-        pass
+        key = (SetupControl() & dict(setup=self.setup)).fetch1()
+        in_state = key['state'] == state
+        if not in_state:
+            key['state'] = state
+            (SetupControl() & dict(setup=self.setup)).delete_quick()
+            SetupControl().insert1(key)
+        return in_state
 
     def get_setup_state(self):
+        state = (SetupControl() & dict(setup=self.setup)).fetch1['state']
+        pass
+
+    def get_setup_state_control(self):
+        state = (SetupControl() & dict(setup=self.setup)).fetch1['state_control']
         pass
 
     def get_setup_task(self):
-        pass
+        task = (SetupControl() & dict(setup=self.setup)).fetch1['task']
+        return task
 
     def ping(self):
-        pass
+        key = (SetupControl() & dict(setup=self.setup)).fetch1()
+        key['last_ping'] = format(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S")
+        (SetupControl() & dict(setup=self.setup)).delete_quick()
+        SetupControl().insert1(key)
 
     def get_scan_key(self):
         pass
