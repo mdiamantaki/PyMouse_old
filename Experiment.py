@@ -189,6 +189,9 @@ class PassiveMatlab(Experiment):
     def get_behavior(self):
         return DummyProbe
 
+    def run(self):
+        return self.logger.get_setup_state == 'stimRunning'
+
 
 class CenterPort(Experiment):
     """2AFC with center init position"""

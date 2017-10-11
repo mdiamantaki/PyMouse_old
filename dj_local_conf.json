@@ -1,8 +1,15 @@
 {
-    "display.limit": 7,
-    "database.reconnect": false,
+    "database.host": "at-database.ad.bcm.edu",
+    "display.show_tuple_count": true,
+    "database.user": "atlab",
     "loglevel": "INFO",
+    "database.port": 3306,
+    "safemode": true,
+    "history": [
+        "No config file found, using default settings."
+    ],
+    "display.limit": 7,
     "display.width": 14,
     "connection.init_function": null,
-    "safemode": true
+    "database.reconnect": false
 }

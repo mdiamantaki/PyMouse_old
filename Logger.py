@@ -17,6 +17,7 @@ class Logger:
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
         self.ip = s.getsockname()[0]
+        print(self.ip)
         self.init_params()
         #self.thread = Thread(target=self.inserter)
         #self.thread.daemon = True
@@ -202,9 +203,7 @@ class RPLogger(Logger):
         key = (SetupInfo() & dict(setup=self.setup)).fetch1()
         in_state = key['state'] == state
         if not in_state:
-            (SetupInfo() & dict(setup=self.setup)).delete_quick()
-            key['state'] = state
-            SetupInfo().insert1(key)
+            (SetupInfo() & dict(setup=self.setup))._update('state',state)
         return in_state
 
     def get_setup_state(self):
@@ -219,12 +218,9 @@ class RPLogger(Logger):
         return self.session_key
 
     def ping(self):
-        key = dict(setup=self.setup)
         if numpy.size((SetupInfo() & dict(setup=self.setup)).fetch()):
-            key = (SetupInfo() & dict(setup=self.setup)).fetch1()
-            (SetupInfo() & dict(setup=self.setup)).delete_quick()
-        key['last_ping'] = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        SetupInfo().insert1(key)
+            lp = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            (SetupInfo() & dict(setup=self.setup))._update('last_ping',lp)
 
 
 class PCLogger(Logger):
@@ -235,7 +231,7 @@ class PCLogger(Logger):
         self.task_idx = []
 
     def log_session(self):
-        task_idx = (SetupControl() & dict(setup=self.setup)).fetch1['task_idx']
+        task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('task_idx')
         self.task_idx = task_idx
         # start session time
         self.timer.start()
@@ -248,28 +244,24 @@ class PCLogger(Logger):
         key = (SetupControl() & dict(setup=self.setup)).fetch1()
         in_state = key['state'] == state
         if not in_state:
-            key['state'] = state
-            (SetupControl() & dict(setup=self.setup)).delete_quick()
-            SetupControl().insert1(key)
+            (SetupControl() & dict(setup=self.setup))._update('state',state)
         return in_state
 
     def get_setup_state(self):
-        state = (SetupControl() & dict(setup=self.setup)).fetch1['state']
-        pass
+        state = (SetupControl() & dict(setup=self.setup)).fetch1('state')
+        return state
 
     def get_setup_state_control(self):
-        state = (SetupControl() & dict(setup=self.setup)).fetch1['state_control']
-        pass
+        state = (SetupControl() & dict(setup=self.setup)).fetch1('state_control')
+        return state
 
     def get_setup_task(self):
-        task = (SetupControl() & dict(setup=self.setup)).fetch1['task']
+        task = (SetupControl() & dict(setup=self.setup)).fetch1('task')
         return task
 
     def ping(self):
-        key = (SetupControl() & dict(setup=self.setup)).fetch1()
-        key['last_ping'] = format(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S")
-        (SetupControl() & dict(setup=self.setup)).delete_quick()
-        SetupControl().insert1(key)
+        lp = format(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S")
+        (SetupControl() & dict(setup=self.setup))._update('last_ping',lp)
 
     def get_scan_key(self):
         pass
