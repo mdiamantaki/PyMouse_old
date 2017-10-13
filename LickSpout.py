@@ -18,7 +18,7 @@ if util.find_spec('RPi'):
     #                'liquid': {1: 4,  2: 3},
     #                'lick':   {1: 2,  2: 5}}
     if 3000 < setup < 3100:
-        GPIO.setup([17, 27, 2], GPIO.IN)
+        GPIO.setup([17, 27, 9], GPIO.IN)
         GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
         channels = {'odor': {1: 24, 2: 25},
                     'liquid': {1: 22, 2: 23},
