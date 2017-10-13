@@ -76,7 +76,6 @@ class Licker:
         # handle missed events
         ready = GPIO.input(channels['start'][1])
         if self.ready != ready:
-            print('In position')
             self.position_change(channels['start'][1])
 
         return self.ready, self.timer_ready.elapsed_time()
@@ -132,7 +131,7 @@ class ValveControl:
         probes = (LiquidCalibration() & dict(setup=self.logger.setup)).fetch['probe']
         for probe in list(set(probes)):
             key = dict(setup=self.logger.setup, probe=probe)
-            dates = (LiquidCalibration() & key).fetch.order_by('date')['date']
+            dates = (LiquidCalibration() & key).fetch('date', order_by='date')
             key['date'] = dates[-1]  # use the most recent calibration
             pulse_dur, pulse_num, weight = (LiquidCalibration.PulseWeight() & key).fetch['pulse_dur',
                                                                                          'pulse_num',
