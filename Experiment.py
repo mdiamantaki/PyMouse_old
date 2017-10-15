@@ -211,13 +211,19 @@ class CenterPort(Experiment):
             time.sleep(.1)
             is_ready, ready_time = self.beh.is_ready()
 
-        print('Starting trial!')
-        self.stim.init_trial(cond)
-        self.beh.is_licking()
+        if self.logger.get_setup_state() == 'running':
+            print('Starting trial!')
+            self.stim.init_trial(cond)
+            self.beh.is_licking()
 
     def trial(self):
+
+        if self.logger.get_setup_state() != 'running':
+            return True
+
         self.stim.present_trial()  # Start Stimulus
         probe = self.beh.is_licking()
+
         if probe > 0:
             self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
             if self.reward_probe == probe:
