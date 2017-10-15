@@ -62,6 +62,10 @@ class Logger:
     def get_session_key(self):
         return self.session_key
 
+    def ping(self):
+        """update timestamp"""
+        pass
+
     def inserter(self):  # insert worker, in case we need threading
         while not self.queue.empty():
             item = self.queue.get()

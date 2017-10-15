@@ -125,6 +125,7 @@ class MultiProbe(Experiment):
             self.logger.update_setup_state('sleeping')
             self.stim.unshow([0, 0, 0])
             while not self.beh.is_licking() and self.logger.get_setup_state() == 'sleeping':
+                self.logger.ping()
                 time.sleep(1)
             self.stim.unshow()
             if self.logger.get_setup_state() == 'sleeping':

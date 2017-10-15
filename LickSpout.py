@@ -23,7 +23,7 @@ if util.find_spec('RPi'):
         channels = {'odor': {1: 24, 2: 25},
                     'liquid': {1: 22, 2: 23},
                     'lick': {1: 17, 2: 27},
-                    'start': {1: 9}}
+                    'start': {1: 9}}  # 2
     else:
         GPIO.setup([17, 27], GPIO.IN)
         GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
@@ -98,6 +98,7 @@ class Licker:
         GPIO.remove_event_detect(channels['lick'][2])
         if 3000 < setup < 3100:
             GPIO.remove_event_detect(channels['start'][1])
+        GPIO.cleanup()
 
 
 class ValveControl:
