@@ -259,11 +259,26 @@ class PCLogger(Logger):
         task = (SetupControl() & dict(setup=self.setup)).fetch1('task')
         return task
 
+    def get_stimulus(self):
+        task = (SetupControl() & dict(setup=self.setup)).fetch1('stimulus')
+        return task
+
+    def get_experimenter(self):
+        task = (SetupControl() & dict(setup=self.setup)).fetch1('experimenter')
+        return task
+
+    def setup_experiment_schema(self):
+        self.experiment = dj.create_virtual_module('experiment', 'pipeline_experiment')
+
     def ping(self):
         lp = format(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S")
         (SetupControl() & dict(setup=self.setup))._update('last_ping',lp)
 
     def get_scan_key(self):
-        pass
+        animal_id = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id')
+        session = (SetupControl() & dict(setup=self.setup)).fetch1('session')
+        scan_idx = (SetupControl() & dict(setup=self.setup)).fetch1('scan_idx')
+        return dict(animal_id=animal_id, session=session, scan_idx=scan_idx)
 
-
+    def get_protocol_file(self):
+        return self.experiment() & dict(vis_protocol=self.get_stimulus(),username=self.get_experimenter()).fetch1(vis_filename)

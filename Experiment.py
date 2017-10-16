@@ -173,7 +173,7 @@ class PassiveMatlab(Experiment):
     """ this class handles the response to the licks
     """
     def __init__(self, logger, timer, params):
-        self.stim = eval(params['stim_type'])(logger)
+        self.stim = eval(params['stim_type'])(logger, self.get_behavior())
         super(PassiveMatlab, self).__init__(logger, timer, params)
 
     def prepare(self):
