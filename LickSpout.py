@@ -18,12 +18,12 @@ if util.find_spec('RPi'):
     #                'liquid': {1: 4,  2: 3},
     #                'lick':   {1: 2,  2: 5}}
     if 3000 < setup < 3100:
-        GPIO.setup([17, 27, 2], GPIO.IN)
+        GPIO.setup([17, 27, 9], GPIO.IN)
         GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
         channels = {'odor': {1: 24, 2: 25},
                     'liquid': {1: 22, 2: 23},
                     'lick': {1: 17, 2: 27},
-                    'start': {1: 2}}
+                    'start': {1: 9}}  # 2
     else:
         GPIO.setup([17, 27], GPIO.IN)
         GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
@@ -84,9 +84,11 @@ class Licker:
         if self.probe1:
             self.probe1 = False
             probe = 1
+            print('Probe 1 activated')
         elif self.probe2:
             self.probe2 = False
             probe = 2
+            print('Probe 2 activated')
         else:
             probe = 0
         return probe
@@ -96,6 +98,7 @@ class Licker:
         GPIO.remove_event_detect(channels['lick'][2])
         if 3000 < setup < 3100:
             GPIO.remove_event_detect(channels['start'][1])
+        GPIO.cleanup()
 
 
 class ValveControl:
@@ -129,7 +132,7 @@ class ValveControl:
         probes = (LiquidCalibration() & dict(setup=self.logger.setup)).fetch['probe']
         for probe in list(set(probes)):
             key = dict(setup=self.logger.setup, probe=probe)
-            dates = (LiquidCalibration() & key).fetch.order_by('date')['date']
+            dates = (LiquidCalibration() & key).fetch('date', order_by='date')
             key['date'] = dates[-1]  # use the most recent calibration
             pulse_dur, pulse_num, weight = (LiquidCalibration.PulseWeight() & key).fetch['pulse_dur',
                                                                                          'pulse_num',
