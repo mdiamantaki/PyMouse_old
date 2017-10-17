@@ -10,6 +10,7 @@ class ExpControl:
         self.params = None
         self.exprmt = None
         self.logger = logger
+        self.logger.setup_experiment_schema()
 
     def do_run_trial(self):
         self.exprmt.pre_trial()
@@ -32,8 +33,8 @@ class ExpControl:
     def do_initialize(self):
         """Initialize the stimulation software"""
         if not self.logger.get_setup_state() == 'systemReady':
-            self.logger.setup_experiment_schema()
             self.logger.update_setup_state('systemReady')
+
 
     def do_start_session(self):
         """start stimulation session"""
@@ -49,11 +50,9 @@ class ExpControl:
         self.exprmt.prepare()  # prepare stuff
         self.logger.update_setup_state('stimRunning')
         while self.logger.get_setup_state_control() == 'startStim':
-            if self.exprmt.run():
+                self.exprmt.run() # will not return until trial is displayed
                 self.logger.ping()
                 self.do_run_trial()
-            else:
-                time.sleep(0.1)
 
     def do_stop_stim(self):
         # # # # # Cleanup # # # # #

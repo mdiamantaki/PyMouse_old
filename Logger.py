@@ -233,6 +233,7 @@ class PCLogger(Logger):
         self.queue = Queue()
         self.timer = Timer()
         self.task_idx = []
+        self.last_time = datetime.datetime.now()
 
     def log_session(self):
         task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('task_idx')
@@ -273,10 +274,14 @@ class PCLogger(Logger):
 
     def setup_experiment_schema(self):
         self.experiment = dj.create_virtual_module('experiment', 'pipeline_experiment')
+        print(self.experiment)
 
     def ping(self):
-        lp = format(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S")
-        (SetupControl() & dict(setup=self.setup))._update('last_ping',lp)
+        nw = datetime.datetime.now()
+        if nw-self.last_time>1:
+            lp = format(nw,"%Y-%m-%d %H:%M:%S")
+            (SetupControl() & dict(setup=self.setup))._update('last_ping',lp)
+            self.last_time = nw
 
     def get_scan_key(self):
         animal_id = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id')
@@ -285,4 +290,6 @@ class PCLogger(Logger):
         return dict(animal_id=animal_id, session=session, scan_idx=scan_idx)
 
     def get_protocol_file(self):
-        return self.experiment() & dict(vis_protocol=self.get_stimulus(),username=self.get_experimenter()).fetch1(vis_filename)
+        protocol_table=self.experiment.VisProtocol()
+        tp = protocol_table & dict(vis_protocol=self.get_stimulus(),username=self.get_experimenter())
+        return tp.fetch1('vis_filename')

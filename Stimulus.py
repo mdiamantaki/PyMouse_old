@@ -243,7 +243,9 @@ class Psychtoolbox(Stimulus):
         self.mat.stimulus.open(nargout=0)
 
     def prepare(self):
-        eval('self.mat.stimulus.conf'+self.logger.get_stim)(nargout=0)
+        protocol_file = self.logger.get_protocol_file()
+        print(protocol_file)
+        self.mat.stimulus.run_protocol(protocol_file, nargout=0)
         self.mat.stimulus.prepare(self.logger.get_scan_key(), nargout=0)
         #elf.mat.stimulus.prepare(self.logger.session_key, nargout=0)
 
