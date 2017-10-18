@@ -257,6 +257,9 @@ class Psychtoolbox(Stimulus):
         self.trial.cancel()
         self.isrunning = False
 
+    def stimulus_done(self):
+        return(self.mat.stimulus.stimulus_done())
+
     def close(self):
         self.mat.stimulus.close(nargout=0)
 

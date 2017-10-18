@@ -48,11 +48,14 @@ class ExpControl:
         self.timer = Timer()  # main timer for trials
         self.exprmt = eval(self.params['exp_type'])(self.logger, self.timer, self.params)  # get experiment & init
         self.exprmt.prepare()  # prepare stuff
+        print(self.exprmt.run())
         self.logger.update_setup_state('stimRunning')
-        while self.logger.get_setup_state_control() == 'startStim':
-                self.exprmt.run() # will not return until trial is displayed
+        while self.logger.get_setup_state_control() == 'startStim' and self.exprmt.run():
+                print(self.exprmt.run())
                 self.logger.ping()
                 self.do_run_trial()
+        if not self.exprmt.run():
+            self.do_stop_stim()
 
     def do_stop_stim(self):
         # # # # # Cleanup # # # # #
