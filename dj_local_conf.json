@@ -1,6 +1,6 @@
 {
     "display.limit": 7,
-    "database.reconnect": false,
+    "database.reconnect": true,
     "loglevel": "INFO",
     "display.width": 14,
     "connection.init_function": null,
