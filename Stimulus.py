@@ -251,7 +251,7 @@ class Psychtoolbox(Stimulus):
 
     def init_trial(self):
         self.isrunning = True
-        self.trial = self.mat.stimulus.run(nargout=0, async=True)
+        self.trial = self.mat.stimulus.remote_run(nargout=0, async=True)
 
     def stop_trial(self):
         self.trial.cancel()
