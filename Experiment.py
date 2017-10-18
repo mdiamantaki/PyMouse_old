@@ -193,6 +193,11 @@ class PassiveMatlab(Experiment):
     def run(self):
         return self.logger.get_setup_state == 'stimRunning'
 
+    def cleanup(self):
+        super(PassiveMatlab, self).cleanup()
+        set.stim.cleanup()
+        set.stim.close()
+
 
 class CenterPort(Experiment):
     """2AFC with center init position"""

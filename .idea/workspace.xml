@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="44e97e84-5a64-4ec9-935b-8647bc869b82" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ExpControl.py" afterPath="$PROJECT_DIR$/ExpControl.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Logger.py" afterPath="$PROJECT_DIR$/Logger.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Experiment.py" afterPath="$PROJECT_DIR$/Experiment.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/Stimulus.py" afterPath="$PROJECT_DIR$/Stimulus.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -31,8 +30,8 @@
       <file leaf-file-name="ExpControl.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/ExpControl.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="107">
-              <caret line="52" column="36" lean-forward="false" selection-start-line="52" selection-start-column="36" selection-end-line="52" selection-end-column="36" />
+            <state relative-caret-position="233">
+              <caret line="65" column="0" lean-forward="true" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
               <folding>
                 <element signature="e#1#21#0" expanded="true" />
               </folding>
@@ -43,8 +42,8 @@
       <file leaf-file-name="Stimulus.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Stimulus.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="233">
-              <caret line="241" column="20" lean-forward="true" selection-start-line="241" selection-start-column="20" selection-end-line="241" selection-end-column="20" />
+            <state relative-caret-position="215">
+              <caret line="264" column="0" lean-forward="false" selection-start-line="264" selection-start-column="0" selection-end-line="264" selection-end-column="0" />
               <folding>
                 <element signature="e#0#27#0" expanded="true" />
               </folding>
@@ -62,7 +61,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Logger.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Logger.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/Logger.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="377">
@@ -86,11 +85,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Experiment.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Experiment.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/Experiment.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="3258">
-              <caret line="183" column="24" lean-forward="false" selection-start-line="183" selection-start-column="24" selection-end-line="183" selection-end-column="24" />
+            <state relative-caret-position="107">
+              <caret line="201" column="29" lean-forward="true" selection-start-line="201" selection-start-column="29" selection-end-line="201" selection-end-column="29" />
               <folding>
                 <element signature="e#0#22#0" expanded="true" />
               </folding>
@@ -108,19 +107,19 @@
       <list>
         <option value="$PROJECT_DIR$/Database.py" />
         <option value="$PROJECT_DIR$/runExp.py" />
-        <option value="$PROJECT_DIR$/Experiment.py" />
         <option value="$PROJECT_DIR$/../cajal/stimuli/matlab/+stimulus/+core/prepare.m" />
         <option value="$PROJECT_DIR$/../cajal/stimuli/matlab/+stimulus/run.m" />
         <option value="$PROJECT_DIR$/../cajal/stimuli/matlab/+stimulus/+core/Control.m" />
-        <option value="$PROJECT_DIR$/Stimulus.py" />
-        <option value="$PROJECT_DIR$/ExpControl.py" />
         <option value="$PROJECT_DIR$/Logger.py" />
+        <option value="$PROJECT_DIR$/ExpControl.py" />
+        <option value="$PROJECT_DIR$/Stimulus.py" />
+        <option value="$PROJECT_DIR$/Experiment.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds">
-    <option name="x" value="109" />
-    <option name="y" value="56" />
+    <option name="x" value="112" />
+    <option name="y" value="52" />
     <option name="width" value="1701" />
     <option name="height" value="566" />
   </component>
@@ -217,7 +216,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="109" y="56" width="1701" height="566" extended-state="0" />
+    <frame x="112" y="52" width="1701" height="566" extended-state="0" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.27219284" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -654,16 +653,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Experiment.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3258">
-          <caret line="183" column="24" lean-forward="false" selection-start-line="183" selection-start-column="24" selection-end-line="183" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#22#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../cajal/stimuli/matlab/+stimulus/+core/prepare.m" />
     <entry file="file://$PROJECT_DIR$/../cajal/stimuli/matlab/+stimulus/run.m">
       <provider selected="true" editor-type-id="text-editor">
@@ -689,32 +678,42 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/Stimulus.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="233">
-          <caret line="241" column="20" lean-forward="true" selection-start-line="241" selection-start-column="20" selection-end-line="241" selection-end-column="20" />
-          <folding>
-            <element signature="e#0#27#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/ExpControl.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="107">
-          <caret line="52" column="36" lean-forward="false" selection-start-line="52" selection-start-column="36" selection-end-line="52" selection-end-column="36" />
-          <folding>
-            <element signature="e#1#21#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/Logger.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="377">
           <caret line="285" column="27" lean-forward="true" selection-start-line="285" selection-start-column="27" selection-end-line="285" selection-end-column="27" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/ExpControl.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="233">
+          <caret line="65" column="0" lean-forward="true" selection-start-line="65" selection-start-column="0" selection-end-line="65" selection-end-column="0" />
+          <folding>
+            <element signature="e#1#21#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Stimulus.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="215">
+          <caret line="264" column="0" lean-forward="false" selection-start-line="264" selection-start-column="0" selection-end-line="264" selection-end-column="0" />
+          <folding>
+            <element signature="e#0#27#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/Experiment.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="107">
+          <caret line="201" column="29" lean-forward="true" selection-start-line="201" selection-start-column="29" selection-end-line="201" selection-end-column="29" />
+          <folding>
+            <element signature="e#0#22#0" expanded="true" />
           </folding>
         </state>
       </provider>

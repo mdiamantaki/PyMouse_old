@@ -260,6 +260,9 @@ class Psychtoolbox(Stimulus):
     def close(self):
         self.mat.stimulus.close(nargout=0)
 
+    def cleanup(self):
+        self.mat.stimulus.cleanup(nargout=0)
+
 
 class Odors(Stimulus):
     """ This class handles the presentation of Odors"""
