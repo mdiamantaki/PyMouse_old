@@ -34,6 +34,12 @@ class ExpControl:
     def do_initialize(self):
         """Initialize the stimulation software"""
         if not self.logger.get_setup_state() == 'systemReady':
+            if self.logger.get_setup_state() == 'sessionRunning':
+                self.do_stop_session()
+            elif self.logger.get_setup_state() == 'stimRunning':
+                self.do_stop_stim()
+            else:
+                pass
             self.logger.update_setup_state('systemReady')
 
 
