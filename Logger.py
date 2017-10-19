@@ -233,7 +233,7 @@ class PCLogger(Logger):
         self.queue = Queue()
         self.timer = Timer()
         self.task_idx = []
-        self.last_time = datetime.datetime.now()
+        self.last_time = systime.time()
 
     def log_session(self):
         task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('task_idx')
@@ -277,9 +277,9 @@ class PCLogger(Logger):
         print(self.experiment)
 
     def ping(self):
-        nw = datetime.datetime.now()
+        nw = systime.time()
         if nw-self.last_time>1:
-            lp = format(nw,"%Y-%m-%d %H:%M:%S")
+            lp = format(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S")
             (SetupControl() & dict(setup=self.setup))._update('last_ping',lp)
             self.last_time = nw
 

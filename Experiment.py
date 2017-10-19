@@ -191,7 +191,7 @@ class PassiveMatlab(Experiment):
         return DummyProbe
 
     def run(self):
-        return self.logger.get_setup_state == 'stimRunning'
+        return self.logger.get_setup_state() == 'stimRunning' and not self.stim.stimulus_done()
 
     def cleanup(self):
         super(PassiveMatlab, self).cleanup()
