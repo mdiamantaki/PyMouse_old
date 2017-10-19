@@ -250,7 +250,6 @@ class PCLogger(Logger):
         in_state = key['state'] == state
         if not in_state:
             (SetupControl() & dict(setup=self.setup))._update('state',state)
-        return in_state
 
     def get_setup_state(self):
         state = (SetupControl() & dict(setup=self.setup)).fetch1('state')
@@ -274,7 +273,6 @@ class PCLogger(Logger):
 
     def setup_experiment_schema(self):
         self.experiment = dj.create_virtual_module('experiment', 'pipeline_experiment')
-        print(self.experiment)
 
     def ping(self):
         nw = systime.time()
@@ -293,3 +291,6 @@ class PCLogger(Logger):
         protocol_table=self.experiment.VisProtocol()
         tp = protocol_table & dict(vis_protocol=self.get_stimulus(),username=self.get_experimenter())
         return tp.fetch1('vis_filename')
+
+    def update_next_trial(self, next_trial):
+        (SetupControl() & dict(setup=self.setup))._update('next_trial',next_trial)

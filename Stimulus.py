@@ -247,11 +247,14 @@ class Psychtoolbox(Stimulus):
         print(protocol_file)
         self.mat.stimulus.run_protocol(protocol_file, nargout=0)
         self.mat.stimulus.prepare(self.logger.get_scan_key(), nargout=0)
-        #elf.mat.stimulus.prepare(self.logger.session_key, nargout=0)
+        next_trial = self.mat.stimulus.get_next_trial()
+        self.logger.update_next_trial(next_trial)
 
     def init_trial(self):
         self.isrunning = True
         self.trial = self.mat.stimulus.remote_run(nargout=0, async=True)
+        next_trial = self.mat.stimulus.get_next_trial()
+        self.logger.update_next_trial(next_trial)
 
     def stop_trial(self):
         self.trial.cancel()

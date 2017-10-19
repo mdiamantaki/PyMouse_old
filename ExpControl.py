@@ -55,7 +55,8 @@ class ExpControl:
             while self.logger.get_setup_state_control() == 'startStim' and self.exprmt.run():
                 self.logger.ping()
                 self.do_run_trial()
-            self.do_stop_stim()
+            if not self.exprmt.run():  # stop if trials ended
+                self.do_stop_stim()
 
     def do_stop_stim(self):
         # # # # # Cleanup # # # # #
