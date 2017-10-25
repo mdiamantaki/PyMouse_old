@@ -7,7 +7,6 @@ logger.log_setup()                                                    # publish 
 ec = ExpControl(logger)
 
 # # # # Waiting for instructions loop # # # # #
-ec.do_initialize()  # initialize
 systime.sleep(3)  # wait for 2pmaster to establish db connection and initialize
 while True:
 

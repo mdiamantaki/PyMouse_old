@@ -12,6 +12,7 @@ class ExpControl:
         self.logger = logger
         self.logger.setup_experiment_schema()
         self.prev_command = None
+        self.logger.update_setup_state('systemReady')
 
     def do_run_trial(self):
         self.exprmt.pre_trial()
@@ -49,13 +50,13 @@ class ExpControl:
             self.logger.init_params()  # clear settings from previous session
             self.logger.log_session()  # start session
             self.logger.update_setup_state('sessionRunning')
+            self.params = (Task() & dict(task_idx=self.logger.task_idx)).fetch1()  # get parameters
+            self.timer = Timer()  # main timer for trials
+            self.exprmt = eval(self.params['exp_type'])(self.logger, self.timer, self.params)  # get experiment & init
 
     def do_start_stim(self):
         """start stimulation trials"""
         if not self.logger.get_setup_state() == 'stimRunning':
-            self.params = (Task() & dict(task_idx=self.logger.task_idx)).fetch1()  # get parameters
-            self.timer = Timer()  # main timer for trials
-            self.exprmt = eval(self.params['exp_type'])(self.logger, self.timer, self.params)  # get experiment & init
             self.exprmt.prepare()  # open stimulus window and prepare the protocol
             self.logger.update_setup_state('stimRunning')
             while self.logger.get_setup_state_control() == 'startStim' and self.exprmt.run():
