@@ -236,6 +236,8 @@ class Psychtoolbox(Stimulus):
     def __init__(self, logger, beh):
         import matlab.engine as eng
         self.mat = eng.start_matlab()
+        self.mat.run('/home/atlab/pipeline/setPath.m', nargout=0)
+        self.mat.run('/home/atlab/pipeline/setDJ.m', nargout=0)
         self.trial = []
         super(Psychtoolbox, self).__init__(logger, beh)
 
