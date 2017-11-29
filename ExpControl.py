@@ -19,7 +19,8 @@ class ExpControl:
 
         # # # # # Trial period # # # # #
         self.timer.start()  # Start countdown for response]
-        while self.timer.elapsed_time() < self.params['trial_duration'] * 1000:  # response period
+        while self.timer.elapsed_time() < self.params['trial_duration'] * 1000 and \
+                        self.logger.get_setup_state_control() == 'startStim' and self.exprmt.run():  # response period
             break_trial = self.exprmt.trial()  # get appropriate response
             if break_trial:
                 break  # break if experiment calls for it
