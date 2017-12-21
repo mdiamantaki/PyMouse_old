@@ -11,5 +11,5 @@
     "display.limit": 7,
     "display.width": 14,
     "connection.init_function": null,
-    "database.reconnect": false
+    "database.reconnect": true
 }

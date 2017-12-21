@@ -5,6 +5,9 @@ import sys
 
 logg = RPLogger()                                                     # setup logger & timer
 logg.log_setup()                                                    # publish IP and make setup available
+stim = Stimulus(logg)
+stim.setup()
+stim.unshow([0, 0, 0])
 
 
 def train(logger=logg):
