@@ -26,6 +26,7 @@ class Probe:
     def give_liquid(self, probe, duration=False, log=True):
         if not duration:
             duration = self.liquid_dur[probe]
+        self.liquid_pulse()
         self.thread.submit(self.__pulse_out, self.channels['liquid'][probe], duration)
         if log:
             self.logger.log_liquid(probe)
@@ -61,7 +62,7 @@ class Probe:
 
 
     def position_change(self, channel):
-        if self.get_input(channel):
+        if self.self.is_ready():
             self.timer_ready.start()
             self.ready = True
             print('in position')
@@ -71,9 +72,9 @@ class Probe:
 
     def in_position(self):
         # handle missed events
-        ready = self.get_input(self.channels['start'][1])
+        ready = self.is_ready()
         if self.ready != ready:
-            self.position_change(self.channels['start'][1])
+            self.position_change()
 
         return self.ready, self.timer_ready.elapsed_time()
 
@@ -117,8 +118,8 @@ class RPProbe(Probe):
         if 3000 < setup < 3100:
             GPIO.add_event_detect(self.channels['start'][1], GPIO.BOTH, callback=self.position_change)
 
-    def get_input(self, channel):
-        return GPIO.input(channel)
+    def is_ready(self):
+        return GPIO.input(self.channels['start'][1])
 
     def __pulse_out(self, channel, duration):
         GPIO.output(channel, GPIO.HIGH)
