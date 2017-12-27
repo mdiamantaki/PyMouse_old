@@ -9,6 +9,7 @@ class Timer:
     def __init__(self):
         self.start_time = 0
         self.time = time
+        self.start()
 
     def start(self):
         self.start_time = self.time()

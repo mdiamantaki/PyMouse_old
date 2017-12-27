@@ -14,7 +14,7 @@ class Behavior:
     def is_licking(self):
         return False
 
-    def is_running(self):
+    def in_position(self):
         return False
 
     def is_ready(self):
@@ -39,8 +39,8 @@ class Behavior:
 class RPBehavior(Behavior):
     """ This class handles the behavior variables for RP """
     def __init__(self, logger, params):
-        self.licker = Licker(logger)
-        self.valves = ValveControl(logger)
+        self.licker = RPLicker(logger)
+        self.valves = RPValveControl(logger)
         super(RPBehavior, self).__init__(logger, params)
 
     def is_licking(self):
@@ -49,7 +49,7 @@ class RPBehavior(Behavior):
             probe = 0
         return probe
 
-    def is_ready(self):
+    def in_position(self):
         ready, ready_time = self.licker.is_ready()
         return ready, ready_time
 
@@ -79,7 +79,7 @@ class DummyProbe(Behavior):
         self.ready = False
         super(DummyProbe, self).__init__(logger, params)
 
-    def is_licking(self):
+    def in_position(self):
         probe = self.__get_events()
         return probe
 
