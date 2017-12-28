@@ -4,9 +4,9 @@ import numpy, socket
 from Timer import *
 from concurrent.futures import ThreadPoolExecutor
 from importlib import util
+from ThreadWorker import GetHWPoller
 import serial
 import sys
-import threading
 
 class Probe:
     def __init__(self, logger):
@@ -19,23 +19,13 @@ class Probe:
         self.timer_ready = Timer()
 
     def give_air(self, probe, duration, log=True):
-        self.thread.submit(self.__pulse_out, self.channels['air'][probe], duration)
-        if log:
-            self.logger.log_air(probe)
+        pass
 
     def give_liquid(self, probe, duration=False, log=True):
-        if not duration:
-            duration = self.liquid_dur[probe]
-        self.liquid_pulse()
-        self.thread.submit(self.__pulse_out, self.channels['liquid'][probe], duration)
-        if log:
-            self.logger.log_liquid(probe)
+        pass
 
     def give_odor(self, odor_idx, duration, log=True):
-        print('Odor %1d presentation for %d' % (odor_idx, duration))
-        self.thread.submit(self.__pulse_out, self.channels['odor'][odor_idx], duration)
-        if log:
-            self.logger.log_odor(odor_idx)
+        pass
 
     def lick(self):
         if self.probe1:
@@ -60,29 +50,8 @@ class Probe:
         self.timer_probe2.start()
         self.logger.log_lick(2)
 
-
-    def position_change(self, channel):
-        if self.self.is_ready():
-            self.timer_ready.start()
-            self.ready = True
-            print('in position')
-        else:
-            self.ready = False
-            print('off position')
-
     def in_position(self):
-        # handle missed events
-        ready = self.is_ready()
-        if self.ready != ready:
-            self.position_change()
-
-        return self.ready, self.timer_ready.elapsed_time()
-
-    def get_input(self, channel):
-        return True
-
-    def __pulse_out(self, channel, duration):
-        pass
+        return True, 0
 
     def __calc_pulse_dur(self, reward_amount):  # calculate pulse duration for the desired reward amount
         self.liquid_dur = dict()
@@ -101,6 +70,7 @@ class Probe:
     def cleanup(self):
         pass
 
+
 class RPProbe(Probe):
     def __init__(self, logger):
         super(RPProbe, self).__init__(logger)
@@ -118,8 +88,39 @@ class RPProbe(Probe):
         if 3000 < setup < 3100:
             GPIO.add_event_detect(self.channels['start'][1], GPIO.BOTH, callback=self.position_change)
 
-    def is_ready(self):
-        return GPIO.input(self.channels['start'][1])
+    def give_air(self, probe, duration, log=True):
+        self.thread.submit(self.__pulse_out, self.channels['air'][probe], duration)
+        if log:
+            self.logger.log_air(probe)
+
+    def give_liquid(self, probe, duration=False, log=True):
+        if not duration:
+            duration = self.liquid_dur[probe]
+        self.thread.submit(self.__pulse_out, self.channels['liquid'][probe], duration)
+        if log:
+            self.logger.log_liquid(probe)
+
+    def give_odor(self, odor_idx, duration, log=True):
+        print('Odor %1d presentation for %d' % (odor_idx, duration))
+        self.thread.submit(self.__pulse_out, self.channels['odor'][odor_idx], duration)
+        if log:
+            self.logger.log_odor(odor_idx)
+
+    def position_change(self, channel):
+        if self.self.is_ready():
+            self.timer_ready.start()
+            self.ready = True
+            print('in position')
+        else:
+            self.ready = False
+            print('off position')
+
+    def in_position(self):
+        # handle missed events
+        ready = GPIO.input(self.channels['start'][1])
+        if self.ready != ready:
+            self.position_change()
+        return self.ready, self.timer_ready.elapsed_time()
 
     def __pulse_out(self, channel, duration):
         GPIO.output(channel, GPIO.HIGH)
@@ -134,46 +135,41 @@ class RPProbe(Probe):
         GPIO.cleanup()
 
 
-class SerialProbe:
+class SerialProbe(Probe):
     def __init__(self, logger):
-        self.port = serial.serial_for_url('/dev/cu.UC-232AC')
-        super(RPProbe, self).__init__(logger)
+        self.serial = serial.serial_for_url('/dev/cu.UC-232AC')
+        super(SerialProbe, self).__init__(logger)
+        self.worker = GetHWPoller(0.001, self.poll_probe)
+        self.interlock = False  # set to prohibit thread from accessing serial port
+        self.worker.start()
 
-    class GetHWPoller(threading.Thread):
-        """ thread to repeatedly poll hardware
-        sleeptime: time to sleep between pollfunc calls
-        pollfunc: function to repeatedly call to poll hardware"""
+    def give_liquid(self, probe, duration=False, log=True):
+        if not duration:
+            duration = self.liquid_dur[probe]
+        self.thread.submit(self.__pulse_out, duration)
+        if log:
+            self.logger.log_liquid(probe)
 
-        def __init__(self, sleeptime, pollfunc):
+    def poll_probe(self):
+        if self.interlock:
+            return "interlock"  # someone else is using serial port, wait till done!
+        self.interlock = True  # set interlock so we won't be interrupted
+        response = self.serial.dsr  # read a byte from the hardware
+        self.interlock = False
+        if response:
+            self.probe1_licked()
 
-            self.sleeptime = sleeptime
-            self.pollfunc = pollfunc
-            threading.Thread.__init__(self)
-            self.runflag = threading.Event()  # clear this to pause thread
-            self.runflag.clear()
-
-        def run(self):
-            self.runflag.set()
-            self.worker()
-
-        def worker(self):
-            while True:
-                if self.runflag.is_set():
-                    self.pollfunc()
-                    time.sleep(self.sleeptime)
-                else:
-                    time.sleep(0.01)
-
-        def pause(self):
-            self.runflag.clear()
-
-        def resume(self):
-            self.runflag.set()
-
-        def running(self):
-            return (self.runflag.is_set())
-
-        def kill(self):
-            print("WORKER END")
+    def __pulse_out(self, duration):
+        while self.interlock:  # busy, wait for free, should timout here
+            print("waiting for interlock")
             sys.stdout.flush()
-            self._Thread__stop()
+        self.interlock = True
+        self.serial.dtr = True
+        sleep(duration/1000)
+        self.serial.dtr = False
+        self.interlock = False
+
+    def cleanup(self):
+        self.worker.kill()
+
+

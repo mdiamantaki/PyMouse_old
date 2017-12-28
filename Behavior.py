@@ -14,9 +14,6 @@ class Behavior:
     def is_licking(self):
         return False
 
-    def in_position(self):
-        return False
-
     def is_ready(self):
         return False, 0
 
@@ -49,8 +46,8 @@ class RPBehavior(Behavior):
             probe = 0
         return probe
 
-    def in_position(self):
-        ready, ready_time = self.licker.is_ready()
+    def is_ready(self):
+        ready, ready_time = self.licker.in_position()
         return ready, ready_time
 
     def water_reward(self, probe):
@@ -78,10 +75,6 @@ class DummyProbe(Behavior):
         self.ready_timer.start()
         self.ready = False
         super(DummyProbe, self).__init__(logger, params)
-
-    def in_position(self):
-        probe = self.__get_events()
-        return probe
 
     def is_ready(self):
         self.__get_events()
