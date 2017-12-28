@@ -8,6 +8,7 @@ from ThreadWorker import GetHWPoller
 import serial
 import sys
 
+
 class Probe:
     def __init__(self, logger):
         self.logger = logger

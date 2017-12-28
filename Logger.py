@@ -234,6 +234,7 @@ class PCLogger(Logger):
         self.timer = Timer()
         self.task_idx = []
         self.last_time = systime.time()
+        self.trial_idx = []
 
     def log_session(self):
         task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('task_idx')
@@ -276,7 +277,7 @@ class PCLogger(Logger):
 
     def ping(self):
         nw = systime.time()
-        if nw-self.last_time>1:
+        if nw-self.last_time > 1:
             lp = format(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S")
             (SetupControl() & dict(setup=self.setup))._update('last_ping',lp)
             self.last_time = nw
@@ -287,6 +288,12 @@ class PCLogger(Logger):
         scan_idx = (SetupControl() & dict(setup=self.setup)).fetch1('scan_idx')
         return dict(animal_id=animal_id, session=session, scan_idx=scan_idx)
 
+    def get_trial_key(self):
+        animal_id = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id')
+        session = (SetupControl() & dict(setup=self.setup)).fetch1('session')
+        scan_idx = (SetupControl() & dict(setup=self.setup)).fetch1('scan_idx')
+        return dict(animal_id=animal_id, session=session, scan_idx=scan_idx, trial_idx=self.trial_idx)
+
     def get_protocol_file(self):
         protocol_table=self.experiment.VisProtocol()
         tp = protocol_table & dict(vis_protocol=self.get_stimulus(),username=self.get_experimenter())
@@ -294,3 +301,4 @@ class PCLogger(Logger):
 
     def update_next_trial(self, next_trial):
         (SetupControl() & dict(setup=self.setup))._update('next_trial',next_trial)
+        self.trial_idx = next_trial

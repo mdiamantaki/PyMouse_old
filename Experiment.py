@@ -171,7 +171,7 @@ class ProbeTest(Experiment):
 
 
 class PassiveMatlab(Experiment):
-    """ this class handles the response to the licks
+    """ Passive Matlab stimulation
     """
     def __init__(self, logger, timer, params):
         self.stim = eval(params['stim_type'])(logger, self.get_behavior())
@@ -199,6 +199,45 @@ class PassiveMatlab(Experiment):
         self.stim.close()
 
 
+class ActiveMatlab(Experiment):
+    """ Rewarded conditions with Matlab
+    """
+    def __init__(self, logger, timer, params):
+        self.stim = eval(params['stim_type'])(logger, self.get_behavior())
+        super(ActiveMatlab, self).__init__(logger, timer, params)
+
+    def prepare(self):
+        self.stim.setup()
+        self.stim.prepare()  # prepare stimulus
+
+    def pre_trial(self):
+        self.stim.init_trial()  # initialize stimulus
+        self.reward_probe = self.stim.mat.stimulus.get_reward_probe(self, self.logger.get_trial_key())
+        self.beh.is_licking()
+
+    def trial(self):
+        probe = self.beh.is_licking()
+        if probe > 0:
+            if self.reward_probe == probe:
+                print('Correct!')
+                self.reward(probe)
+        return self.stim.trial.done()
+
+    def get_behavior(self):
+        return SerialProbe
+
+    def run(self):
+        return self.logger.get_setup_state() == 'stimRunning' and not self.stim.stimulus_done()
+
+    def reward(self, probe):
+        self.beh.water_reward(probe)
+
+    def cleanup(self):
+        self.beh.cleanup()
+        self.stim.cleanup()
+        self.stim.close()
+
+
 class CenterPort(Experiment):
     """2AFC with center init position"""
 
@@ -218,20 +257,16 @@ class CenterPort(Experiment):
         while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
             time.sleep(.1)
             is_ready, ready_time = self.beh.is_ready()
-
         if self.logger.get_setup_state() == 'running':
             print('Starting trial!')
             self.stim.init_trial(cond)
             self.beh.is_licking()
 
     def trial(self):
-
         if self.logger.get_setup_state() != 'running':
             return True
-
         self.stim.present_trial()  # Start Stimulus
         probe = self.beh.is_licking()
-
         if probe > 0:
             self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
             if self.reward_probe == probe:
