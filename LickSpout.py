@@ -7,7 +7,7 @@ from importlib import util
 from ThreadWorker import GetHWPoller
 import serial
 import sys
-
+import platform
 
 class Probe:
     def __init__(self, logger):
@@ -138,9 +138,11 @@ class RPProbe(Probe):
 
 class SerialProbe(Probe):
     def __init__(self, logger):
-        # ser_port = '/dev/cu.UC-232AC'
-        ser_port = '/dev/ttyUSB0'
-        self.serial = serial.serial_for_url('/dev/cu.UC-232AC')
+        if platform.system()=='linux':
+            ser_port = '/dev/ttyUSB0'
+        else:
+            ser_port = '/dev/cu.UC-232AC'
+        self.serial = serial.serial_for_url(ser_port)
         super(SerialProbe, self).__init__(logger)
         self.worker = GetHWPoller(0.001, self.poll_probe)
         self.interlock = False  # set to prohibit thread from accessing serial port
