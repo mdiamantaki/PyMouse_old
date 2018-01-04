@@ -138,6 +138,8 @@ class RPProbe(Probe):
 
 class SerialProbe(Probe):
     def __init__(self, logger):
+        # ser_port = '/dev/cu.UC-232AC'
+        ser_port = '/dev/ttyUSB0'
         self.serial = serial.serial_for_url('/dev/cu.UC-232AC')
         super(SerialProbe, self).__init__(logger)
         self.worker = GetHWPoller(0.001, self.poll_probe)
