@@ -36,35 +36,40 @@ class Behavior:
 class RPBehavior(Behavior):
     """ This class handles the behavior variables for RP """
     def __init__(self, logger, params):
-        self.licker = RPLicker(logger)
-        self.valves = RPValveControl(logger)
+        self.probe = RPProbe(logger)
         super(RPBehavior, self).__init__(logger, params)
 
     def is_licking(self):
-        probe = self.licker.lick()
+        probe = self.probe.lick()
         if self.resp_timer.elapsed_time() < self.resp_int:
             probe = 0
         return probe
 
     def is_ready(self):
-        ready, ready_time = self.licker.in_position()
+        ready, ready_time = self.probe.in_position()
         return ready, ready_time
 
     def water_reward(self, probe):
-        self.valves.give_liquid(probe)
+        self.probe.give_liquid(probe)
 
     def punish_with_air(self, probe, air_dur=200):
-        self.valves.give_air(probe, air_dur)
+        self.probe.give_air(probe, air_dur)
 
     def give_odor(self, odor_idx, odor_dur):
-        self.valves.give_odor(odor_idx, odor_dur)
+        self.probe.give_odor(odor_idx, odor_dur)
 
     def inactivity_time(self):  # in minutes
-        return numpy.minimum(self.licker.timer_probe1.elapsed_time(),
-                             self.licker.timer_probe2.elapsed_time()) / 1000 / 60
+        return numpy.minimum(self.probe.timer_probe1.elapsed_time(),
+                             self.probe.timer_probe2.elapsed_time()) / 1000 / 60
 
     def cleanup(self):
-        self.licker.cleanup()
+        self.probe.cleanup()
+
+
+class TPBehavior(RPBehavior):
+    def __init__(self, logger, params):
+        self.probe = SerialProbe(logger)
+        super(RPBehavior, self).__init__(logger, params)
 
 
 class DummyProbe(Behavior):

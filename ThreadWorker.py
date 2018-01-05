@@ -39,5 +39,5 @@ class GetHWPoller(threading.Thread):
 
     def kill(self):
         print("WORKER END")
-        sys.stdout.flush()
-        self._Thread__stop()
+        #sys.stdout.flush()
+        #  self._Thread__stop()

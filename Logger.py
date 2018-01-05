@@ -87,12 +87,12 @@ class RPLogger(Logger):
 
     def log_session(self):
 
-        animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1['animal_id', 'task_idx']
+        animal_id, task_idx = (SetupInfo() & dict(setup=self.setup)).fetch1('animal_id', 'task_idx')
         self.task_idx = task_idx
 
         # create session key
         self.session_key['animal_id'] = animal_id
-        last_sessions = (Session() & self.session_key).fetch['session_id']
+        last_sessions = (Session() & self.session_key).fetch('session_id')
         if numpy.size(last_sessions) == 0:
             last_session = 0
         else:
@@ -115,7 +115,7 @@ class RPLogger(Logger):
     def log_conditions(self, condition_table):
 
         # generate factorial conditions
-        conditions = eval((Task() & dict(task_idx=self.task_idx)).fetch1['conditions'])
+        conditions = eval((Task() & dict(task_idx=self.task_idx)).fetch1('conditions'))
         conditions = sum([list((dict(zip(conds, x)) for x in product(*conds.values()))) for conds in conditions], [])
 
         # iterate through all conditions and insert
@@ -207,15 +207,15 @@ class RPLogger(Logger):
         key = (SetupInfo() & dict(setup=self.setup)).fetch1()
         in_state = key['state'] == state
         if not in_state:
-            (SetupInfo() & dict(setup=self.setup))._update('state',state)
+            (SetupInfo() & dict(setup=self.setup))._update('state', state)
         return in_state
 
     def get_setup_state(self):
-        state = (SetupInfo() & dict(setup=self.setup)).fetch1['state']
+        state = (SetupInfo() & dict(setup=self.setup)).fetch1('state')
         return state
 
     def get_setup_task(self):
-        task = (SetupInfo() & dict(setup=self.setup)).fetch1['task']
+        task = (SetupInfo() & dict(setup=self.setup)).fetch1('task')
         return task
 
     def get_session_key(self):
@@ -224,7 +224,7 @@ class RPLogger(Logger):
     def ping(self):
         if numpy.size((SetupInfo() & dict(setup=self.setup)).fetch()):
             lp = str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-            (SetupInfo() & dict(setup=self.setup))._update('last_ping',lp)
+            (SetupInfo() & dict(setup=self.setup))._update('last_ping', lp)
 
 
 class PCLogger(Logger):
@@ -250,7 +250,7 @@ class PCLogger(Logger):
         key = (SetupControl() & dict(setup=self.setup)).fetch1()
         in_state = key['state'] == state
         if not in_state:
-            (SetupControl() & dict(setup=self.setup))._update('state',state)
+            (SetupControl() & dict(setup=self.setup))._update('state', state)
 
     def get_setup_state(self):
         state = (SetupControl() & dict(setup=self.setup)).fetch1('state')
@@ -279,7 +279,7 @@ class PCLogger(Logger):
         nw = systime.time()
         if nw-self.last_time > 1:
             lp = format(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S")
-            (SetupControl() & dict(setup=self.setup))._update('last_ping',lp)
+            (SetupControl() & dict(setup=self.setup))._update('last_ping', lp)
             self.last_time = nw
 
     def get_scan_key(self):
@@ -295,10 +295,10 @@ class PCLogger(Logger):
         return dict(animal_id=animal_id, session=session, scan_idx=scan_idx, trial_idx=self.trial_idx)
 
     def get_protocol_file(self):
-        protocol_table=self.experiment.VisProtocol()
+        protocol_table = self.experiment.VisProtocol()
         tp = protocol_table & dict(vis_protocol=self.get_stimulus(),username=self.get_experimenter())
         return tp.fetch1('vis_filename')
 
     def update_next_trial(self, next_trial):
-        (SetupControl() & dict(setup=self.setup))._update('next_trial',next_trial)
+        (SetupControl() & dict(setup=self.setup))._update('next_trial', next_trial)
         self.trial_idx = next_trial
