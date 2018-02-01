@@ -211,7 +211,7 @@ class RPLogger(Logger):
         return in_state
 
     def get_setup_state(self):
-        state = (SetupInfo() & dict(setup=self.setup)).fetch1['state']
+        state = (SetupInfo() & dict(setup=self.setup)).fetch1('state')
         return state
 
     def get_setup_task(self):
