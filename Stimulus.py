@@ -20,7 +20,7 @@ class Stimulus:
         # setup parameters
         self.path = 'stimuli/'     # default path to copy local stimuli
         self.size = (800, 480)     # window size
-        self.color = [128, 128, 128]  # default background color
+        self.color = [127, 127, 127]  # default background color
         self.loc = (0, 0)          # default starting location of stimulus surface
         self.fps = 30              # default presentation framerate
         self.phd_size = (50, 50)    # default photodiode signal size in pixels
@@ -135,24 +135,22 @@ class RPMovies(Stimulus):
             os.makedirs(self.path)
         for cond_idx in conditions:
             filename = self.path + \
-                       (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1[
-                           'file_name']
+                       (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1(
+                           'file_name')
             if not os.path.isfile(filename):
-                (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1[
-                    'clip'].tofile(filename)
+                (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1(
+                    'clip').tofile(filename)
 
     def init_trial(self, cond):
         self.isrunning = True
         filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) &
-                                     self.logger.session_key).fetch1['file_name']
+                                     self.logger.session_key).fetch1('file_name')
         self.logger.start_trial(cond)  # log start trial
         self.vid = self.player(filename, args=['--win', '0 15 800 465', '--loop', '--no-osd'])  # start video
         return cond
 
     def stop_trial(self):
-        print("Quit video")
         self.vid.quit()
-        print("Quited video")
         self.unshow()
         self.isrunning = False
         self.logger.log_trial(self.flip_count)  # log trial
@@ -180,7 +178,7 @@ class Gratings(Stimulus):
         self.frame_idx = 0
         self.xt = np.cos((self.stim_conditions[cond]['direction'] / 180) * np.pi)
         self.yt = np.sin((self.stim_conditions[cond]['direction'] / 180) * np.pi)
-        self.logger.start_trial(cond) # log start trial
+        self.logger.start_trial(cond)  # log start trial
         self.isrunning = True
         return cond
 
