@@ -140,7 +140,6 @@ class RPMovies(Stimulus):
             if not os.path.isfile(filename):
                 (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1[
                     'clip'].tofile(filename)
-        self.width, self.height = (Movie() & self.logger.session_key).fetch1['frame_width','frame_height']
 
     def init_trial(self, cond):
         self.isrunning = True
