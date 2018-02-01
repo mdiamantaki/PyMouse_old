@@ -79,18 +79,18 @@ class RPProbe(Probe):
     def __init__(self, logger):
         super(RPProbe, self).__init__(logger)
         from RPi import GPIO
-        setup = int(''.join(list(filter(str.isdigit, socket.gethostname()))))
+        self.setup = int(''.join(list(filter(str.isdigit, socket.gethostname()))))
         self.GPIO = GPIO
-        self.GPIO.setmode(GPIO.BCM)
-        self.GPIO.setup([17, 27, 9], GPIO.IN)
-        self.GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
+        self.GPIO.setmode(self.GPIO.BCM)
+        self.GPIO.setup([17, 27, 9], self.GPIO.IN)
+        self.GPIO.setup([22, 23, 24, 25], self.GPIO.OUT, initial=self.GPIO.LOW)
         self.channels = {'air': {1: 24, 2: 25},
                     'liquid': {1: 22, 2: 23},
                     'lick': {1: 17, 2: 27},
                     'start': {1: 9}}  # 2
         self.GPIO.add_event_detect(self.channels['lick'][2], self.GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
         self.GPIO.add_event_detect(self.channels['lick'][1], self.GPIO.RISING, callback=self.probe1_licked, bouncetime=200)
-        if 3000 < setup < 3100:
+        if 3000 < self.setup < 3100:
             self.GPIO.add_event_detect(self.channels['start'][1], self.GPIO.BOTH, callback=self.position_change)
 
     def give_air(self, probe, duration, log=True):
@@ -111,7 +111,7 @@ class RPProbe(Probe):
         if log:
             self.logger.log_odor(odor_idx)
 
-    def position_change(self, channel):
+    def position_change(self, channel=0):
         if self.in_position():
             self.timer_ready.start()
             self.ready = True
@@ -135,7 +135,7 @@ class RPProbe(Probe):
     def cleanup(self):
         self.GPIO.remove_event_detect(self.channels['lick'][1])
         self.GPIO.remove_event_detect(self.channels['lick'][2])
-        if 3000 < setup < 3100:
+        if 3000 < self.setup < 3100:
             self.GPIO.remove_event_detect(self.channels['start'][1])
             self.GPIO.cleanup()
 
