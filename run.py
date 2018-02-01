@@ -26,10 +26,12 @@ def train(logger=logg):
 
         # # # # # Pre-Trial period # # # # #
         exprmt.pre_trial()
-
+        iloop = 1
         # # # # # Trial period # # # # #
         timer.start()                                                # Start countdown for response
         while timer.elapsed_time() < params['trial_duration']*1000:  # response period
+            iloop += 1
+            print(iloop)
             break_trial = exprmt.trial()                             # get appropriate response
             if break_trial:
                 break                                                # break if experiment calls for it
