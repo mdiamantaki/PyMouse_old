@@ -80,17 +80,18 @@ class RPProbe(Probe):
         super(RPProbe, self).__init__(logger)
         from RPi import GPIO
         setup = int(''.join(list(filter(str.isdigit, socket.gethostname()))))
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup([17, 27, 9], GPIO.IN)
-        GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
+        self.GPIO = GPIO
+        self.GPIO.setmode(GPIO.BCM)
+        self.GPIO.setup([17, 27, 9], GPIO.IN)
+        self.GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
         self.channels = {'air': {1: 24, 2: 25},
                     'liquid': {1: 22, 2: 23},
                     'lick': {1: 17, 2: 27},
                     'start': {1: 9}}  # 2
-        GPIO.add_event_detect(self.channels['lick'][2], GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
-        GPIO.add_event_detect(self.channels['lick'][1], GPIO.RISING, callback=self.probe1_licked, bouncetime=200)
+        self.GPIO.add_event_detect(self.channels['lick'][2], self.GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
+        self.GPIO.add_event_detect(self.channels['lick'][1], self.GPIO.RISING, callback=self.probe1_licked, bouncetime=200)
         if 3000 < setup < 3100:
-            GPIO.add_event_detect(self.channels['start'][1], GPIO.BOTH, callback=self.position_change)
+            self.GPIO.add_event_detect(self.channels['start'][1], self.GPIO.BOTH, callback=self.position_change)
 
     def give_air(self, probe, duration, log=True):
         self.thread.submit(self.__pulse_out, self.channels['air'][probe], duration)
@@ -121,22 +122,22 @@ class RPProbe(Probe):
 
     def in_position(self):
         # handle missed events
-        ready = GPIO.input(self.channels['start'][1])
+        ready = self.GPIO.input(self.channels['start'][1])
         if self.ready != ready:
             self.position_change()
         return self.ready, self.timer_ready.elapsed_time()
 
     def __pulse_out(self, channel, duration):
-        GPIO.output(channel, GPIO.HIGH)
+        self.GPIO.output(channel, self.GPIO.HIGH)
         sleep(duration/1000)
-        GPIO.output(channel, GPIO.LOW)
+        self.GPIO.output(channel, self.GPIO.LOW)
 
     def cleanup(self):
-        GPIO.remove_event_detect(self.channels['lick'][1])
-        GPIO.remove_event_detect(self.channels['lick'][2])
+        self.GPIO.remove_event_detect(self.channels['lick'][1])
+        self.GPIO.remove_event_detect(self.channels['lick'][2])
         if 3000 < setup < 3100:
-            GPIO.remove_event_detect(self.channels['start'][1])
-        GPIO.cleanup()
+            self.GPIO.remove_event_detect(self.channels['start'][1])
+            self.GPIO.cleanup()
 
 
 class SerialProbe(Probe):
