@@ -20,7 +20,7 @@ class Stimulus:
         # setup parameters
         self.path = 'stimuli/'     # default path to copy local stimuli
         self.size = (800, 480)     # window size
-        self.color = [88, 88, 88]  # default background color
+        self.color = [128, 128, 128]  # default background color
         self.loc = (0, 0)          # default starting location of stimulus surface
         self.fps = 30              # default presentation framerate
         self.phd_size = (50, 50)    # default photodiode signal size in pixels
@@ -140,13 +140,14 @@ class RPMovies(Stimulus):
             if not os.path.isfile(filename):
                 (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond_idx) & self.logger.session_key).fetch1[
                     'clip'].tofile(filename)
+        self.width, self.height = (Movie() & self.logger.session_key).fetch1['frame_width','frame_height']
 
     def init_trial(self, cond):
         self.isrunning = True
         filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) &
                                      self.logger.session_key).fetch1['file_name']
         self.logger.start_trial(cond)  # log start trial
-        self.vid = self.player(filename)  # start video
+        self.vid = self.player(filename, args=['--win', '0 15 800 465', '--loop', '--no-osd'])  # start video
         return cond
 
     def stop_trial(self):
