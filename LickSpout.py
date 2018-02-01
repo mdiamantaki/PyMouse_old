@@ -123,9 +123,9 @@ class RPProbe(Probe):
     def in_position(self):
         # handle missed events
         ready = self.GPIO.input(self.channels['start'][1])
-        if self.ready != ready:
-            self.position_change()
-        return self.ready, self.timer_ready.elapsed_time()
+        #if self.ready != ready:
+        #    self.position_change()
+        return ready, self.timer_ready.elapsed_time()
 
     def __pulse_out(self, channel, duration):
         self.GPIO.output(channel, self.GPIO.HIGH)
@@ -137,7 +137,7 @@ class RPProbe(Probe):
         self.GPIO.remove_event_detect(self.channels['lick'][2])
         if 3000 < self.setup < 3100:
             self.GPIO.remove_event_detect(self.channels['start'][1])
-            self.GPIO.cleanup()
+        self.GPIO.cleanup()
 
 
 class SerialProbe(Probe):
