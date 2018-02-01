@@ -111,7 +111,7 @@ class RPProbe(Probe):
             self.logger.log_odor(odor_idx)
 
     def position_change(self, channel):
-        if self.self.is_ready():
+        if self.in_position():
             self.timer_ready.start()
             self.ready = True
             print('in position')
