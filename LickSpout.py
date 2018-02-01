@@ -83,7 +83,7 @@ class RPProbe(Probe):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup([17, 27, 9], GPIO.IN)
         GPIO.setup([22, 23, 24, 25], GPIO.OUT, initial=GPIO.LOW)
-        self.channels = {'odor': {1: 24, 2: 25},
+        self.channels = {'air': {1: 24, 2: 25},
                     'liquid': {1: 22, 2: 23},
                     'lick': {1: 17, 2: 27},
                     'start': {1: 9}}  # 2
@@ -106,7 +106,7 @@ class RPProbe(Probe):
 
     def give_odor(self, odor_idx, duration, log=True):
         print('Odor %1d presentation for %d' % (odor_idx, duration))
-        self.thread.submit(self.__pulse_out, self.channels['odor'][odor_idx], duration)
+        self.thread.submit(self.__pulse_out, self.channels['air'][odor_idx], duration)
         if log:
             self.logger.log_odor(odor_idx)
 
