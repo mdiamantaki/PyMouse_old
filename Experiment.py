@@ -73,6 +73,7 @@ class Experiment:
                 return numpy.random.choice(self.conditions)
             else:
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
+                self.probe_bias[-1] = numpy.random.choice(self.probes)
                 return numpy.random.choice(self.conditions[self.probes == bias_probe])
 
 
