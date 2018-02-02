@@ -58,6 +58,7 @@ class Experiment:
         """Get curr condition & create random block of all conditions
         Should be called within init_trial
         """
+        print(list(self.probe_bias))
         if self.randomization == 'block':
             if numpy.size(self.indexes) == 0:
                 self.indexes = numpy.random.permutation(numpy.size(self.conditions))
@@ -109,6 +110,7 @@ class MultiProbe(Experiment):
                     self.stim.present_trial()
                 return True
             else:
+                print('Wrong!')
                 self.punish(probe)
                 return True  # break trial
         else:
