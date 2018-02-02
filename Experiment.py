@@ -21,7 +21,7 @@ class Experiment:
         self.indexes = []
         self.beh = self.get_behavior()(logger, params)
         self.stim = eval(params['stim_type'])(logger, self.beh)
-        self.probe_bias = numpy.repeat(numpy.nan, 10)  # History term for bias calculation
+        self.probe_bias = []  # History term for bias calculation
 
     def prepare(self):
         """Prepare things before experiment starts"""
@@ -69,12 +69,10 @@ class Experiment:
             return numpy.random.choice(self.conditions)
         elif self.randomization == 'bias':
             if len(self.probe_bias) == 0 or numpy.all(numpy.isnan(self.probe_bias)):
+                self.bias_probe = numpy.random.choice(self.probes, 10)
                 return numpy.random.choice(self.conditions)
             else:
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
-                index = numpy.where(numpy.logical_and(self.probe_bias != bias_probe,
-                                                      numpy.logical_not(numpy.isnan(self.probe_bias))))
-                self.probe_bias = numpy.delete(self.probe_bias, index[0][0])  # remove current pick from bias estimator
                 return numpy.random.choice(self.conditions[self.probes == bias_probe])
 
 

@@ -25,6 +25,20 @@ def train(logger=logg):
     # # # # # Run # # # # #
     while exprmt.run():
 
+        # # # # # PAUSE # # # # #
+        now = datetime.now()
+        start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
+        stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
+        if stop < start:
+            stop = stop.replace(day=now.day+1)
+        if now < start or now > stop:
+            logger.update_setup_state('sleeping')
+        while now < start or now > stop and logger.get_setup_state() == 'sleeping':
+            time.sleep(1)
+            now = datetime.now()
+        if logger.get_setup_state() == 'sleeping':
+            logger.update_setup_state('running')
+
         # # # # # Pre-Trial period # # # # #
         exprmt.pre_trial()
 
@@ -42,20 +56,6 @@ def train(logger=logg):
         timer.start()
         while timer.elapsed_time() < params['intertrial_duration']*1000:
             exprmt.inter_trial()
-
-        # # # # # PAUSE # # # # #
-        now = datetime.now()
-        start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
-        stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
-        if stop < start:
-            stop = stop.replace(day=now.day+1)
-        if now < start or now > stop:
-            logger.update_setup_state('sleeping')
-        while now < start or now > stop and logger.get_setup_state() == 'sleeping':
-            time.sleep(1)
-            now = datetime.now()
-        if logger.get_setup_state() == 'sleeping':
-            logger.update_setup_state('running')
 
     # # # # # Cleanup # # # # #
     exprmt.cleanup()
@@ -89,6 +89,7 @@ def calibrate(logger=logg):
     stim.screen.fill((255, 255, 255))
     stim.screen.blit(font.render('Done calibrating', True, (0, 128, 0)), (stim.size[1]/4, stim.size[1]/2))
     stim.flip()
+
 
 # # # # Waiting for instructions loop # # # # #
 while not logg.get_setup_state() == 'stopped':
