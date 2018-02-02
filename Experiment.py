@@ -73,7 +73,7 @@ class Experiment:
                 return numpy.random.choice(self.conditions)
             else:
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
-                self.probe_bias[-1] = numpy.random.choice(self.probes)
+                self.probe_bias = np.concatenate((self.probe_bias[1:], [numpy.random.choice(self.probes)]))
                 return numpy.random.choice(self.conditions[self.probes == bias_probe])
 
 
@@ -101,7 +101,7 @@ class MultiProbe(Experiment):
         probe = self.beh.is_licking()
         if probe > 0 and not self.responded:
             self.responded = True
-            self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
+            self.probe_bias[-1] = probe
             if self.reward_probe == probe:
                 print('Correct!')
                 self.reward(probe)
