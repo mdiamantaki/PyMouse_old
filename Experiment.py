@@ -69,7 +69,7 @@ class Experiment:
             return numpy.random.choice(self.conditions)
         elif self.randomization == 'bias':
             if len(self.probe_bias) == 0 or numpy.all(numpy.isnan(self.probe_bias)):
-                self.bias_probe = numpy.random.choice(self.probes, 10)
+                self.probe_bias = numpy.random.choice(self.probes, 10)
                 return numpy.random.choice(self.conditions)
             else:
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
