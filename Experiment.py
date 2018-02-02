@@ -12,6 +12,7 @@ class Experiment:
         self.timeout = params['timeout_duration']
         self.silence = params['silence_thr']
         self.ready_wait = params['init_duration']
+        self.randomization = params['randomization']
         self.timer = timer
         self.reward_probe = []
         self.conditions = []
@@ -20,9 +21,7 @@ class Experiment:
         self.indexes = []
         self.beh = self.get_behavior()(logger, params)
         self.stim = eval(params['stim_type'])(logger, self.beh)
-        bias_array = np.empty(10)  # History term for bias calculation
-        bias_array[:] = np.NAN
-        self.probe_bias = bias_array
+        self.probe_bias = np.repeat(np.nan, 10)  # History term for bias calculation
 
     def prepare(self):
         """Prepare things before experiment starts"""
@@ -55,23 +54,25 @@ class Experiment:
     def get_behavior(self):
         return RPBehavior  # default is raspberry pi
 
-    def _get_new_cond(self, seq_gen='block'):
+    def _get_new_cond(self):
         """Get curr condition & create random block of all conditions
         Should be called within init_trial
         """
-        if seq_gen == 'block':
+        if self.randomization == 'block':
             if numpy.size(self.indexes) == 0:
                 self.indexes = numpy.random.permutation(numpy.size(self.conditions))
             cond = self.conditions[self.indexes[0]]
             self.indexes = self.indexes[1:]
             return cond
-        elif seq_gen == 'random' or numpy.any(self.probes == 0):
+        elif self.randomization == 'random' or numpy.any(self.probes == 0):
             return numpy.random.choice(self.conditions)
-        elif seq_gen == 'bias':
-            if numpy.all(numpy.isnan(self.probe_bias)):
+        elif self.randomization == 'bias':
+            if numpy.all(numpy.isnan(self.probe_bias)) or numpy.all(numpy.empty(self.probe_bias)):
                 return numpy.random.choice(self.conditions)
             else:
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
+                index = numpy.where(self.probe_bias == bias_probe)
+                self.probe_bias = numpy.delete(self.probe_bias, index[0][0])  # remove current pick from bias estimator
                 return numpy.random.choice(self.conditions[self.probes == bias_probe])
 
 
@@ -89,7 +90,7 @@ class MultiProbe(Experiment):
         self.stim.prepare(self.conditions)  # prepare stimulus
 
     def pre_trial(self):
-        cond = self._get_new_cond('bias')
+        cond = self._get_new_cond()
         self.stim.init_trial(cond)
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
         self.beh.is_licking()
@@ -104,7 +105,7 @@ class MultiProbe(Experiment):
                 print('Correct!')
                 self.reward(probe)
                 self.timer.start()
-                while self.timer.elapsed_time() < 1000: # give an extra second to associate the reward with the stimulus
+                while self.timer.elapsed_time() < 1000:  # give an extra second to associate the reward with stimulus
                     self.stim.present_trial()
                 return True
             else:
@@ -127,6 +128,7 @@ class MultiProbe(Experiment):
         elif self.beh.inactivity_time() > self.silence and self.logger.get_setup_state() == 'running':
             self.logger.update_setup_state('sleeping')
             self.stim.unshow([0, 0, 0])
+            self.probe_bias = []  # reset bias
             while not self.beh.is_licking() and self.logger.get_setup_state() == 'sleeping':
                 self.logger.ping()
                 time.sleep(1)
@@ -254,7 +256,7 @@ class CenterPort(Experiment):
         self.stim.prepare(self.conditions)  # prepare stimulus
 
     def pre_trial(self):
-        cond = self._get_new_cond('bias')
+        cond = self._get_new_cond
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
         is_ready, ready_time = self.beh.is_ready()
         while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
