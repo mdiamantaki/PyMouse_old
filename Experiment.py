@@ -64,14 +64,16 @@ class Experiment:
             cond = self.conditions[self.indexes[0]]
             self.indexes = self.indexes[1:]
             return cond
-        elif self.randomization == 'random' or numpy.any(self.probes == 0):
+        elif self.randomization == 'random':
             return numpy.random.choice(self.conditions)
         elif self.randomization == 'bias':
             if len(self.probe_bias) == 0 or numpy.all(numpy.isnan(self.probe_bias)):
                 self.probe_bias = numpy.random.choice(self.probes, 5)
                 return numpy.random.choice(self.conditions)
             else:
-                bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
+                mn = numpy.min(self.probes)
+                mx = numpy.max(self.probes)
+                bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean((self.probe_bias - mn)/(mx-mn)))*(mx-mn) + mn
                 self.probe_bias = np.concatenate((self.probe_bias[1:], [numpy.random.choice(self.probes)]))
                 return numpy.random.choice(self.conditions[self.probes == bias_probe])
 
@@ -109,6 +111,7 @@ class MultiProbe(Experiment):
                     self.stim.present_trial()
                 return True
             else:
+                print('Wrong!')
                 self.punish(probe)
                 return True  # break trial
         else:
