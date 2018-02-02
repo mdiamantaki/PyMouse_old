@@ -48,10 +48,9 @@ def train(logger=logg):
             exprmt.inter_trial()
 
         # # # # # PAUSE # # # # #
-        print(params['start_time'])
         now = datetime.now()
-        start = datetime.strptime(params['start_time'], '%H:%M:%S').replace(year=now.year, month=now.month, day=now.day)
-        stop = datetime.strptime(params['stop_time'], '%H:%M:%S').replace(year=now.year, month=now.month, day=now.day)
+        start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
+        stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
         if stop < start:
             stop = stop.replace(day=now.day+1)
         while logger.get_setup_state() == 'sleeping' and now < start or now > stop:
