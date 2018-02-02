@@ -80,6 +80,7 @@ class MultiProbe(Experiment):
 
     def __init__(self, logger, timer, params):
         self.post_wait = 0
+        self.responded = False
         super(MultiProbe, self).__init__(logger, timer, params)
 
     def prepare(self):
@@ -96,23 +97,25 @@ class MultiProbe(Experiment):
     def trial(self):
         self.stim.present_trial()  # Start Stimulus
         probe = self.beh.is_licking()
-        if probe > 0:
+        if probe > 0 and not self.responded:
+            self.responded = True
             self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
             if self.reward_probe == probe:
                 print('Correct!')
                 self.reward(probe)
                 self.timer.start()
-                while self.timer.elapsed_time() < 5000:
+                while self.timer.elapsed_time() < 1000: # give an extra second to associate the reward with the stimulus
                     self.stim.present_trial()
                 return True
             else:
                 self.punish(probe)
-                return False  # break trial
+                return True  # break trial
         else:
             return False
 
     def post_trial(self):
         self.stim.stop_trial()  # stop stimulus when timeout
+        self.responded = False
         self.timer.start()
         while self.timer.elapsed_time()/1000 < self.post_wait and self.logger.get_setup_state() == 'running':
             time.sleep(0.5)

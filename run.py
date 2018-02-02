@@ -2,6 +2,7 @@ from Logger import *
 from Experiment import *
 from Stimulus import *
 import sys
+from datetime import datetime
 
 logg = RPLogger()                                                     # setup logger & timer
 logg.log_setup()                                                    # publish IP and make setup available
@@ -25,24 +26,41 @@ def train(logger=logg):
     while exprmt.run():
 
         # # # # # Pre-Trial period # # # # #
+        print('PreTrial')
         exprmt.pre_trial()
-        iloop = 1
+
         # # # # # Trial period # # # # #
+        print('PreTrial')
         timer.start()                                                # Start countdown for response
         while timer.elapsed_time() < params['trial_duration']*1000:  # response period
-            iloop += 1
-            print(iloop)
             break_trial = exprmt.trial()                             # get appropriate response
             if break_trial:
                 break                                                # break if experiment calls for it
 
         # # # # # Post-Trial Period # # # # #
+        print('PostTrial')
         exprmt.post_trial()
 
         # # # # # Intertrial period # # # # #
+        print('InterTrial')
         timer.start()
         while timer.elapsed_time() < params['intertrial_duration']*1000:
             exprmt.inter_trial()
+
+        # # # # # PAUSE # # # # #
+        now = datetime.now()
+        start = datetime.strptime(params['start_time'], '%H:%M:%S').replace(year=now.year, month=now.month, day=now.day)
+        stop = datetime.strptime(params['stop_time'], '%H:%M:%S').replace(year=now.year, month=now.month, day=now.day)
+        if stop < start:
+            stop = stop.replace(day=now.day+1)
+        while logger.get_setup_state() == 'sleeping' and now < start or now > stop:
+            time.sleep(1)
+            print('Sleeping')
+            if logger.get_setup_state() != 'sleeping':
+                logger.update_setup_state('sleeping')
+            now = datetime.now()
+        if logger.get_setup_state() == 'sleeping':
+            logger.update_setup_state('running')
 
     # # # # # Cleanup # # # # #
     exprmt.cleanup()

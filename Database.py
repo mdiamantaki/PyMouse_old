@@ -116,6 +116,8 @@ class Task(dj.Lookup):
     silence_thr = 30             : int  # lickless period after which stimulus is paused (min)
     conditions                   : varchar(4095) # stimuli to be presented (array of dictionaries)
     description =''              : varchar(2048) # task description
+    start_time=null              : time
+    stop_time=null               : time
     """
 
     contents = [
