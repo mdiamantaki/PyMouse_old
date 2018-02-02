@@ -59,6 +59,7 @@ class Experiment:
         Should be called within init_trial
         """
         print(list(self.probe_bias))
+        print(list(self.probes))
         if self.randomization == 'block':
             if numpy.size(self.indexes) == 0:
                 self.indexes = numpy.random.permutation(numpy.size(self.conditions))
@@ -74,6 +75,7 @@ class Experiment:
                 return numpy.random.choice(self.conditions)
             else:
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
+                print(bias_probe)
                 self.probe_bias = np.concatenate((self.probe_bias[1:], [numpy.random.choice(self.probes)]))
                 return numpy.random.choice(self.conditions[self.probes == bias_probe])
 
