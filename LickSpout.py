@@ -111,7 +111,7 @@ class RPProbe(Probe):
             self.logger.log_odor(odor_idx)
 
     def position_change(self, channel=0):
-        if self.in_position():
+        if self.GPIO.input(self.channels['start'][1]):
             self.timer_ready.start()
             self.ready = True
             print('in position')
@@ -122,8 +122,8 @@ class RPProbe(Probe):
     def in_position(self):
         # handle missed events
         ready = self.GPIO.input(self.channels['start'][1])
-        #if self.ready != ready:
-        #    self.position_change()
+        if self.ready != ready:
+            self.position_change()
         return ready, self.timer_ready.elapsed_time()
 
     def __pulse_out(self, channel, duration):
