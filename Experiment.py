@@ -59,6 +59,7 @@ class Experiment:
         Should be called within init_trial
         """
         print(list(self.probe_bias))
+        print(self.randomization)
         if self.randomization == 'block':
             if numpy.size(self.indexes) == 0:
                 self.indexes = numpy.random.permutation(numpy.size(self.conditions))
