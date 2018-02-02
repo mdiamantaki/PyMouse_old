@@ -72,7 +72,8 @@ class Experiment:
                 return numpy.random.choice(self.conditions)
             else:
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
-                index = numpy.where(self.probe_bias == bias_probe)
+                index = numpy.where(numpy.logical_and(self.probe_bias != bias_probe,
+                                                      numpy.logical_not(numpy.isnan(self.probe_bias))))
                 self.probe_bias = numpy.delete(self.probe_bias, index[0][0])  # remove current pick from bias estimator
                 return numpy.random.choice(self.conditions[self.probes == bias_probe])
 
