@@ -90,7 +90,7 @@ class RPProbe(Probe):
                     'start': {1: 9}}  # 2
         self.GPIO.add_event_detect(self.channels['lick'][2], self.GPIO.RISING, callback=self.probe2_licked, bouncetime=200)
         self.GPIO.add_event_detect(self.channels['lick'][1], self.GPIO.RISING, callback=self.probe1_licked, bouncetime=200)
-        self.GPIO.add_event_detect(self.channels['start'][1], self.GPIO.BOTH, callback=self.position_change)
+        self.GPIO.add_event_detect(self.channels['start'][1], self.GPIO.BOTH, callback=self.position_change, bouncetime=200)
 
     def give_air(self, probe, duration, log=True):
         self.thread.submit(self.__pulse_out, self.channels['air'][probe], duration)
@@ -124,7 +124,7 @@ class RPProbe(Probe):
         ready = self.GPIO.input(self.channels['start'][1])
         if self.ready != ready:
             self.position_change()
-        return ready, self.timer_ready.elapsed_time()
+        return self.ready, self.timer_ready.elapsed_time()
 
     def __pulse_out(self, channel, duration):
         self.GPIO.output(channel, self.GPIO.HIGH)
