@@ -58,6 +58,7 @@ class Experiment:
         """Get curr condition & create random block of all conditions
         Should be called within init_trial
         """
+        print(list(self.probe_bias))
         if self.randomization == 'block':
             if numpy.size(self.indexes) == 0:
                 self.indexes = numpy.random.permutation(numpy.size(self.conditions))
@@ -67,7 +68,7 @@ class Experiment:
         elif self.randomization == 'random' or numpy.any(self.probes == 0):
             return numpy.random.choice(self.conditions)
         elif self.randomization == 'bias':
-            if numpy.all(numpy.isnan(self.probe_bias)) or numpy.all(numpy.empty(self.probe_bias)):
+            if numpy.all(numpy.empty(self.probe_bias)) or numpy.all(numpy.isnan(self.probe_bias)):
                 return numpy.random.choice(self.conditions)
             else:
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
