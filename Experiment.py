@@ -59,20 +59,15 @@ class Experiment:
         Should be called within init_trial
         """
         print(list(self.probe_bias))
-        print(type(self.randomization))
         if self.randomization == 'block':
-            print('block case')
             if numpy.size(self.indexes) == 0:
                 self.indexes = numpy.random.permutation(numpy.size(self.conditions))
             cond = self.conditions[self.indexes[0]]
             self.indexes = self.indexes[1:]
             return cond
-        elif self.randomization == 'random' or numpy.any(self.probes == 0):
-            print('random case')
+        elif self.randomization == 'random':
             return numpy.random.choice(self.conditions)
         elif self.randomization == 'bias':
-            print('bias case')
-            print(list(self.probe_bias))
             if len(self.probe_bias) == 0 or numpy.all(numpy.isnan(self.probe_bias)):
                 print("initializing bias")
                 self.probe_bias = numpy.random.choice(self.probes, 5)
