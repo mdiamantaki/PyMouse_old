@@ -48,6 +48,7 @@ def train(logger=logg):
             exprmt.inter_trial()
 
         # # # # # PAUSE # # # # #
+        print(params['start_time'])
         now = datetime.now()
         start = datetime.strptime(params['start_time'], '%H:%M:%S').replace(year=now.year, month=now.month, day=now.day)
         stop = datetime.strptime(params['stop_time'], '%H:%M:%S').replace(year=now.year, month=now.month, day=now.day)
