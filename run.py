@@ -48,19 +48,19 @@ def train(logger=logg):
             exprmt.inter_trial()
 
         # # # # # PAUSE # # # # #
-        now = datetime.now()
-        start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
-        stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
-        if stop < start:
-            stop = stop.replace(day=now.day+1)
-        while logger.get_setup_state() == 'sleeping' and now < start or now > stop:
-            time.sleep(1)
-            print('Sleeping')
-            if logger.get_setup_state() != 'sleeping':
-                logger.update_setup_state('sleeping')
+        if not np.isnan(params['start_time']) and not np.isnan(params['stop_time']):
             now = datetime.now()
-        if logger.get_setup_state() == 'sleeping':
-            logger.update_setup_state('running')
+            start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
+            stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
+            if stop < start:
+                stop = stop.replace(day=now.day+1)
+            if now < start or now > stop:
+                logger.update_setup_state('sleeping')
+            while logger.get_setup_state() == 'sleeping' and now < start or now > stop:
+                time.sleep(1)
+                now = datetime.now()
+            if logger.get_setup_state() == 'sleeping':
+                logger.update_setup_state('running')
 
     # # # # # Cleanup # # # # #
     exprmt.cleanup()
