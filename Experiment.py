@@ -21,7 +21,7 @@ class Experiment:
         self.indexes = []
         self.beh = self.get_behavior()(logger, params)
         self.stim = eval(params['stim_type'])(logger, self.beh)
-        self.probe_bias = []  # History term for bias calculation
+        self.probe_bias = numpy.repeat(numpy.nan, 1)   # History term for bias calculation
 
     def prepare(self):
         """Prepare things before experiment starts"""
@@ -58,7 +58,6 @@ class Experiment:
         """Get curr condition & create random block of all conditions
         Should be called within init_trial
         """
-        print(list(self.probe_bias))
         if self.randomization == 'block':
             if numpy.size(self.indexes) == 0:
                 self.indexes = numpy.random.permutation(numpy.size(self.conditions))
@@ -69,7 +68,7 @@ class Experiment:
             return numpy.random.choice(self.conditions)
         elif self.randomization == 'bias':
             if len(self.probe_bias) == 0 or numpy.all(numpy.isnan(self.probe_bias)):
-                self.probe_bias = numpy.random.choice(self.probes, 10)
+                self.probe_bias = numpy.random.choice(self.probes, 5)
                 return numpy.random.choice(self.conditions)
             else:
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean(self.probe_bias - 1)) + 1
@@ -101,7 +100,7 @@ class MultiProbe(Experiment):
         probe = self.beh.is_licking()
         if probe > 0 and not self.responded:
             self.responded = True
-            self.probe_bias[-1] = probe
+            self.probe_bias[-1] = probe  # bias correction
             if self.reward_probe == probe:
                 print('Correct!')
                 self.reward(probe)
