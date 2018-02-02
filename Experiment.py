@@ -68,7 +68,9 @@ class Experiment:
         elif self.randomization == 'random' or numpy.any(self.probes == 0):
             return numpy.random.choice(self.conditions)
         elif self.randomization == 'bias':
+            print(list(self.probe_bias))
             if len(self.probe_bias) == 0 or numpy.all(numpy.isnan(self.probe_bias)):
+                print("initializing bias")
                 self.probe_bias = numpy.random.choice(self.probes, 5)
                 return numpy.random.choice(self.conditions)
             else:
