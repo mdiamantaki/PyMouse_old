@@ -26,11 +26,9 @@ def train(logger=logg):
     while exprmt.run():
 
         # # # # # Pre-Trial period # # # # #
-        print('PreTrial')
         exprmt.pre_trial()
 
         # # # # # Trial period # # # # #
-        print('PreTrial')
         timer.start()                                                # Start countdown for response
         while timer.elapsed_time() < params['trial_duration']*1000:  # response period
             break_trial = exprmt.trial()                             # get appropriate response
@@ -38,11 +36,9 @@ def train(logger=logg):
                 break                                                # break if experiment calls for it
 
         # # # # # Post-Trial Period # # # # #
-        print('PostTrial')
         exprmt.post_trial()
 
         # # # # # Intertrial period # # # # #
-        print('InterTrial')
         timer.start()
         while timer.elapsed_time() < params['intertrial_duration']*1000:
             exprmt.inter_trial()
@@ -55,7 +51,7 @@ def train(logger=logg):
             stop = stop.replace(day=now.day+1)
         if now < start or now > stop:
             logger.update_setup_state('sleeping')
-        while logger.get_setup_state() == 'sleeping' and now < start or now > stop:
+        while now < start or now > stop and logger.get_setup_state() == 'sleeping':
             time.sleep(1)
             now = datetime.now()
         if logger.get_setup_state() == 'sleeping':
