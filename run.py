@@ -32,12 +32,12 @@ def train(logger=logg):
         if stop < start:
             stop = stop.replace(day=now.day+1)
         if now < start or now > stop:
-            logger.update_setup_state('sleeping')
-        while now < start or now > stop and logger.get_setup_state() == 'sleeping':
-            time.sleep(1)
+            logger.update_setup_state('offtime')
+        while (now < start or now > stop) and logger.get_setup_state() == 'offtime':
+            time.sleep(5)
             logger.ping()
             now = datetime.now()
-        if logger.get_setup_state() == 'sleeping':
+        if logger.get_setup_state() == 'offtime':
             logger.update_setup_state('running')
 
         # # # # # Pre-Trial period # # # # #
