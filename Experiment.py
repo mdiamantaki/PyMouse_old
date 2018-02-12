@@ -131,7 +131,7 @@ class MultiProbe(Experiment):
         elif self.beh.inactivity_time() > self.silence and self.logger.get_setup_state() == 'running':
             self.logger.update_setup_state('sleeping')
             self.stim.unshow([0, 0, 0])
-            self.probe_bias = []  # reset bias
+            self.probe_bias = numpy.repeat(numpy.nan, 1)  # reset bias
             while not self.beh.is_licking() and self.logger.get_setup_state() == 'sleeping':
                 self.logger.ping()
                 time.sleep(1)
