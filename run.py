@@ -35,6 +35,7 @@ def train(logger=logg):
             logger.update_setup_state('sleeping')
         while now < start or now > stop and logger.get_setup_state() == 'sleeping':
             time.sleep(1)
+            logger.ping()
             now = datetime.now()
         if logger.get_setup_state() == 'sleeping':
             logger.update_setup_state('running')
