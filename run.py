@@ -38,6 +38,8 @@ def train(logger=logg):
             time.sleep(5)
         if logger.get_setup_state() == 'offtime':
             logger.update_setup_state('running')
+        elif logger.get_setup_state() == 'stopped':
+            break
 
         # # # # # Pre-Trial period # # # # #
         exprmt.pre_trial()
