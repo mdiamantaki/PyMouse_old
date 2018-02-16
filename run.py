@@ -33,10 +33,9 @@ def train(logger=logg):
             stop = stop.replace(day=now.day+1)
         if now < start or now > stop:
             logger.update_setup_state('offtime')
-        while (now < start or now > stop) and logger.get_setup_state() == 'offtime':
-            time.sleep(5)
+        while (datetime.now() < start or datetime.now() > stop) and logger.get_setup_state() == 'offtime':
             logger.ping()
-            now = datetime.now()
+            time.sleep(5)
         if logger.get_setup_state() == 'offtime':
             logger.update_setup_state('running')
 
