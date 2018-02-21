@@ -261,6 +261,17 @@ class PCLogger(Logger):
         self.timer.start()
         self.inserter()
 
+    def log_liquid(self, probe):
+        timestamp = self.timer.elapsed_time()
+        self.queue.put(dict(table=LiquidDelivery(), tuple=dict(self.session_key, time=timestamp, probe=probe)))
+        self.inserter()
+
+    def log_lick(self, probe):
+        timestamp = self.timer.elapsed_time()
+        self.queue.put(dict(table=Lick(), tuple=dict(self.session_key,
+                                                     time=timestamp,
+                                                     probe=probe)))
+
     def update_setup_state(self, state):
         key = (SetupControl() & dict(setup=self.setup)).fetch1()
         in_state = key['state'] == state
