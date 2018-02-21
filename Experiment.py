@@ -224,7 +224,7 @@ class PassiveMatlabReward(PassiveMatlab):
                 self.beh.water_reward(1)
 
     def get_behavior(self):
-        return SerialProbe
+        return TPBehavior
 
 
 class ActiveMatlab(Experiment):

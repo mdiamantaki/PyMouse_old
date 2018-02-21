@@ -78,10 +78,7 @@ class RPBehavior(Behavior):
 class TPBehavior(RPBehavior):
     def __init__(self, logger, params):
         self.probe = SerialProbe(logger)
-        self.resp_int = params['response_interval']
-        self.resp_timer = Timer()
-        self.resp_timer.start()
-        self.logger = logger
+        super(RPBehavior, self).__init__(logger, params)
 
     def get_in_position(self):
         self.probe.get_in_position()
