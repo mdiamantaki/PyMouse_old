@@ -212,9 +212,7 @@ class PassiveMatlab(Experiment):
 
 
 class PassiveMatlabReward(PassiveMatlab):
-    def __init__(self, logger, timer, params):
-        self.stim = eval(params['stim_type'])(logger, self.get_behavior())
-        super(PassiveMatlabReward, self).__init__(logger, timer, params)
+    """ Passive Matlab with reward in between scans"""
 
     def on_hold(self, status=True):
         if not status:  # remove probe
@@ -224,6 +222,9 @@ class PassiveMatlabReward(PassiveMatlab):
             probe = self.beh.is_licking()
             if probe == 1:
                 self.beh.water_reward(1)
+
+    def get_behavior(self):
+        return SerialProbe
 
 
 class ActiveMatlab(Experiment):

@@ -246,13 +246,16 @@ class PCLogger(Logger):
         self.session_key['session_id'] = session
 
         # get task parameters for session table
-        task_fields = set(Session().heading.names).intersection(Task().heading.names)
-        task_params = (Task() & dict(task_idx=task_idx)).proj(*task_fields).fetch1()
-        del task_params['task_idx']
-        key = dict(self.session_key.items() | task_params.items())
-        key['setup'] = self.setup
-        self.queue.put(dict(table=Session(), tuple=key))
-        self.reward_amount = task_params['reward_amount']/1000  # convert to ml
+        if numpy.size((Session() & self.session_key).fetch()):  # if session exists
+            self.reward_amount = (Session() & self.session_key).fetch1('reward_amount')/1000
+        else:
+            task_fields = set(Session().heading.names).intersection(Task().heading.names)
+            task_params = (Task() & dict(task_idx=task_idx)).proj(*task_fields).fetch1()
+            del task_params['task_idx']
+            key = dict(self.session_key.items() | task_params.items())
+            key['setup'] = self.setup
+            self.queue.put(dict(table=Session(), tuple=key))
+            self.reward_amount = task_params['reward_amount']/1000  # convert to ml
 
         # start session time
         self.timer.start()
