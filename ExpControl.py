@@ -44,7 +44,6 @@ class ExpControl:
                 pass
             self.logger.update_setup_state('systemReady')
 
-
     def do_start_session(self):
         """start stimulation session"""
         if not self.logger.get_setup_state() == 'sessionRunning':
@@ -77,9 +76,13 @@ class ExpControl:
             self.do_stop_stim()  # first stop the stimulaton
             self.logger.update_setup_state('systemReady')
 
-    def process_command(self,command):
-        if not command == self.prev_command: # only process changes in command
-        #   process command
+    def process_command(self, command):
+        if not command == self.prev_command:  # only process changes in command
+
+            # undo stuff
+            self.exprmt.on_hold(False)
+
+            #   process command
             self.prev_command = command
             if command == 'Initialize':
                 # wait for initialization
@@ -94,3 +97,7 @@ class ExpControl:
                 self.do_stop_session()
             else:
                 pass
+
+        elif command == 'Initialize' or command == 'stopStim':  # Trying to catch the period in between scans
+            self.exprmt.on_hold()
+

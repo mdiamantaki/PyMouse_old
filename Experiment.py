@@ -47,6 +47,10 @@ class Experiment:
         """Handle intertrial period events"""
         pass
 
+    def on_hold(self, status=False):
+        """Handle events that happen in between experiments"""
+        pass
+
     def cleanup(self):
         self.beh.cleanup()
         self.logger.update_setup_state('ready')  # update setup state
@@ -205,6 +209,21 @@ class PassiveMatlab(Experiment):
         self.beh.cleanup()
         self.stim.cleanup()
         self.stim.close()
+
+
+class PassiveMatlabReward(PassiveMatlab):
+    def __init__(self, logger, timer, params):
+        self.stim = eval(params['stim_type'])(logger, self.get_behavior())
+        super(ActiveMatlab, self).__init__(logger, timer, params)
+
+    def on_hold(self, status=True):
+        if not status:  # remove probe
+            self.beh.get_off_position()
+        else:
+            self.beh.get_in_position()
+            probe = self.beh.is_licking()
+            if probe == 1:
+                self.beh.water_reward(1)
 
 
 class ActiveMatlab(Experiment):

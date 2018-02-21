@@ -32,6 +32,12 @@ class Behavior:
     def cleanup(self):
         pass
 
+    def get_in_position(self):
+        pass
+
+    def get_off_position(self):
+        pass
+
 
 class RPBehavior(Behavior):
     """ This class handles the behavior variables for RP """
@@ -43,6 +49,9 @@ class RPBehavior(Behavior):
         probe = self.probe.lick()
         if self.resp_timer.elapsed_time() < self.resp_int:
             probe = 0
+        # reset lick timer if licking is detected &
+        if probe > 0:
+            self.resp_timer.start()
         return probe
 
     def is_ready(self):
@@ -70,6 +79,16 @@ class TPBehavior(RPBehavior):
     def __init__(self, logger, params):
         self.probe = SerialProbe(logger)
         super(RPBehavior, self).__init__(logger, params)
+
+    def get_in_position(self):
+        self.probe.get_in_position()
+
+    def get_off_position(self):
+        self.probe.get_off_position()
+
+    def is_ready(self):
+        ready = self.probe.in_position()
+        return ready, 0
 
 
 class DummyProbe(Behavior):

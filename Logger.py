@@ -237,14 +237,28 @@ class PCLogger(Logger):
         self.trial_idx = []
 
     def log_session(self):
-        task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('task_idx')
+        task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id', 'session', 'task_idx')
+        animal_id = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id')
+        session = (SetupControl() & dict(setup=self.setup)).fetch1('session')
+
         self.task_idx = task_idx
+
+        # create session key
+        self.session_key['animal_id'] = animal_id
+        self.session_key['session_id'] = session
+
+        # get task parameters for session table
+        task_fields = set(Session().heading.names).intersection(Task().heading.names)
+        task_params = (Task() & dict(task_idx=task_idx)).proj(*task_fields).fetch1()
+        del task_params['task_idx']
+        key = dict(self.session_key.items() | task_params.items())
+        key['setup'] = self.setup
+        self.queue.put(dict(table=Session(), tuple=key))
+        self.reward_amount = task_params['reward_amount']/1000  # convert to ml
+
         # start session time
         self.timer.start()
-
-    def log_setup(self):
-        """Log setup information"""
-        pass
+        self.inserter()
 
     def update_setup_state(self, state):
         key = (SetupControl() & dict(setup=self.setup)).fetch1()
