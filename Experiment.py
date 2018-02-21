@@ -214,7 +214,7 @@ class PassiveMatlab(Experiment):
 class PassiveMatlabReward(PassiveMatlab):
     def __init__(self, logger, timer, params):
         self.stim = eval(params['stim_type'])(logger, self.get_behavior())
-        super(ActiveMatlab, self).__init__(logger, timer, params)
+        super(PassiveMatlabReward, self).__init__(logger, timer, params)
 
     def on_hold(self, status=True):
         if not status:  # remove probe
