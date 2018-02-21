@@ -237,9 +237,7 @@ class PCLogger(Logger):
         self.trial_idx = []
 
     def log_session(self):
-        task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id', 'session', 'task_idx')
-        animal_id = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id')
-        session = (SetupControl() & dict(setup=self.setup)).fetch1('session')
+        animal_id, session, task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id', 'session', 'task_idx')
 
         self.task_idx = task_idx
 
