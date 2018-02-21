@@ -149,7 +149,7 @@ class RPProbe(Probe):
 
 class SerialProbe(Probe):
     def __init__(self, logger):
-        if platform.system() == 'linux':
+        if platform.system() == 'Linux':
             ser_port = '/dev/ttyUSB0'
         else:
             ser_port = '/dev/cu.UC-232AC'
