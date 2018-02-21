@@ -182,15 +182,15 @@ class SerialProbe(Probe):
             if self.timer_probe2.elapsed_time() > 200:
                 self.probe2_licked(2)
 
-    def __pulse_out(self, probe, duration):
+    def __pulse_out(self, duration):
         while self.interlock:  # busy, wait for free, should timeout here
             print("waiting for interlock")
             sys.stdout.flush()
+        print('reward!')
         self.interlock = True
-        if probe == 1:
-            self.serial.dtr = True
-            sleep(duration/1000)
-            self.serial.dtr = False
+        self.serial.dtr = True
+        sleep(duration/1000)
+        self.serial.dtr = False
         self.interlock = False
 
     def get_in_position(self):

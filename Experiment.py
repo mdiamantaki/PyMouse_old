@@ -218,6 +218,7 @@ class PassiveMatlabReward(PassiveMatlab):
         if not status:  # remove probe
             self.beh.get_off_position()
         else:
+            print('delivering reward')
             self.beh.get_in_position()
             probe = self.beh.is_licking()
             if probe == 1:
