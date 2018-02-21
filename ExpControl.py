@@ -78,10 +78,6 @@ class ExpControl:
 
     def process_command(self, command):
         if not command == self.prev_command:  # only process changes in command
-
-            # undo stuff
-            self.exprmt.on_hold(False)
-
             #   process command
             self.prev_command = command
             if command == 'Initialize':
@@ -90,6 +86,7 @@ class ExpControl:
             elif command == 'startSession':
                 self.do_start_session()
             elif command == 'startStim':
+                self.exprmt.on_hold(False)  # undo stuff
                 self.do_start_stim()  # this is a busy loop
             elif command == 'stopStim':
                 self.do_stop_stim()
@@ -98,6 +95,6 @@ class ExpControl:
             else:
                 pass
 
-        elif command == 'Initialize' or command == 'stopStim':  # Trying to catch the period in between scans
+        elif (command == 'Initialize' or command == 'stopStim') and self.exprmt is not None:  # Trying to catch the period in between scans
             self.exprmt.on_hold()
 
