@@ -45,7 +45,7 @@ class Experiment:
 
     def inter_trial(self):
         """Handle intertrial period events"""
-        pass
+        self.logger.ping()
 
     def on_hold(self, status=False):
         """Handle events that happen in between experiments"""
