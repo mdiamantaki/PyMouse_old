@@ -59,6 +59,12 @@ class Probe:
     def in_position(self):
         return True, 0
 
+    def get_in_position(self):
+        pass
+
+    def get_off_position(self):
+        pass
+
     def __calc_pulse_dur(self, reward_amount):  # calculate pulse duration for the desired reward amount
         self.liquid_dur = dict()
         probes = (LiquidCalibration() & dict(setup=self.logger.setup)).fetch('probe')
@@ -143,13 +149,13 @@ class RPProbe(Probe):
 
 class SerialProbe(Probe):
     def __init__(self, logger):
-        if platform.system() == 'linux':
+        if platform.system() == 'Linux':
             ser_port = '/dev/ttyUSB0'
         else:
             ser_port = '/dev/cu.UC-232AC'
         self.serial = serial.serial_for_url(ser_port)
-        self.serial.dtr = False
-        self.serial.rts = False
+        self.serial.dtr = False  # probe 1
+        self.serial.rts = False  # place probe in position
         super(SerialProbe, self).__init__(logger)
         self.worker = GetHWPoller(0.001, self.poll_probe)
         self.interlock = False  # set to prohibit thread from accessing serial port
@@ -176,20 +182,29 @@ class SerialProbe(Probe):
             if self.timer_probe2.elapsed_time() > 200:
                 self.probe2_licked(2)
 
-    def __pulse_out(self, probe, duration):
+    def __pulse_out(self, duration):
         while self.interlock:  # busy, wait for free, should timeout here
             print("waiting for interlock")
             sys.stdout.flush()
+        print('reward!')
         self.interlock = True
-        if probe == 1:
-            self.serial.dtr = True
-            sleep(duration/1000)
-            self.serial.dtr = False
-        elif probe == 2:
-            self.serial.rts = True
-            sleep(duration/1000)
-            self.serial.rts = False
+        self.serial.dtr = True
+        sleep(duration/1000)
+        self.serial.dtr = False
         self.interlock = False
+
+    def get_in_position(self):
+        if not self.ready:
+            self.serial.rts = True
+            self.ready = True
+
+    def get_off_position(self):
+        if self.ready:
+            self.serial.rts = False
+            self.ready = False
+
+    def in_position(self):
+        return self.ready
 
     def cleanup(self):
         self.worker.kill()
