@@ -237,13 +237,18 @@ class PCLogger(Logger):
         self.trial_idx = []
 
     def log_session(self):
-        animal_id, session, task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id', 'session', 'task_idx')
+        animal_id, task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id', 'task_idx')
 
         self.task_idx = task_idx
 
         # create session key
         self.session_key['animal_id'] = animal_id
-        self.session_key['session_id'] = session
+        last_sessions = (Session() & self.session_key).fetch('session_id')
+        if numpy.size(last_sessions) == 0:
+            last_session = 0
+        else:
+            last_session = numpy.max(last_sessions)
+        self.session_key['session_id'] = last_session + 1
 
         # get task parameters for session table
         if numpy.size((Session() & self.session_key).fetch()):  # if session exists
