@@ -35,11 +35,24 @@ def train(logger=logg):
             logger.update_setup_state('offtime')
         while (datetime.now() < start or datetime.now() > stop) and logger.get_setup_state() == 'offtime':
             logger.ping()
+            now = datetime.now()
+            start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
+            stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
+            if stop < start:
+                stop = stop.replace(day=now.day + 1)
             time.sleep(5)
-        if logger.get_setup_state() == 'offtime':
-            logger.update_setup_state('running')
-        elif logger.get_setup_state() == 'stopped':
-            break
+        else:
+            if logger.get_setup_state() == 'offtime':
+                # # # # # New session # # # # #
+                logger.init_params()  # clear settings from previous session
+                logger.log_session()  # start session
+                params = (Task() & dict(task_idx=logger.task_idx)).fetch1()  # get parameters
+                timer = Timer()  # main timer for trials
+                exprmt = eval(params['exp_type'])(logger, timer, params)  # get experiment & init
+                exprmt.prepare()  # prepare stuff
+                logger.update_setup_state('running')
+            elif logger.get_setup_state() == 'stopped':
+                break
 
         # # # # # Pre-Trial period # # # # #
         exprmt.pre_trial()
