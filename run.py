@@ -33,7 +33,7 @@ def train(logger=logg):
             stop = stop.replace(day=now.day+1)
         if now < start or now > stop:
             logger.update_setup_state('offtime')
-        while (datetime.now() < start or datetime.now() > stop) and logger.get_setup_state() == 'offtime':
+        while (now < start or now > stop) and logger.get_setup_state() == 'offtime':
             logger.ping()
             now = datetime.now()
             start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
