@@ -41,18 +41,10 @@ def train(logger=logg):
             if stop < start:
                 stop = stop.replace(day=now.day + 1)
             time.sleep(5)
-        else:
-            if logger.get_setup_state() == 'offtime':
-                # # # # # New session # # # # #
-                logger.init_params()  # clear settings from previous session
-                logger.log_session()  # start session
-                params = (Task() & dict(task_idx=logger.task_idx)).fetch1()  # get parameters
-                timer = Timer()  # main timer for trials
-                exprmt = eval(params['exp_type'])(logger, timer, params)  # get experiment & init
-                exprmt.prepare()  # prepare stuff
-                logger.update_setup_state('running')
-            elif logger.get_setup_state() == 'stopped':
-                break
+        if logger.get_setup_state() == 'offtime':
+            logger.update_setup_state('running')
+        elif logger.get_setup_state() == 'stopped':
+            break
 
         # # # # # Pre-Trial period # # # # #
         exprmt.pre_trial()
