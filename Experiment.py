@@ -33,6 +33,7 @@ class Experiment:
     def pre_trial(self):
         """Prepare things before trial starts"""
         self.stim.init_trial()  # initialize stimulus
+        self.logger.ping()
 
     def trial(self):
         """Do stuff in trial, returns break condition"""
@@ -45,7 +46,7 @@ class Experiment:
 
     def inter_trial(self):
         """Handle intertrial period events"""
-        self.logger.ping()
+        pass
 
     def on_hold(self, status=False):
         """Handle events that happen in between experiments"""
