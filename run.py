@@ -2,7 +2,7 @@ from Logger import *
 from Experiment import *
 from Stimulus import *
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 
 logg = RPLogger()                                                     # setup logger & timer
 logg.log_setup()                                                    # publish IP and make setup available
@@ -30,7 +30,7 @@ def train(logger=logg):
         start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
         stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
         if stop < start:
-            stop = stop.replace(day=now.day+1)
+            stop = stop + timedelta(days=1)
         if now < start or now > stop:
             logger.update_setup_state('offtime')
         while (now < start or now > stop) and logger.get_setup_state() == 'offtime':
@@ -39,7 +39,7 @@ def train(logger=logg):
             start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
             stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
             if stop < start:
-                stop = stop.replace(day=now.day + 1)
+                stop = stop + timedelta(days=1)
             time.sleep(5)
         if logger.get_setup_state() == 'offtime':
             logger.update_setup_state('running')
