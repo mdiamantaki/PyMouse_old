@@ -14,68 +14,71 @@ stim.unshow([0, 0, 0])
 def train(logger=logg):
     """ Run training experiment """
 
-    # # # # # Prepare # # # # #
-    logger.init_params()                                            # clear settings from previous session
-    logger.log_session()                                            # start session
-    params = (Task() & dict(task_idx=logger.task_idx)).fetch1()     # get parameters
-    timer = Timer()                                                 # main timer for trials
-    exprmt = eval(params['exp_type'])(logger, timer, params)        # get experiment & init
-    exprmt.prepare()                                                # prepare stuff
+    # # # # # Global Run # # # # #
+    while logger.get_setup_state() == 'running':
 
-    # # # # # Run # # # # #
-    while exprmt.run():
+        # # # # # Prepare # # # # #
+        logger.init_params()                                            # clear settings from previous session
+        logger.log_session()                                            # start session
+        params = (Task() & dict(task_idx=logger.task_idx)).fetch1()     # get parameters
+        timer = Timer()                                                 # main timer for trials
+        exprmt = eval(params['exp_type'])(logger, timer, params)        # get experiment & init
+        exprmt.prepare()                                                # prepare stuff
 
-        # # # # # PAUSE # # # # #
-        now = datetime.now()
-        start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
-        stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
-        if stop < start:
-            stop = stop + timedelta(days=1)
-        if now < start or now > stop:
-            logger.update_setup_state('offtime')
-        while (now < start or now > stop) and logger.get_setup_state() == 'offtime':
-            logger.ping()
+        # # # # # Session Run # # # # #
+        while exprmt.run():
+
+            # # # # # PAUSE # # # # #
             now = datetime.now()
             start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
             stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
             if stop < start:
                 stop = stop + timedelta(days=1)
-            time.sleep(5)
-        if logger.get_setup_state() == 'offtime':
-            logger.update_setup_state('running')
-        elif logger.get_setup_state() == 'stopped':
-            break
+            if now < start or now > stop:
+                logger.update_setup_state('offtime')
+            while (now < start or now > stop) and logger.get_setup_state() == 'offtime':
+                logger.ping()
+                now = datetime.now()
+                start = params['start_time'] + now.replace(hour=0, minute=0, second=0)
+                stop = params['stop_time'] + now.replace(hour=0, minute=0, second=0)
+                if stop < start:
+                    stop = stop + timedelta(days=1)
+                time.sleep(5)
+            if logger.get_setup_state() == 'offtime':
+                logger.update_setup_state('running')
+                break
 
-        # # # # # Pre-Trial period # # # # #
-        exprmt.pre_trial()
+            # # # # # Pre-Trial period # # # # #
+            exprmt.pre_trial()
 
-        # # # # # Trial period # # # # #
-        timer.start()                                                # Start countdown for response
-        while timer.elapsed_time() < params['trial_duration']*1000:  # response period
-            break_trial = exprmt.trial()                             # get appropriate response
-            if break_trial:
-                break                                                # break if experiment calls for it
+            # # # # # Trial period # # # # #
+            timer.start()                                                # Start countdown for response
+            while timer.elapsed_time() < params['trial_duration']*1000:  # response period
+                break_trial = exprmt.trial()                             # get appropriate response
+                if break_trial:
+                    break                                                # break if experiment calls for it
 
-        # # # # # Post-Trial Period # # # # #
-        exprmt.post_trial()
+            # # # # # Post-Trial Period # # # # #
+            exprmt.post_trial()
 
-        # # # # # Intertrial period # # # # #
-        timer.start()
-        while timer.elapsed_time() < params['intertrial_duration']*1000:
-            exprmt.inter_trial()
+            # # # # # Intertrial period # # # # #
+            timer.start()
+            while timer.elapsed_time() < params['intertrial_duration']*1000:
+                exprmt.inter_trial()
 
-    # # # # # Cleanup # # # # #
-    exprmt.cleanup()
+        # # # # # Cleanup # # # # #
+        exprmt.cleanup()
+
 
 
 def calibrate(logger=logg):
     """ Lickspout liquid delivery calibration """
     task_idx = (SetupInfo() & dict(setup=logger.setup)).fetch1['task_idx']
-    duration, probes, pulsenum, pulse_interval, save = \
+    duration, probes, pulsenum, pulse_interval, save, probe_control = \
         (CalibrationTask() & dict(task_idx=task_idx)).fetch1[
-            'pulse_dur', 'probe', 'pulse_num', 'pulse_interval', 'save']
+            'pulse_dur', 'probe', 'pulse_num', 'pulse_interval', 'save', 'probe_control']
     probes = eval(probes)
-    valve = ValveControl(logger)                                    # get valve object
+    valve = probe_control(logger)  # get valve object
     print('Running calibration')
     pulse = 0
     stim = Stimulus(logger)
@@ -102,6 +105,7 @@ def calibrate(logger=logg):
 while not logg.get_setup_state() == 'stopped':
     while logg.get_setup_state() == 'ready':                        # wait for remote start
         time.sleep(1)
+        logg.ping()
     if not logg.get_setup_state() == 'stopped':                     # run experiment unless stopped
         #try:
         eval(logg.get_setup_task())(logg)
@@ -112,5 +116,3 @@ while not logg.get_setup_state() == 'stopped':
 
 # # # # # Exit # # # # #
 sys.exit(0)
-
-
