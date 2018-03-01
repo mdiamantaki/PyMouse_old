@@ -54,7 +54,6 @@ class Experiment:
 
     def cleanup(self):
         self.beh.cleanup()
-        self.logger.update_setup_state('ready')  # update setup state
 
     def get_behavior(self):
         return RPBehavior  # default is raspberry pi
