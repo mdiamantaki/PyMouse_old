@@ -125,9 +125,12 @@ class MultiProbe(Experiment):
         self.stim.stop_trial()  # stop stimulus when timeout
         self.responded = False
         self.timer.start()
+        if self.post_wait > 0:
+            self.stim.unshow([0, 0, 0])
         while self.timer.elapsed_time()/1000 < self.post_wait and self.logger.get_setup_state() == 'running':
             time.sleep(0.5)
         self.post_wait = 0
+        self.stim.unshow()
 
     def inter_trial(self):
         if self.beh.is_licking():
@@ -311,9 +314,12 @@ class CenterPort(Experiment):
     def post_trial(self):
         self.stim.stop_trial()  # stop stimulus when timeout
         self.timer.start()
+        if self.post_wait > 0:
+            self.stim.unshow([0, 0, 0])
         while self.timer.elapsed_time()/1000 < self.post_wait and self.logger.get_setup_state() == 'running':
             time.sleep(0.5)
         self.post_wait = 0
+        self.stim.unshow()
 
     def inter_trial(self):
         if self.beh.is_licking():
