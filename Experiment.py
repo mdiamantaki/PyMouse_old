@@ -279,7 +279,7 @@ class CenterPort(Experiment):
         self.stim.prepare(self.conditions)  # prepare stimulus
 
     def pre_trial(self):
-        cond = self._get_new_cond
+        cond = self._get_new_cond()
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
         is_ready, ready_time = self.beh.is_ready()
         while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
