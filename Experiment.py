@@ -286,7 +286,11 @@ class CenterPort(Experiment):
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
         is_ready, ready_time = self.beh.is_ready()
         while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
-            time.sleep(.1)
+            if ready_time > 0:
+                time.sleep(.05)
+            else:
+                self.logger.ping()
+                time.sleep(.5)
             is_ready, ready_time = self.beh.is_ready()
         if self.logger.get_setup_state() == 'running':
             print('Starting trial!')
