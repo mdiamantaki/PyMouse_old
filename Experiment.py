@@ -125,9 +125,12 @@ class MultiProbe(Experiment):
         self.stim.stop_trial()  # stop stimulus when timeout
         self.responded = False
         self.timer.start()
+        if self.post_wait > 0:
+            self.stim.unshow([0, 0, 0])
         while self.timer.elapsed_time()/1000 < self.post_wait and self.logger.get_setup_state() == 'running':
             time.sleep(0.5)
         self.post_wait = 0
+        self.stim.unshow()
 
     def inter_trial(self):
         if self.beh.is_licking():
@@ -279,11 +282,15 @@ class CenterPort(Experiment):
         self.stim.prepare(self.conditions)  # prepare stimulus
 
     def pre_trial(self):
-        cond = self._get_new_cond
+        cond = self._get_new_cond()
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
         is_ready, ready_time = self.beh.is_ready()
         while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
-            time.sleep(.1)
+            if ready_time > 0:
+                time.sleep(.05)
+            else:
+                self.logger.ping()
+                time.sleep(.5)
             is_ready, ready_time = self.beh.is_ready()
         if self.logger.get_setup_state() == 'running':
             print('Starting trial!')
@@ -311,9 +318,12 @@ class CenterPort(Experiment):
     def post_trial(self):
         self.stim.stop_trial()  # stop stimulus when timeout
         self.timer.start()
+        if self.post_wait > 0:
+            self.stim.unshow([0, 0, 0])
         while self.timer.elapsed_time()/1000 < self.post_wait and self.logger.get_setup_state() == 'running':
             time.sleep(0.5)
         self.post_wait = 0
+        self.stim.unshow()
 
     def inter_trial(self):
         if self.beh.is_licking():

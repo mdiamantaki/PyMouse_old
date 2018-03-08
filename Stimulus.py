@@ -150,7 +150,10 @@ class RPMovies(Stimulus):
         return cond
 
     def stop_trial(self):
-        self.vid.quit()
+        try:
+            self.vid.quit()
+        except:
+            pass
         self.unshow()
         self.isrunning = False
         self.logger.log_trial(self.flip_count)  # log trial
