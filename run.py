@@ -99,6 +99,7 @@ def calibrate(logger=logg):
     stim.screen.fill((255, 255, 255))
     stim.screen.blit(font.render('Done calibrating', True, (0, 128, 0)), (stim.size[1]/4, stim.size[1]/2))
     stim.flip()
+    valve.cleanup()
 
 
 # # # # Waiting for instructions loop # # # # #
