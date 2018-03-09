@@ -79,7 +79,7 @@ def calibrate(logger=logg):
             'pulse_dur', 'probe', 'pulse_num', 'pulse_interval', 'save', 'probe_control')
     probes = eval(probes)
     #valve = probe_control(logger)  # get valve object
-    valve = eval(probe_control(logger))
+    valve = eval(probe_control)(logger)
     print('Running calibration')
     pulse = 0
     stim = Stimulus(logger)
