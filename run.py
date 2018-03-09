@@ -78,8 +78,7 @@ def calibrate(logger=logg):
         (CalibrationTask() & dict(task_idx=task_idx)).fetch1(
             'pulse_dur', 'probe', 'pulse_num', 'pulse_interval', 'save', 'probe_control')
     probes = eval(probes)
-    #valve = probe_control(logger)  # get valve object
-    valve = eval(probe_control)(logger)
+    valve = eval(probe_control)(logger)  # get valve object
     print('Running calibration')
     pulse = 0
     stim = Stimulus(logger)
