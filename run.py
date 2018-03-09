@@ -73,10 +73,10 @@ def train(logger=logg):
 
 def calibrate(logger=logg):
     """ Lickspout liquid delivery calibration """
-    task_idx = (SetupInfo() & dict(setup=logger.setup)).fetch1['task_idx']
+    task_idx = (SetupInfo() & dict(setup=logger.setup)).fetch1('task_idx')
     duration, probes, pulsenum, pulse_interval, save, probe_control = \
-        (CalibrationTask() & dict(task_idx=task_idx)).fetch1[
-            'pulse_dur', 'probe', 'pulse_num', 'pulse_interval', 'save', 'probe_control']
+        (CalibrationTask() & dict(task_idx=task_idx)).fetch1(
+            'pulse_dur', 'probe', 'pulse_num', 'pulse_interval', 'save', 'probe_control')
     probes = eval(probes)
     valve = probe_control(logger)  # get valve object
     print('Running calibration')
