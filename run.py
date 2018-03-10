@@ -49,7 +49,9 @@ def train(logger=logg):
                 break
 
             # # # # # Pre-Trial period # # # # #
-            exprmt.pre_trial()
+            break_trial = exprmt.pre_trial()
+            if break_trial:
+                break
 
             # # # # # Trial period # # # # #
             timer.start()                                                # Start countdown for response
