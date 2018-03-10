@@ -278,6 +278,7 @@ class CenterPort(Experiment):
 
     def __init__(self, logger, timer, params):
         self.post_wait = 0
+        self.wait_time = Timer()
         super(CenterPort, self).__init__(logger, timer, params)
 
     def prepare(self):
@@ -289,12 +290,14 @@ class CenterPort(Experiment):
         cond = self._get_new_cond()
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
         is_ready, ready_time = self.beh.is_ready()
+        self.wait_time.start()
         while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
             if ready_time > 0:
                 time.sleep(.05)
-            else:
-                self.logger.ping()
-                time.sleep(.5)
+                if self.wait_time.elapsed_time() > 5000:  # ping every 5 seconds
+                    self.logger.ping()
+                    self.wait_time.start()
+
             is_ready, ready_time = self.beh.is_ready()
         if self.logger.get_setup_state() == 'running':
             print('Starting trial!')
