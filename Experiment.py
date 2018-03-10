@@ -292,11 +292,10 @@ class CenterPort(Experiment):
         is_ready, ready_time = self.beh.is_ready()
         self.wait_time.start()
         while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
-            if ready_time > 0:
-                time.sleep(.05)
-                if self.wait_time.elapsed_time() > 5000:  # ping every 5 seconds
-                    self.logger.ping()
-                    self.wait_time.start()
+            time.sleep(.02)
+            if self.wait_time.elapsed_time() > 5000:  # ping every 5 seconds
+                self.logger.ping()
+                self.wait_time.start()
 
             is_ready, ready_time = self.beh.is_ready()
         if self.logger.get_setup_state() == 'running':
