@@ -34,6 +34,7 @@ class Experiment:
         """Prepare things before trial starts"""
         self.stim.init_trial()  # initialize stimulus
         self.logger.ping()
+        return False
 
     def trial(self):
         """Do stuff in trial, returns break condition"""
@@ -100,6 +101,7 @@ class MultiProbe(Experiment):
         self.stim.init_trial(cond)
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
         self.beh.is_licking()
+        return False
 
     def trial(self):
         self.stim.present_trial()  # Start Stimulus
@@ -198,6 +200,7 @@ class PassiveMatlab(Experiment):
 
     def pre_trial(self):
         self.stim.init_trial()  # initialize stimulus
+        return False
 
     def trial(self):
         return self.stim.trial.done()
@@ -245,6 +248,7 @@ class ActiveMatlab(Experiment):
         self.stim.init_trial()  # initialize stimulus
         self.reward_probe = self.stim.mat.stimulus.get_reward_probe(self, self.logger.get_trial_key())
         self.beh.is_licking()
+        return False
 
     def trial(self):
         probe = self.beh.is_licking()
@@ -296,6 +300,9 @@ class CenterPort(Experiment):
             print('Starting trial!')
             self.stim.init_trial(cond)
             self.beh.is_licking()
+            return False
+        else:
+            return True
 
     def trial(self):
         if self.logger.get_setup_state() != 'running':
