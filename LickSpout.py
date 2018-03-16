@@ -48,13 +48,13 @@ class Probe:
         self.probe1 = True
         self.timer_probe1.start()
         self.logger.log_lick(1)
-        print('Probe 1 activated')
+        #print('Probe 1 activated')
 
     def probe2_licked(self, channel):
         self.probe2 = True
         self.timer_probe2.start()
         self.logger.log_lick(2)
-        print('Probe 2 activated')
+        #print('Probe 2 activated')
 
     def in_position(self):
         return True, 0
