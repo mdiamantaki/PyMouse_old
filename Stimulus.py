@@ -145,9 +145,9 @@ class RPMovies(Stimulus):
         self.isrunning = True
         filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) &
                                      self.logger.session_key).fetch1('file_name')
-        self.logger.start_trial(cond)  # log start trial
         self.vid = self.player(filename, args=['--win', '0 15 800 465', '--no-osd'],
                                dbus_name='org.mpris.MediaPlayer2.omxplayer0')  # start video
+        self.logger.start_trial(cond)  # log start trial
         return cond
 
     def stop_trial(self):
