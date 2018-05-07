@@ -48,13 +48,13 @@ class Probe:
         self.probe1 = True
         self.timer_probe1.start()
         self.logger.log_lick(1)
-        print('Probe 1 activated')
+        #print('Probe 1 activated')
 
     def probe2_licked(self, channel):
         self.probe2 = True
         self.timer_probe2.start()
         self.logger.log_lick(2)
-        print('Probe 2 activated')
+        #print('Probe 2 activated')
 
     def in_position(self):
         return True, 0
@@ -132,7 +132,11 @@ class RPProbe(Probe):
         ready = self.GPIO.input(self.channels['start'][1])
         if self.ready != ready:
             self.position_change()
-        return self.ready, self.timer_ready.elapsed_time()
+        if not self.ready:
+            ready_time = 0
+        else:
+            ready_time = self.timer_ready.elapsed_time()
+        return self.ready, ready_time
 
     def __pulse_out(self, channel, duration):
         self.GPIO.output(channel, self.GPIO.HIGH)
@@ -142,8 +146,7 @@ class RPProbe(Probe):
     def cleanup(self):
         self.GPIO.remove_event_detect(self.channels['lick'][1])
         self.GPIO.remove_event_detect(self.channels['lick'][2])
-        if 3000 < self.setup < 3100:
-            self.GPIO.remove_event_detect(self.channels['start'][1])
+        self.GPIO.remove_event_detect(self.channels['start'][1])
         self.GPIO.cleanup()
 
 

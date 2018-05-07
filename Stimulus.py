@@ -145,12 +145,21 @@ class RPMovies(Stimulus):
         self.isrunning = True
         filename = self.path + (Movie.Clip() * MovieClipCond() & dict(cond_idx=cond) &
                                      self.logger.session_key).fetch1('file_name')
+        try:
+            self.vid = self.player(filename, args=['--win', '0 15 800 465', '--no-osd'],
+                                   dbus_name='org.mpris.MediaPlayer2.omxplayer0')  # start video
+        except:
+            self.logger.update_setup_notes('dbError')
+            raise SystemError('DBus cannot connect to the OMXPlayer process')
+
         self.logger.start_trial(cond)  # log start trial
-        self.vid = self.player(filename, args=['--win', '0 15 800 465', '--no-osd'])  # start video
         return cond
 
     def stop_trial(self):
-        self.vid.quit()
+        try:
+            self.vid.quit()
+        except:
+            pass
         self.unshow()
         self.isrunning = False
         self.logger.log_trial(self.flip_count)  # log trial

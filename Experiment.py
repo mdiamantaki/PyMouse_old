@@ -33,6 +33,8 @@ class Experiment:
     def pre_trial(self):
         """Prepare things before trial starts"""
         self.stim.init_trial()  # initialize stimulus
+        self.logger.ping()
+        return False
 
     def trial(self):
         """Do stuff in trial, returns break condition"""
@@ -45,7 +47,7 @@ class Experiment:
 
     def inter_trial(self):
         """Handle intertrial period events"""
-        self.logger.ping()
+        pass
 
     def on_hold(self, status=False):
         """Handle events that happen in between experiments"""
@@ -53,7 +55,6 @@ class Experiment:
 
     def cleanup(self):
         self.beh.cleanup()
-        self.logger.update_setup_state('ready')  # update setup state
 
     def get_behavior(self):
         return RPBehavior  # default is raspberry pi
@@ -100,6 +101,7 @@ class MultiProbe(Experiment):
         self.stim.init_trial(cond)
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
         self.beh.is_licking()
+        return False
 
     def trial(self):
         self.stim.present_trial()  # Start Stimulus
@@ -125,9 +127,12 @@ class MultiProbe(Experiment):
         self.stim.stop_trial()  # stop stimulus when timeout
         self.responded = False
         self.timer.start()
+        if self.post_wait > 0:
+            self.stim.unshow([0, 0, 0])
         while self.timer.elapsed_time()/1000 < self.post_wait and self.logger.get_setup_state() == 'running':
             time.sleep(0.5)
         self.post_wait = 0
+        self.stim.unshow()
 
     def inter_trial(self):
         if self.beh.is_licking():
@@ -195,6 +200,7 @@ class PassiveMatlab(Experiment):
 
     def pre_trial(self):
         self.stim.init_trial()  # initialize stimulus
+        return False
 
     def trial(self):
         return self.stim.trial.done()
@@ -242,6 +248,7 @@ class ActiveMatlab(Experiment):
         self.stim.init_trial()  # initialize stimulus
         self.reward_probe = self.stim.mat.stimulus.get_reward_probe(self, self.logger.get_trial_key())
         self.beh.is_licking()
+        return False
 
     def trial(self):
         probe = self.beh.is_licking()
@@ -271,6 +278,7 @@ class CenterPort(Experiment):
 
     def __init__(self, logger, timer, params):
         self.post_wait = 0
+        self.wait_time = Timer()
         super(CenterPort, self).__init__(logger, timer, params)
 
     def prepare(self):
@@ -279,16 +287,24 @@ class CenterPort(Experiment):
         self.stim.prepare(self.conditions)  # prepare stimulus
 
     def pre_trial(self):
-        cond = self._get_new_cond
+        cond = self._get_new_cond()
         self.reward_probe = (RewardCond() & self.logger.session_key & dict(cond_idx=cond)).fetch1('probe')
         is_ready, ready_time = self.beh.is_ready()
+        self.wait_time.start()
         while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
-            time.sleep(.1)
+            time.sleep(.02)
+            if self.wait_time.elapsed_time() > 5000:  # ping every 5 seconds
+                self.logger.ping()
+                self.wait_time.start()
+
             is_ready, ready_time = self.beh.is_ready()
         if self.logger.get_setup_state() == 'running':
             print('Starting trial!')
             self.stim.init_trial(cond)
             self.beh.is_licking()
+            return False
+        else:
+            return True
 
     def trial(self):
         if self.logger.get_setup_state() != 'running':
@@ -311,9 +327,12 @@ class CenterPort(Experiment):
     def post_trial(self):
         self.stim.stop_trial()  # stop stimulus when timeout
         self.timer.start()
+        if self.post_wait > 0:
+            self.stim.unshow([0, 0, 0])
         while self.timer.elapsed_time()/1000 < self.post_wait and self.logger.get_setup_state() == 'running':
             time.sleep(0.5)
         self.post_wait = 0
+        self.stim.unshow()
 
     def inter_trial(self):
         if self.beh.is_licking():
