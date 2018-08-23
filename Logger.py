@@ -210,6 +210,9 @@ class RPLogger(Logger):
             (SetupInfo() & dict(setup=self.setup))._update('state', state)
         return in_state
 
+    def update_setup_notes(self, note):
+        (SetupInfo() & dict(setup=self.setup))._update('notes', note)
+
     def get_setup_state(self):
         state = (SetupInfo() & dict(setup=self.setup)).fetch1('state')
         return state

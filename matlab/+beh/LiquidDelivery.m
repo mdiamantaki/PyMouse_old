@@ -25,7 +25,7 @@ classdef LiquidDelivery < dj.Relvar
             mice = unique(fetchn(obj & 'animal_id>0','animal_id'));
             for imouse = 1:length(mice)
                 figure
-                daytimeFunc = @(sesstime, times) datenum(sesstime,'YYYY-mm-dd HH:MM:SS') - 18/24 + times/1000/3600/24;
+                daytimeFunc = @(sesstime, times) datenum(sesstime,'YYYY-mm-dd HH:MM:SS') + times/1000/3600/24;
                 k.animal_id = mice(imouse);
                 [times, sess_times, rew] = fetchn(obj * beh.Session & k,...
                     'time','session_tmst','reward_amount');
