@@ -33,19 +33,20 @@ classdef Lick < dj.Relvar
             
             params = getParams(params, varargin);
             
-            if isempty(restrict) || ~isstruct(restrict)
-                mice = fetchn(beh.SetupInfo & beh.Condition & beh.Trial & 'animal_id>0','animal_id');
+            if nargin<2 || isempty(restrict) || ~isstruct(restrict)
+                [mice,state] = fetchn(beh.SetupInfo & beh.Condition & beh.Trial & 'animal_id>0','animal_id','state');
                 keys = [];
                 for imouse=1:length(mice)
                     keys(imouse).animal_id = mice(imouse);
                     k.animal_id = mice(imouse);
-                    if strcmp(restrict,'full')
-                        sessions = fetch(beh.Session & beh.Condition & beh.Trial & k & (beh.MovieClipCond & 'movie_name="obj1v4"') & ...
-                            (beh.MovieClipCond & 'movie_name="obj2v4"'),'ORDER BY session_id DESC');
+                    sessions = fetch(beh.Session & beh.Condition & beh.Trial & k ,'ORDER BY session_id DESC');
+                    if (nargin>2 && strcmp(restrict,'now')) || ~strcmp(state{imouse},'running')
+                        sess_idx = 1;
                     else
-                        sessions = fetch(beh.Session & beh.Condition & beh.Trial & k ,'ORDER BY session_id DESC');
+                        sess_idx = 2;
                     end
-                    keys(imouse).session_id = sessions(1).session_id;
+                   
+                    keys(imouse).session_id = sessions(sess_idx).session_id;
                 end
                 keys = keys';
                 assert(~isempty(keys),'no keys specified!')
@@ -129,12 +130,12 @@ classdef Lick < dj.Relvar
                         set(gca,'ytick',[])
                     end
                     
-                     if icond == length(conds)
-                         tr(end+1) = t;
-                               l = legend(tr,'Probe #1','Probe #2','Trial start');
-                                 set(l,'box','off','fontsize',params.fontsize,'location','southeast')
-                     end
-                        
+                    if icond == length(conds)
+                        tr(end+1) = t;
+                        l = legend(tr,'Probe #1','Probe #2','Trial start');
+                        set(l,'box','off','fontsize',params.fontsize,'location','southeast')
+                    end
+                    
                     colors = [0 0 1;1 0 0];
                     rprob = fetch1(beh.RewardCond & key & conds(icond),'probe');
                     if count(beh.MovieClipCond & conds(1))>0
@@ -145,7 +146,7 @@ classdef Lick < dj.Relvar
                         title(sprintf('Direction: %d \n Reward Probe:%d',direction, rprob))
                     end
                     
-                        
+                    
                     % average licking plots
                     if params.average
                         set(gca,'xtick',[],'XColor',[1 1 1])
@@ -167,8 +168,8 @@ classdef Lick < dj.Relvar
                                     lick_det = find(Ltimes(idx)<bins(ibin) & Ltimes(idx)>=bins(ibin-1),1,'first');
                                     probe=P(idx);
                                     if probe(lick_det)==1
-                                         N(itrial,ibin-1) =1;
-                                         N2(itrial,ibin-1)= 0;
+                                        N(itrial,ibin-1) =1;
+                                        N2(itrial,ibin-1)= 0;
                                     elseif probe(lick_det)==2
                                         N(itrial,ibin-1)=0;
                                         N2(itrial,ibin-1) =1;
@@ -176,8 +177,8 @@ classdef Lick < dj.Relvar
                                         N(itrial,ibin-1) =0;
                                         N2(itrial,ibin-1) =0;
                                     end
-%                                     N(itrial,ibin-1) = any(Ltimes(idx)<bins(ibin) & Ltimes(idx)>=bins(ibin-1) & P(idx)==1);
-%                                     N2(itrial,ibin-1) = any(Ltimes(idx)<bins(ibin) & Ltimes(idx)>=bins(ibin-1) & P(idx)==2);
+                                    %                                     N(itrial,ibin-1) = any(Ltimes(idx)<bins(ibin) & Ltimes(idx)>=bins(ibin-1) & P(idx)==1);
+                                    %                                     N2(itrial,ibin-1) = any(Ltimes(idx)<bins(ibin) & Ltimes(idx)>=bins(ibin-1) & P(idx)==2);
                                 end
                             end
                             N = mean(N);
@@ -197,7 +198,7 @@ classdef Lick < dj.Relvar
                         else
                             set(gca,'ytick',[])
                         end
-                       
+                        
                     else
                         if icond==1; xlabel('Time (sec)','fontsize',params.fontsize);end
                     end
