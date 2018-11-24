@@ -43,6 +43,7 @@ classdef LiquidDelivery < dj.Relvar
                 ylabel('Delivered liquid (ml)')
                 title(sprintf('Animal ID %d',mice(imouse)))
             end
+            autoArrangeFigures(ceil(sqrt(length(mice))),ceil(sqrt(length(mice))),'offset',[0 0])
         end
      end
     

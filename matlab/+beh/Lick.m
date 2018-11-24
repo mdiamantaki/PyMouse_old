@@ -33,14 +33,14 @@ classdef Lick < dj.Relvar
             
             params = getParams(params, varargin);
             
-            if nargin<2 || isempty(restrict) || ~isstruct(restrict)
+            if (nargin<2 || isempty(restrict)) || (~isstruct(restrict) && ~isobject(restrict))
                 [mice,state] = fetchn(beh.SetupInfo & beh.Condition & beh.Trial & 'animal_id>0','animal_id','state');
                 keys = [];
                 for imouse=1:length(mice)
                     keys(imouse).animal_id = mice(imouse);
                     k.animal_id = mice(imouse);
                     sessions = fetch(beh.Session & beh.Condition & beh.Trial & k ,'ORDER BY session_id DESC');
-                    if (nargin>2 && strcmp(restrict,'now')) || ~strcmp(state{imouse},'running')
+                    if (nargin>1 && strcmp(restrict,'now')) || ~strcmp(state{imouse},'running')
                         sess_idx = 1;
                     else
                         sess_idx = 2;
@@ -51,7 +51,11 @@ classdef Lick < dj.Relvar
                 keys = keys';
                 assert(~isempty(keys),'no keys specified!')
             else
-                keys = fetch(beh.Session & restrict);
+                if isstruct(restrict)
+                    keys = fetch(beh.Session & restrict);
+                else
+                    keys = fetch(restrict);
+                end
             end
             
             for key=keys'
@@ -90,7 +94,7 @@ classdef Lick < dj.Relvar
                     tr = [];
                     for iprobe = unique(probes(LickIdx))'
                         idx = probes(LickIdx)==iprobe;
-                        tr(iprobe) = plot(Ltimes(idx),trialIdx(idx),'.','color',colors(iprobe,:));
+                        tr{iprobe} = plot(Ltimes(idx),trialIdx(idx),'.','color',colors(iprobe,:));
                     end
                     
                     % show reward &  punishment
@@ -131,8 +135,11 @@ classdef Lick < dj.Relvar
                     end
                     
                     if icond == length(conds)
-                        tr(end+1) = t;
-                        l = legend(tr,'Probe #1','Probe #2','Trial start');
+                         tr{end+1} = t;
+                        legnd ={'Probe #1','Probe #2','Trial start'};
+                        idx = ~cellfun(@isempty,tr);
+                        tr = tr(idx);
+                        l = legend([tr{:}],legnd(idx));
                         set(l,'box','off','fontsize',params.fontsize,'location','southeast')
                     end
                     
