@@ -1,7 +1,6 @@
 import datajoint as dj
 
-schema = dj.schema('pipeline_behavior', locals())
-
+schema = dj.schema('pipeline_behavior')
 
 def erd():
     """for convenience"""

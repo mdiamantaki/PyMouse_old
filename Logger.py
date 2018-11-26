@@ -323,7 +323,7 @@ class PCLogger(Logger):
         return dict(animal_id=animal_id, session=session, scan_idx=scan_idx)
 
     def get_trial_key(self):
-        animal_id = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id')
+        animal_id = (() & dict(setup=self.setup)).fetch1('animal_id')
         session = (SetupControl() & dict(setup=self.setup)).fetch1('session')
         scan_idx = (SetupControl() & dict(setup=self.setup)).fetch1('scan_idx')
         return dict(animal_id=animal_id, session=session, scan_idx=scan_idx, trial_idx=self.trial_idx)
