@@ -5,7 +5,7 @@ import socket
 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 s.connect(("8.8.8.8", 80))
 ip = s.getsockname()[0]
-conn2 = dj.Connection(ip, 'atlab')
+conn2 = dj.Connection(ip, dj.config['database.user'], dj.config['database.password'])
 schema2 = dj.schema('pipeline_behavior', connection=conn2)
 
 @schema2

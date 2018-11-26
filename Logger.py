@@ -1,6 +1,7 @@
 import numpy, socket
 from Timer import *
 from Database import *
+from DatabaseForControl import *
 from itertools import product
 from queue import Queue
 import time as systime
