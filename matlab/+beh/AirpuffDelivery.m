@@ -16,8 +16,10 @@ classdef AirpuffDelivery < dj.Relvar
             params.color = [0 0 1];
             params = getParams(params,varargin);
             
-            times = msec2tmst(fetch(beh.Session & obj),fetchn(obj,'time'));
-            plot(times,ones(size(times)) * params.factor,'.','color',params.color)
+            if exists(obj)
+                times = msec2tmst(fetch(beh.Session & obj),fetchn(obj,'time'));
+                plot(times,ones(size(times)) * params.factor,'.','color',params.color)
+            end
         end
      end
 end

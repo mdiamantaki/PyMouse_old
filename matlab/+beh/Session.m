@@ -21,7 +21,7 @@ classdef Session < dj.Relvar
         function plot(obj)
             figure
             plot(beh.Lick & obj,'color',[0 0 0],'factor',2.01)
-            hold onn
+            hold on
             plot(beh.Trial & obj,'factor',2,'color',[0 0 1])
             plot(beh.Trial & obj,'factor',1.9,'color',[0.5 0.5 1],'time','end_time')
             plot(beh.LiquidDelivery & obj,'factor',1.5,'color',[0 1 0])

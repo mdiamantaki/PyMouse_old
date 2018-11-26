@@ -7,6 +7,7 @@ state="ready"               : enum('ready','running','stopped','sleeping') #
 animal_id=null              : int                           # animal id
 task_idx=null               : int                           # task identification number
 task="train"                : enum('train','calibrate')     # 
+notes=""                    : varchar(256)                  # exp notes
 %}
 
 
