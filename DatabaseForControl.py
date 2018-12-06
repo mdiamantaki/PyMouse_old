@@ -14,7 +14,7 @@ schema2 = dj.schema('pipeline_behavior', connection=conn2)
 class SetupControl(dj.Lookup):
     definition = """
     #
-    2p_setup               : varchar(256)   # two photon setup name, e.g. 2P1
+    twop_setup               : varchar(256)   # two photon setup name, e.g. 2P1
     setup                  : varchar(256)   # Setup name of behavior/stim computer, e.g. at-stim01
     ---
     ip                     : varchar(16)    # setup IP address, e.g. at-stim01.ad.bcm.edu
@@ -28,4 +28,6 @@ class SetupControl(dj.Lookup):
     last_ping=null         : timestamp
     task_idx=7             : int             # task identification number
     task="train"           : enum('train','calibrate')
+    trial_done=1           : int # 0=trial running 1=trial finished
+    exp_done=1             : int # 0=exp running 1=all trials done
     """

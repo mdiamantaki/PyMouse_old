@@ -337,3 +337,15 @@ class PCLogger(Logger):
     def update_next_trial(self, next_trial):
         (SetupControl() & dict(setup=self.setup))._update('next_trial', next_trial)
         self.trial_idx = next_trial
+
+    def get_trial_done(self):
+        trial_done = (SetupControl() & dict(setup=self.setup)).fetch1('trial_done')
+        return trial_done
+
+    def get_exp_done(self):
+        exp_done = (SetupControl() & dict(setup=self.setup)).fetch1('exp_done')
+        return exp_done
+
+    def update_trial_done(self, state):
+        (SetupControl() & dict(setup=self.setup))._update('trial_done', state)
+
