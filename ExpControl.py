@@ -2,7 +2,6 @@
 from Logger import *
 from Experiment import *
 
-
 class ExpControl:
     """ This class handles the control of session/stim from 2pmaster"""
 
@@ -16,27 +15,21 @@ class ExpControl:
         self.logger.update_setup_state('systemReady')
 
     def do_run_trial(self):
-#       self.timer.start()
-
         self.exprmt.pre_trial()
-
-#        print(self.timer.elapsed_time())
 
         # # # # # Trial period # # # # #
         self.timer.start()  # Start countdown for response]
         while self.timer.elapsed_time() < self.params['trial_duration'] * 1000 and \
                         self.logger.get_setup_state_control() == 'startStim' and self.exprmt.run():  # response period
-            break_trial = self.exprmt.trial()  #  return true if trial is done
+            break_trial = self.exprmt.trial()  # get appropriate response
             if break_trial:
                 break  # break if experiment calls for it
-            systime.sleep(0.001)
-
-#        print(self.timer.elapsed_time())
 
         # # # # # Post-Trial Period # # # # #
         self.exprmt.post_trial()
 
         # # # # # Intertrial period # # # # #
+        self.timer.start()
         while self.timer.elapsed_time() < self.params['intertrial_duration'] * 1000:
             self.exprmt.inter_trial()
 
