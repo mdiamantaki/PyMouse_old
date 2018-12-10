@@ -1,5 +1,5 @@
-from time import time
-
+#from time import time
+import time
 
 class Timer:
     """ This is a timer that is used for the state system
@@ -8,7 +8,7 @@ class Timer:
 
     def __init__(self):
         self.start_time = 0
-        self.time = time
+        self.time = time.time
         self.start()
 
     def start(self):
