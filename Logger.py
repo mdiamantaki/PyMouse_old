@@ -1,7 +1,6 @@
 import numpy, socket
 from Timer import *
 from Database import *
-from DatabaseForControl import *
 from itertools import product
 from queue import Queue
 import time as systime
@@ -233,6 +232,9 @@ class RPLogger(Logger):
 
 class PCLogger(Logger):
     """ This class handles the database logging for 2P systems"""
+
+    from DatabaseForControl import SetupControl
+
     def init_params(self):
         self.queue = Queue()
         self.timer = Timer()
@@ -241,7 +243,7 @@ class PCLogger(Logger):
         self.trial_idx = []
 
     def log_session(self):
-        animal_id, task_idx = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id', 'task_idx')
+        animal_id, task_idx = (self.SetupControl() & dict(setup=self.setup)).fetch1('animal_id', 'task_idx')
 
         self.task_idx = task_idx
 
@@ -282,29 +284,29 @@ class PCLogger(Logger):
                                                      probe=probe)))
 
     def update_setup_state(self, state):
-        key = (SetupControl() & dict(setup=self.setup)).fetch1()
+        key = (self.SetupControl() & dict(setup=self.setup)).fetch1()
         in_state = key['state'] == state
         if not in_state:
-            (SetupControl() & dict(setup=self.setup))._update('state', state)
+            (self.SetupControl() & dict(setup=self.setup))._update('state', state)
 
     def get_setup_state(self):
-        state = (SetupControl() & dict(setup=self.setup)).fetch1('state')
+        state = (self.SetupControl() & dict(setup=self.setup)).fetch1('state')
         return state
 
     def get_setup_state_control(self):
-        state = (SetupControl() & dict(setup=self.setup)).fetch1('state_control')
+        state = (self.SetupControl() & dict(setup=self.setup)).fetch1('state_control')
         return state
 
     def get_setup_task(self):
-        task = (SetupControl() & dict(setup=self.setup)).fetch1('task')
+        task = (self.SetupControl() & dict(setup=self.setup)).fetch1('task')
         return task
 
     def get_stimulus(self):
-        task = (SetupControl() & dict(setup=self.setup)).fetch1('stimulus')
+        task = (self.SetupControl() & dict(setup=self.setup)).fetch1('stimulus')
         return task
 
     def get_experimenter(self):
-        task = (SetupControl() & dict(setup=self.setup)).fetch1('experimenter')
+        task = (self.SetupControl() & dict(setup=self.setup)).fetch1('experimenter')
         return task
 
     def setup_experiment_schema(self):
@@ -314,19 +316,19 @@ class PCLogger(Logger):
         nw = systime.time()
         if nw-self.last_time > 1:
             lp = format(datetime.datetime.now(),"%Y-%m-%d %H:%M:%S")
-            (SetupControl() & dict(setup=self.setup))._update('last_ping', lp)
+            (self.SetupControl() & dict(setup=self.setup))._update('last_ping', lp)
             self.last_time = nw
 
     def get_scan_key(self):
-        animal_id = (SetupControl() & dict(setup=self.setup)).fetch1('animal_id')
-        session = (SetupControl() & dict(setup=self.setup)).fetch1('session')
-        scan_idx = (SetupControl() & dict(setup=self.setup)).fetch1('scan_idx')
+        animal_id = (self.SetupControl() & dict(setup=self.setup)).fetch1('animal_id')
+        session = (self.SetupControl() & dict(setup=self.setup)).fetch1('session')
+        scan_idx = (self.SetupControl() & dict(setup=self.setup)).fetch1('scan_idx')
         return dict(animal_id=animal_id, session=session, scan_idx=scan_idx)
 
     def get_trial_key(self):
-        animal_id = (() & dict(setup=self.setup)).fetch1('animal_id')
-        session = (SetupControl() & dict(setup=self.setup)).fetch1('session')
-        scan_idx = (SetupControl() & dict(setup=self.setup)).fetch1('scan_idx')
+        animal_id = (self.SetupControl() & dict(setup=self.setup)).fetch1('animal_id')
+        session = (self.SetupControl() & dict(setup=self.setup)).fetch1('session')
+        scan_idx = (self.SetupControl() & dict(setup=self.setup)).fetch1('scan_idx')
         return dict(animal_id=animal_id, session=session, scan_idx=scan_idx, trial_idx=self.trial_idx)
 
     def get_protocol_file(self):
@@ -335,17 +337,17 @@ class PCLogger(Logger):
         return tp.fetch1('vis_filename')
 
     def update_next_trial(self, next_trial):
-        (SetupControl() & dict(setup=self.setup))._update('next_trial', next_trial)
+        (self.SetupControl() & dict(setup=self.setup))._update('next_trial', next_trial)
         self.trial_idx = next_trial
 
     def get_trial_done(self):
-        trial_done = (SetupControl() & dict(setup=self.setup)).fetch1('trial_done')
+        trial_done = (self.SetupControl() & dict(setup=self.setup)).fetch1('trial_done')
         return trial_done
 
     def get_exp_done(self):
-        exp_done = (SetupControl() & dict(setup=self.setup)).fetch1('exp_done')
+        exp_done = (self.SetupControl() & dict(setup=self.setup)).fetch1('exp_done')
         return exp_done
 
     def update_trial_done(self, state):
-        (SetupControl() & dict(setup=self.setup))._update('trial_done', state)
+        (self.SetupControl() & dict(setup=self.setup))._update('trial_done', state)
 
