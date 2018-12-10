@@ -235,6 +235,7 @@ class PCLogger(Logger):
 
     def __init__(self):
         from DatabaseForControl import SetupControl
+        self.SetupControl = SetupControl
         super(PCLogger, self).__init__()     
 
     def init_params(self):
