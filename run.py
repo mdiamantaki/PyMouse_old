@@ -1,4 +1,4 @@
-from Logger import *
+from Logger import RPLogger
 from Experiment import *
 from Stimulus import *
 import sys
