@@ -233,7 +233,9 @@ class RPLogger(Logger):
 class PCLogger(Logger):
     """ This class handles the database logging for 2P systems"""
 
-    from DatabaseForControl import SetupControl
+    def __init__(self):
+        from DatabaseForControl import SetupControl
+        super(PCLogger, self).__init__()     
 
     def init_params(self):
         self.queue = Queue()
