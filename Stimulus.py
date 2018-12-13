@@ -254,7 +254,7 @@ class Psychtoolbox(Stimulus):
         self.mat.stimulus.open(nargout=0)
 
     def prepare(self):
-        self.mat.stimulus.useLocalDBForControl(True)
+        self.mat.stimulus.useLocalDBForControl(True, nargout=0)
         protocol_file = self.logger.get_protocol_file()
         print(protocol_file)
         self.mat.stimulus.prepare(self.logger.get_scan_key(), nargout=0)
