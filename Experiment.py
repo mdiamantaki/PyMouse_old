@@ -82,7 +82,7 @@ class Experiment:
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean((self.probe_bias - mn)/(mx-mn)))*(mx-mn) + mn
                 self.probe_bias = np.concatenate((self.probe_bias[1:], [numpy.random.choice(self.probes)]))
                 print(self.probes)
-                print(probe_bias)
+                print(self.probe_bias)
                 return numpy.random.choice(self.conditions[self.probes == bias_probe])
 
 
