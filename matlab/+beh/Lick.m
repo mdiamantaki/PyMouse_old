@@ -62,9 +62,10 @@ classdef Lick < dj.Relvar
                 
                 colors = [0 0 1; 1 0 0];
                 conds = fetch(beh.Condition & key); sub = nan(length(conds),1);s = sub;
+                date = datestr(fetch1(beh.Session & key,'session_tmst'),'YYYY-mm-dd');
                 if ~isempty(conds) && exists(beh.Trial & key) && count(beh.Trial & key)>0
                     figure
-                    set(gcf,'name',sprintf('Licks Animal:%d Session:%d',key.animal_id,key.session_id))
+                    set(gcf,'name',sprintf('Licks Animal:%d Day:%s Session:%d',key.animal_id,date,key.session_id))
                 else
                     continue
                 end
