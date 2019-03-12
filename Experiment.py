@@ -203,7 +203,7 @@ class PassiveMatlab(Experiment):
         return False
 
     def trial(self):
-        return self.stim.trial.done()
+        return self.stim.trial_done()
 
     def get_behavior(self):
         return DummyProbe
