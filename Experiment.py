@@ -74,12 +74,15 @@ class Experiment:
         elif self.randomization == 'bias':
             if len(self.probe_bias) == 0 or numpy.all(numpy.isnan(self.probe_bias)):
                 self.probe_bias = numpy.random.choice(self.probes, 5)
+                print('Initializing probe bias!')
                 return numpy.random.choice(self.conditions)
             else:
                 mn = numpy.min(self.probes)
                 mx = numpy.max(self.probes)
                 bias_probe = numpy.random.binomial(1, 1 - numpy.nanmean((self.probe_bias - mn)/(mx-mn)))*(mx-mn) + mn
                 self.probe_bias = np.concatenate((self.probe_bias[1:], [numpy.random.choice(self.probes)]))
+                print(self.probes)
+                print(probe_bias)
                 return numpy.random.choice(self.conditions[self.probes == bias_probe])
 
 
