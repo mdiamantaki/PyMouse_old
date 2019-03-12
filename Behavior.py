@@ -52,7 +52,7 @@ class RPBehavior(Behavior):
             probe = 0
         # reset lick timer if licking is detected &
         if probe > 0:
-            print(self.resp_timer.elapsed_time())
+            #print(self.resp_timer.elapsed_time())
             self.resp_timer.start()
         return probe
 
