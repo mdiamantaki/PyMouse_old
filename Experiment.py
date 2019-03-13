@@ -315,12 +315,15 @@ class CenterPort(Experiment):
         self.stim.present_trial()  # Start Stimulus
         probe = self.beh.is_licking()
 
-        # delayed response
-        if self.timer.elapsed_time() > self.trial_wait and not self.resp_ready:
+        is_ready, ready_time = self.beh.is_ready()  # update times
+        if ready_time > self.trial_wait and not self.resp_ready:
             self.resp_ready = True
+        elif not is_ready:
+            print('Wrong!')
+            self.punish(probe)
 
-        if probe > 0 and self.resp_ready:
-            if self.reward_probe != probe or not self.resp_ready:
+        if probe > 0:
+            if self.reward_probe != probe:
                 print('Wrong!')
                 self.punish(probe)
             else:
@@ -331,6 +334,23 @@ class CenterPort(Experiment):
             return True  # break trial
         else:
             return False
+
+        # delayed response
+        #if self.timer.elapsed_time() > self.trial_wait and not self.resp_ready:
+        #    self.resp_ready = True
+
+        # if probe > 0:
+        #     if self.reward_probe != probe or not self.resp_ready:
+        #         print('Wrong!')
+        #         self.punish(probe)
+        #     else:
+        #         print('Correct!')
+        #         self.reward(probe)
+        #     self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
+        #     self.resp_ready = False
+        #     return True  # break trial
+        # else:
+        #     return False
 
     def post_trial(self):
         self.stim.stop_trial()  # stop stimulus when timeout
