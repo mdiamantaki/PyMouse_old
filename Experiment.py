@@ -318,9 +318,10 @@ class CenterPort(Experiment):
         is_ready, ready_time = self.beh.is_ready()  # update times
         if ready_time > self.trial_wait and not self.resp_ready:
             self.resp_ready = True
-        elif not is_ready:
+        elif not is_ready and not self.resp_ready:
             print('Wrong!')
             self.punish(probe)
+            return True  # break trial
 
         if probe > 0:
             if self.reward_probe != probe:
