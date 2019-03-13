@@ -12,6 +12,7 @@ class Experiment:
         self.timeout = params['timeout_duration']
         self.silence = params['silence_thr']
         self.ready_wait = params['init_duration']
+        self.trial_wait = params['delay_duration']
         self.randomization = params['randomization']
         self.timer = timer
         self.reward_probe = []
@@ -278,6 +279,7 @@ class CenterPort(Experiment):
 
     def __init__(self, logger, timer, params):
         self.post_wait = 0
+        self.resp_ready = False
         self.wait_time = Timer()
         super(CenterPort, self).__init__(logger, timer, params)
 
@@ -296,12 +298,13 @@ class CenterPort(Experiment):
             if self.wait_time.elapsed_time() > 5000:  # ping every 5 seconds
                 self.logger.ping()
                 self.wait_time.start()
+            is_ready, ready_time = self.beh.is_ready()  # update times
 
-            is_ready, ready_time = self.beh.is_ready()
         if self.logger.get_setup_state() == 'running':
             print('Starting trial!')
             self.stim.init_trial(cond)
             self.beh.is_licking()
+            self.timer.start()  # trial start counter
             return False
         else:
             return True
@@ -311,16 +314,21 @@ class CenterPort(Experiment):
             return True
         self.stim.present_trial()  # Start Stimulus
         probe = self.beh.is_licking()
-        if probe > 0:
-            self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
-            if self.reward_probe == probe:
-                print('Correct!')
-                self.reward(probe)
-                return True
-            else:
+
+        # delayed response
+        if self.timer.elapsed_time() > self.trial_wait and not self.resp_ready:
+            self.resp_ready = True
+
+        if probe > 0 and self.resp_ready:
+            if self.reward_probe != probe or not self.resp_ready:
                 print('Wrong!')
                 self.punish(probe)
-                return True  # break trial
+            else:
+                print('Correct!')
+                self.reward(probe)
+            self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
+            self.resp_ready = False
+            return True  # break trial
         else:
             return False
 
