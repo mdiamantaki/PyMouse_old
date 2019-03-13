@@ -58,7 +58,7 @@ class Experiment:
         self.beh.cleanup()
 
     def get_behavior(self):
-        return RPBehavior  # default is raspberry pi
+        return DummyProbe  # default is raspberry pi
 
     def _get_new_cond(self):
         """Get curr condition & create random block of all conditions
@@ -158,13 +158,6 @@ class MultiProbe(Experiment):
         self.beh.water_reward(probe)
 
 
-class DummyMultiProbe(MultiProbe):
-    """Testing"""
-
-    def get_behavior(self):
-        return TPBehavior
-
-
 class FreeWater(Experiment):
     """Reward upon lick"""
 
@@ -173,19 +166,6 @@ class FreeWater(Experiment):
         probe = self.beh.is_licking()
         if probe:
             self.beh.water_reward(probe)
-
-
-class ProbeTest(Experiment):
-    """Reward upon lick"""
-    def prepare(self):
-        pass
-    
-    def trial(self):
-        probe = self.beh.is_licking()
-        if probe:
-            print(probe)
-            self.beh.water_reward(probe)
-            self.beh.punish_with_air(probe)
 
 
 class PassiveMatlab(Experiment):
@@ -205,9 +185,6 @@ class PassiveMatlab(Experiment):
 
     def trial(self):
         return self.stim.trial_done()
-
-    def get_behavior(self):
-        return DummyProbe
 
     def run(self):
         return self.logger.get_setup_state() == 'stimRunning' and not self.stim.stimulus_done()
@@ -324,6 +301,7 @@ class CenterPort(Experiment):
             self.punish(probe)
             return True  # break trial
 
+        # response to probe lick
         if probe > 0 and self.resp_ready:
             if self.reward_probe != probe:
                 print('Wrong!')
@@ -336,23 +314,6 @@ class CenterPort(Experiment):
             return True  # break trial
         else:
             return False
-
-        # delayed response
-        #if self.timer.elapsed_time() > self.trial_wait and not self.resp_ready:
-        #    self.resp_ready = True
-
-        # if probe > 0:
-        #     if self.reward_probe != probe or not self.resp_ready:
-        #         print('Wrong!')
-        #         self.punish(probe)
-        #     else:
-        #         print('Correct!')
-        #         self.reward(probe)
-        #     self.probe_bias = np.concatenate((self.probe_bias[1:], [probe]))
-        #     self.resp_ready = False
-        #     return True  # break trial
-        # else:
-        #     return False
 
     def post_trial(self):
         self.stim.stop_trial()  # stop stimulus when timeout
@@ -368,15 +329,12 @@ class CenterPort(Experiment):
         if self.beh.is_licking():
             self.timer.start()
 
+    def get_behavior(self):
+        return RPBehavior
+
     def punish(self, probe):
         self.post_wait = self.timeout
 
     def reward(self, probe):
         self.beh.water_reward(probe)
 
-
-class DummyCenterPort(CenterPort):
-    """Testing"""
-
-    def get_behavior(self):
-        return DummyProbe
