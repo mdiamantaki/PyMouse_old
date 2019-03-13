@@ -184,7 +184,7 @@ class PassiveMatlab(Experiment):
         return False
 
     def trial(self):
-        return self.stim.trial.done()
+        return self.stim.trial_done()
 
     def run(self):
         return self.logger.get_setup_state() == 'stimRunning' and not self.stim.stimulus_done()
