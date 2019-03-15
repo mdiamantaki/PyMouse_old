@@ -338,3 +338,76 @@ class CenterPort(Experiment):
     def reward(self, probe):
         self.beh.water_reward(probe)
 
+
+class CenterPortTrain(Experiment):
+    """2AFC with center init position"""
+
+    def __init__(self, logger, timer, params):
+        self.post_wait = 0
+        self.resp_ready = False
+        self.wait_time = Timer()
+        super(CenterPort, self).__init__(logger, timer, params)
+
+    def pre_trial(self):
+        is_ready, ready_time = self.beh.is_ready()
+        self.wait_time.start()
+        while self.logger.get_setup_state() == 'running' and (not is_ready or ready_time < self.ready_wait):
+            time.sleep(.02)
+            if self.wait_time.elapsed_time() > 5000:  # ping every 5 seconds
+                self.logger.ping()
+                self.wait_time.start()
+            is_ready, ready_time = self.beh.is_ready()  # update times
+
+        if self.logger.get_setup_state() == 'running':
+            print('Starting trial!')
+            self.beh.is_licking()
+            self.timer.start()  # trial start counter
+            return False
+        else:
+            return True
+
+    def trial(self):
+        if self.logger.get_setup_state() != 'running':
+            return True
+        probe = self.beh.is_licking()
+
+        # delayed response
+        is_ready, ready_time = self.beh.is_ready()  # update times
+        if self.timer.elapsed_time() > self.trial_wait and not self.resp_ready:
+            self.resp_ready = True
+        elif not is_ready and not self.resp_ready:
+            print('Wrong!')
+            self.punish(probe)
+            return True  # break trial
+
+        # response to probe lick
+        if probe > 0 and self.resp_ready:
+            print('Correct!')
+            self.reward(probe)
+            self.resp_ready = False
+            return True  # break trial
+        else:
+            return False
+
+    def post_trial(self):
+        self.stim.stop_trial()  # stop stimulus when timeout
+        self.timer.start()
+        if self.post_wait > 0:
+            self.stim.unshow([0, 0, 0])
+        while self.timer.elapsed_time()/1000 < self.post_wait and self.logger.get_setup_state() == 'running':
+            time.sleep(0.5)
+        self.post_wait = 0
+        self.stim.unshow()
+
+    def inter_trial(self):
+        if self.beh.is_licking():
+            self.timer.start()
+
+    def get_behavior(self):
+        return RPBehavior
+
+    def punish(self, probe):
+        self.post_wait = self.timeout
+
+    def reward(self, probe):
+        self.beh.water_reward(probe)
