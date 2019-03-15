@@ -2,7 +2,7 @@ from pygame.locals import *
 import io, imageio, pygame, os
 from Database import *
 import numpy as np
-
+from Timer import *
 
 class Stimulus:
     """ This class handles the stimulus presentation
@@ -254,25 +254,30 @@ class Psychtoolbox(Stimulus):
         self.mat.stimulus.open(nargout=0)
 
     def prepare(self):
+        self.mat.stimulus.useLocalDBForControl(True, nargout=0)
         protocol_file = self.logger.get_protocol_file()
         print(protocol_file)
         self.mat.stimulus.prepare(self.logger.get_scan_key(), nargout=0)
         self.mat.stimulus.run_protocol(protocol_file, nargout=0)
-        next_trial = self.mat.stimulus.get_next_trial()
-        self.logger.update_next_trial(next_trial)
+        self.next_trial = self.mat.stimulus.get_next_trial()
+        self.logger.update_next_trial(self.next_trial)
 
     def init_trial(self):
         self.isrunning = True
+        self.logger.update_trial_done(0)
         self.trial = self.mat.stimulus.run_trial(nargout=0, async=True)
-        next_trial = self.mat.stimulus.get_next_trial()
-        self.logger.update_next_trial(next_trial)
+        self.next_trial = self.next_trial + 1
+        self.logger.update_next_trial(self.next_trial)
 
     def stop_trial(self):
         self.trial.cancel()
         self.isrunning = False
 
     def stimulus_done(self):
-        return(self.mat.stimulus.stimulus_done())
+        return(self.logger.get_exp_done()==1)
+
+    def trial_done(self):
+        return(self.logger.get_trial_done()==1)
 
     def close(self):
         self.mat.stimulus.close(nargout=0)
