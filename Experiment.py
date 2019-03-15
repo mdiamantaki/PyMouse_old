@@ -338,3 +338,30 @@ class CenterPort(Experiment):
     def reward(self, probe):
         self.beh.water_reward(probe)
 
+
+class CenterPortTrain(CenterPort):
+    """Training on the 2AFC with center init position"""
+
+    def trial(self):
+        if self.logger.get_setup_state() != 'running':
+            return True
+        probe = self.beh.is_licking()
+
+        # delayed response
+        is_ready, ready_time = self.beh.is_ready()  # update times
+        if self.timer.elapsed_time() > self.trial_wait and not self.resp_ready:
+            self.resp_ready = True
+        elif not is_ready and not self.resp_ready:
+            print('Wrong!')
+            self.punish(probe)
+            return True  # break trial
+
+        # response to probe lick
+        if probe > 0 and self.resp_ready:
+            print('Correct!')
+            self.reward(probe)
+            self.resp_ready = False
+            return True  # break trial
+        else:
+            return False
+
