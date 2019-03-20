@@ -165,6 +165,8 @@ class RPLogger(Logger):
         timestamp = self.timer.elapsed_time()
         self.queue.put(dict(table=LiquidDelivery(), tuple=dict(self.session_key, time=timestamp, probe=probe)))
         self.inserter()
+        rew = (LiquidDelivery & self.session_key).__len__()*(Session() & self.session_key).fetch1('reward_amount')/1000
+        (SetupInfo() & dict(setup=self.setup))._update('total_liquid', rew)
 
     def log_odor(self, odor_idx):
         timestamp = self.timer.elapsed_time()
