@@ -111,6 +111,7 @@ class RPLogger(Logger):
         # start session time
         self.timer.start()
         self.inserter()
+        (SetupInfo() & dict(setup=self.setup))._update('current_session', self.session_key['session_id'])
 
     def log_conditions(self, condition_table):
 
@@ -157,6 +158,7 @@ class RPLogger(Logger):
         self.inserter()
 
         # insert ping
+        (SetupInfo() & dict(setup=self.setup))._update('last_trial', self.last_trial)
         self.ping()
 
     def log_liquid(self, probe):
