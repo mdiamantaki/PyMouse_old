@@ -166,6 +166,12 @@ class FreeWater(Experiment):
         probe = self.beh.is_licking()
         if probe:
             self.beh.water_reward(probe)
+            return True
+        else:
+            return False
+
+    def get_behavior(self):
+        return RPBehavior
 
 
 class PassiveMatlab(Experiment):
