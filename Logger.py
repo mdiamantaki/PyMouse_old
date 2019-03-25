@@ -112,6 +112,8 @@ class RPLogger(Logger):
         self.timer.start()
         self.inserter()
         (SetupInfo() & dict(setup=self.setup))._update('current_session', self.session_key['session_id'])
+        (SetupInfo() & dict(setup=self.setup))._update('last_trial', 0)
+        (SetupInfo() & dict(setup=self.setup))._update('total_liquid', 0)
 
     def log_conditions(self, condition_table):
 
