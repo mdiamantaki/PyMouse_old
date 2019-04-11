@@ -67,7 +67,7 @@ classdef Lick < dj.Relvar
                     figure
                     set(gcf,'name',sprintf('Licks Animal:%d Day:%s Session:%d',key.animal_id,date,key.session_id))
                 else
-                    continue
+                    continueclo
                 end
                 for icond = 1:length(conds)
                     if params.sub > 1
@@ -78,8 +78,10 @@ classdef Lick < dj.Relvar
                     
                     % get data
                     tdur = fetch1(beh.Session & key,'trial_duration');
-                    wtimes = fetchn(beh.Trial & key & conds(icond),'start_time')/1000;
-                    if isempty(wtimes);fprintf('No trials for animal %d',key.animal_id);continue;end
+                    [wtimes, etimes] = fetchn(beh.Trial & key & conds(icond),'start_time','end_time');
+                    wtimes = wtimes/1000;
+                    etimes = etimes/1000;
+                    if isempty(wtimes);fprintf('No trials for animal %d \n',key.animal_id);continue;end
                     wtimes(end+1) = wtimes(end)+1;wtimes = wtimes(:); % FIX THIS
                     [ltimes, probes] = ...
                         (fetchn(beh.Lick & key & conds(icond),'time','probe'));
@@ -91,16 +93,12 @@ classdef Lick < dj.Relvar
                     [LickIdx,trialIdx] = find(bsxfun(@gt,ltimes,start') & bsxfun(@lt,ltimes,stop'));
                     Ltimes = ltimes(LickIdx)-wtimes(trialIdx);
                     
-                    % plot Licks
-                    tr = [];
-                    for iprobe = unique(probes(LickIdx))'
-                        idx = probes(LickIdx)==iprobe;
-                        tr{iprobe} = plot(Ltimes(idx),trialIdx(idx),'.','color',colors(iprobe,:));
-                    end
-                    
                     % show reward &  punishment
+                    if params.response       
+                        [EndIdx,etrialIdx] = find(bsxfun(@gt,etimes,start') & bsxfun(@lt,etimes,stop'));
+                          Etimes = etimes(EndIdx)-wtimes(etrialIdx);
+                        plot(Etimes,etrialIdx,'x','color',[0.1 0.1 0.1]);
                     
-                    if params.response
                         [rtimes, rprobes] = ...
                             (fetchn(beh.LiquidDelivery & key & conds(icond),'time','probe'));
                         [ptimes, pprobes] = ...
@@ -116,10 +114,17 @@ classdef Lick < dj.Relvar
                         % plot Reward & punishment
                         for iprobe = unique(probes)'
                             idx = rprobes(RewIdx)==iprobe;
-                            plot(Rtimes(idx),rtrialIdx(idx),'o','color',colors(iprobe,:))
+                            plot(Rtimes(idx),rtrialIdx(idx),'o','color',[0 1 0])
                             idx = pprobes(PunIdx)==iprobe;
                             plot(Ptimes(idx),ptrialIdx(idx),'*','color',colors(iprobe,:))
                         end
+                    end
+                    
+                    % plot Licks
+                    tr = [];
+                    for iprobe = unique(probes(LickIdx))'
+                        idx = probes(LickIdx)==iprobe;
+                        tr{iprobe} = plot(Ltimes(idx),trialIdx(idx),'.','color',colors(iprobe,:));
                     end
                     
                     % adjust plot settings
@@ -148,10 +153,15 @@ classdef Lick < dj.Relvar
                     rprob = fetch1(beh.RewardCond & key & conds(icond),'probe');
                     if count(beh.MovieClipCond & conds(1))>0
                         [mov, clip] = fetch1(beh.MovieClipCond & key & conds(icond),'movie_name','clip_number');
-                        title(sprintf('%s %d',mov, clip),'Color', colors(rprob,:))
+                        title(sprintf('%s %d',mov, clip),'Color', colors(rprob,:),...
+                            'rotation',45,'HorizontalAlignment','left','VerticalAlignment','middle')
                     elseif count(beh.GratingCond & conds(1))
                         direction = fetch1( beh.GratingCond & key & conds(icond),'direction');
                         title(sprintf('Direction: %d \n Reward Probe:%d',direction, rprob))
+                    elseif count(beh.OdorCond & conds(1))>0
+                        odor = fetch1(beh.OdorCond & key & conds(icond),'odor_name');
+                        title(sprintf('%s',odor),'Color', colors(rprob,:),...
+                            'rotation',45,'HorizontalAlignment','left','VerticalAlignment','middle')
                     end
                     
                     
