@@ -19,7 +19,7 @@ classdef Trial < dj.Relvar
             params.time = 'start_time';
             params = getParams(params,varargin);
             
-            times = msec2tmst(fetch(beh.Session & self),fetchn(self, params.time));
+            times = msec2tmst(beh.Session & self,fetchn(self, params.time));
             plot(times,ones(size(times))* params.factor,'.','color',params.color)
             
             if strcmp(params.time,'start_time')

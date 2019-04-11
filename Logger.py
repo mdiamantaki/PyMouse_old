@@ -132,7 +132,11 @@ class RPLogger(Logger):
                 self.queue.put(dict(table=RewardCond(), tuple=dict(self.session_key,
                                                                    cond_idx=cond_idx,
                                                                    probe=probes[cond_idx-1])))
-            self.queue.put(dict(table=condition_table(), tuple=dict(cond.items() | self.session_key.items(),
+
+            if numpy.size(condition_table) < 2:
+                condition_table = [condition_table]
+            for condtable in condition_table:
+                self.queue.put(dict(table=condtable(), tuple=dict(cond.items() | self.session_key.items(),
                                                                     cond_idx=cond_idx)))
         self.inserter()
 
