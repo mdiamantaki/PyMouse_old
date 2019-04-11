@@ -70,7 +70,7 @@ class Logger:
     def inserter(self):  # insert worker, in case we need threading
         while not self.queue.empty():
             item = self.queue.get()
-            item['table'].insert1(item['tuple'])
+            item['table'].insert(item['tuple'], ignore_extra_fields=True)
 
 
 class RPLogger(Logger):
