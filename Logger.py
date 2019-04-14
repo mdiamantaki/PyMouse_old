@@ -121,6 +121,10 @@ class RPLogger(Logger):
         conditions = eval((Task() & dict(task_idx=self.task_idx)).fetch1('conditions'))
         conditions = sum([list((dict(zip(conds, x)) for x in product(*conds.values()))) for conds in conditions], [])
 
+        # make sure condition_table is a list
+        if numpy.size(condition_table) < 2:
+            condition_table = [condition_table]
+
         # iterate through all conditions and insert
         cond_idx = 0
         probes = numpy.empty(numpy.size(conditions))
@@ -132,11 +136,6 @@ class RPLogger(Logger):
                 self.queue.put(dict(table=RewardCond(), tuple=dict(self.session_key,
                                                                    cond_idx=cond_idx,
                                                                    probe=probes[cond_idx-1])))
-            print(numpy.size(condition_table))
-            if numpy.size(condition_table) < 2:
-                print('Changing Size!')
-                condition_table = [condition_table]
-            print(numpy.size(condition_table))
             for condtable in condition_table:
                 self.queue.put(dict(table=condtable(), tuple=dict(cond.items() | self.session_key.items(),
                                                                     cond_idx=cond_idx)))
