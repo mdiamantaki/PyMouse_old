@@ -132,9 +132,11 @@ class RPLogger(Logger):
                 self.queue.put(dict(table=RewardCond(), tuple=dict(self.session_key,
                                                                    cond_idx=cond_idx,
                                                                    probe=probes[cond_idx-1])))
-
+            print numpy.size(condition_table)
             if numpy.size(condition_table) < 2:
+                print 'Changing Size!'
                 condition_table = [condition_table]
+            print numpy.size(condition_table)
             for condtable in condition_table:
                 self.queue.put(dict(table=condtable(), tuple=dict(cond.items() | self.session_key.items(),
                                                                     cond_idx=cond_idx)))
