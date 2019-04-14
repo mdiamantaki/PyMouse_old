@@ -134,7 +134,7 @@ class RPLogger(Logger):
                                                                    probe=probes[cond_idx-1])))
             print(numpy.size(condition_table))
             if numpy.size(condition_table) < 2:
-                print 'Changing Size!'
+                print('Changing Size!')
                 condition_table = [condition_table]
             print(numpy.size(condition_table))
             for condtable in condition_table:
