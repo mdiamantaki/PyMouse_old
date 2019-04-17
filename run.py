@@ -36,6 +36,7 @@ def train(logger=logg):
                 stop = stop + timedelta(days=1)
             if now < start or now > stop:
                 logger.update_setup_state('offtime')
+                exprmt.stim.unshow([0, 0, 0])
             while (now < start or now > stop) and logger.get_setup_state() == 'offtime':
                 logger.ping()
                 now = datetime.now()
@@ -46,6 +47,7 @@ def train(logger=logg):
                 time.sleep(5)
             if logger.get_setup_state() == 'offtime':
                 logger.update_setup_state('running')
+                exprmt.stim.unshow()
                 break
 
             # # # # # Pre-Trial period # # # # #
