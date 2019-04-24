@@ -225,7 +225,7 @@ class Gratings(Stimulus):
         theta_rad = (theta/180) * np.pi
         xt = xm * np.cos(theta_rad)
         yt = ym * np.sin(theta_rad)
-        im = np.floor((np.sin(((xt + yt) * freq * 2 * np.pi) + phase)+1)*127*contrast/100 +contrast/200)
+        im = np.floor(((np.sin(((xt + yt) * freq * 2 * np.pi) + phase)+1)*contrast/100 + contrast/200)*127)
         grating = np.transpose(np.tile(im, [3, 1, 1]), (1, 2, 0))
         return pygame.surfarray.make_surface(grating)
 
