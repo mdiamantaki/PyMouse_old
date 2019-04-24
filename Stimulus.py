@@ -221,7 +221,7 @@ class Gratings(Stimulus):
         freq = w/lamda  # compute frequency from wavelength
         # make linear ramp
         x0 = np.linspace(0, 1, w) - 0.5
-        if square:
+        if square > 0:
             x0 = (x0 > 0) - 0.5
         xm, ym = np.meshgrid(x0, x0)
         # Change orientation by adding Xm and Ym together in different proportions
