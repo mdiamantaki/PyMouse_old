@@ -209,7 +209,7 @@ class Gratings(Stimulus):
     def get_condition_table(self):
         return GratingCond
 
-    def __make_grating(self, lamda=50, theta=0, phase=0):
+    def __make_grating(self, lamda=50, theta=0, phase=0, contrast=100):
         """ Makes an oriented grating
         lamda: wavelength (number of pixels per cycle)
         theta: grating orientation in degrees
@@ -218,7 +218,7 @@ class Gratings(Stimulus):
         w = np.max(self.size) + 2 * lamda
         freq = w/lamda  # compute frequency from wavelength
         # make linear ramp
-        x0 = np.linspace(0, 1, w) - .5
+        x0 = np.linspace(0, contrast/100, w) - contrast/200
         xm, ym = np.meshgrid(x0, x0)
         # Change orientation by adding Xm and Ym together in different proportions
         theta_rad = (theta/180) * np.pi
