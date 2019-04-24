@@ -177,7 +177,8 @@ class Gratings(Stimulus):
             params = (GratingCond() & dict(cond_idx=cond) & self.logger.session_key).fetch1()
             params['grating'] = self.__make_grating(params['spatial_period'],
                                                     params['direction'],
-                                                    params['phase'])
+                                                    params['phase'],
+                                                    params['contrast'])
             self.stim_conditions[cond] = params
 
     def init_trial(self, cond):
