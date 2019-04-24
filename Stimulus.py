@@ -219,13 +219,13 @@ class Gratings(Stimulus):
         w = np.max(self.size) + 2 * lamda
         freq = w/lamda  # compute frequency from wavelength
         # make linear ramp
-        x0 = np.linspace(0, contrast/100, w) - contrast/200
+        x0 = np.linspace(0, 1, w) - 0.5
         xm, ym = np.meshgrid(x0, x0)
         # Change orientation by adding Xm and Ym together in different proportions
         theta_rad = (theta/180) * np.pi
         xt = xm * np.cos(theta_rad)
         yt = ym * np.sin(theta_rad)
-        im = np.floor((np.sin(((xt + yt) * freq * 2 * np.pi) + phase)+1)*127)
+        im = np.floor((np.sin(((xt + yt) * freq * 2 * np.pi) + phase)+1)*127*contrast/100 +contrast/200)
         grating = np.transpose(np.tile(im, [3, 1, 1]), (1, 2, 0))
         return pygame.surfarray.make_surface(grating)
 
