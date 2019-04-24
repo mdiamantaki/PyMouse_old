@@ -222,7 +222,7 @@ class Gratings(Stimulus):
         # make linear ramp
         x0 = np.linspace(0, 1, w) - 0.5
         if square > 0:
-            x0 = (x0 > 0) - 0.5
+            x0 = np.double(x0 > 0) - 0.5
         xm, ym = np.meshgrid(x0, x0)
         # Change orientation by adding Xm and Ym together in different proportions
         theta_rad = (theta/180) * np.pi
