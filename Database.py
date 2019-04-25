@@ -266,6 +266,7 @@ class GratingCond(dj.Manual):
     temporal_freq            : float                  # cycles/sec
     contrast=100             : int                    # 0-100 Michelson contrast
     phase=0                  : float                  # initial phase in rad
+    square=0                 : tinyint                # square wave flag (binary)
     """
 
 @schema

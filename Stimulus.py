@@ -28,8 +28,8 @@ class Stimulus:
         # setup pygame
         pygame.init()
         self.screen = pygame.display.set_mode(self.size)
-        # self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
-        #self.screen = pygame.display.set_mode(self.size, HWSURFACE)
+        #self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
+        #self.screen = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         self.unshow()
         pygame.mouse.set_visible(0)
         pygame.display.toggle_fullscreen()
@@ -173,11 +173,15 @@ class Gratings(Stimulus):
     def prepare(self, conditions):
         self.clock = pygame.time.Clock()
         self.stim_conditions = dict()
+        self.timer = Timer()
+        self.timer.start()
         for cond in conditions:
             params = (GratingCond() & dict(cond_idx=cond) & self.logger.session_key).fetch1()
             params['grating'] = self.__make_grating(params['spatial_period'],
                                                     params['direction'],
-                                                    params['phase'])
+                                                    params['phase'],
+                                                    params['contrast'],
+                                                    params['square'])
             self.stim_conditions[cond] = params
 
     def init_trial(self, cond):
@@ -197,9 +201,9 @@ class Gratings(Stimulus):
                          (-self.lamda + self.yt * displacement,
                           -self.lamda + self.xt * displacement))
         #self.encode_photodiode()
+        self.clock.tick_busy_loop(self.fps)
         self.flip()
         self.frame_idx += 1
-        self.clock.tick_busy_loop(self.fps)
 
     def stop_trial(self):
         self.unshow()
@@ -209,7 +213,7 @@ class Gratings(Stimulus):
     def get_condition_table(self):
         return GratingCond
 
-    def __make_grating(self, lamda=50, theta=0, phase=0):
+    def __make_grating(self, lamda=50, theta=0, phase=0, contrast=100, square=False):
         """ Makes an oriented grating
         lamda: wavelength (number of pixels per cycle)
         theta: grating orientation in degrees
@@ -218,13 +222,16 @@ class Gratings(Stimulus):
         w = np.max(self.size) + 2 * lamda
         freq = w/lamda  # compute frequency from wavelength
         # make linear ramp
-        x0 = np.linspace(0, 1, w) - .5
+        x0 = np.linspace(0, 1, w) - 0.5
         xm, ym = np.meshgrid(x0, x0)
         # Change orientation by adding Xm and Ym together in different proportions
         theta_rad = (theta/180) * np.pi
         xt = xm * np.cos(theta_rad)
         yt = ym * np.sin(theta_rad)
-        im = np.floor((np.sin(((xt + yt) * freq * 2 * np.pi) + phase)+1)*127)
+        im = (np.sin(((xt + yt) * freq * 2 * np.pi) + phase)+1)
+        if square > 0:
+            im = np.double(im > 1)*2
+        im = np.floor((im*contrast/100 + (100-contrast)/200)*127)
         grating = np.transpose(np.tile(im, [3, 1, 1]), (1, 2, 0))
         return pygame.surfarray.make_surface(grating)
 
