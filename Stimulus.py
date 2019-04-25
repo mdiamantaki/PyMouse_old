@@ -230,6 +230,8 @@ class Gratings(Stimulus):
         if square > 0:
             im = np.double(im > 0.5)
         im = np.floor((im*contrast/100 + (100-contrast)/200)*127)
+        print(np.max(np.max(im)))
+        print(np.min(np.min(im)))
         grating = np.transpose(np.tile(im, [3, 1, 1]), (1, 2, 0))
         return pygame.surfarray.make_surface(grating)
 
