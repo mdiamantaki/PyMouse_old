@@ -211,10 +211,10 @@ class Gratings(Stimulus):
         print('Flip: %s' % self.timer.elapsed_time())
 
         self.frame_idx += 1
-        self.clock.tick_busy_loop(self.fps)
+        #self.clock.tick_busy_loop(self.fps)
 
         self.timer.start()
-        
+
     def stop_trial(self):
         self.unshow()
         self.isrunning = False
