@@ -28,8 +28,8 @@ class Stimulus:
         # setup pygame
         pygame.init()
         #self.screen = pygame.display.set_mode(self.size)
-        self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
-        #self.screen = pygame.display.set_mode(self.size, HWSURFACE)
+        #self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
+        self.screen = pygame.display.set_mode(self.size, HWSURFACE | DOUBLEBUF)
         self.unshow()
         pygame.mouse.set_visible(0)
         pygame.display.toggle_fullscreen()
