@@ -27,9 +27,9 @@ class Stimulus:
 
         # setup pygame
         pygame.init()
-        #self.screen = pygame.display.set_mode(self.size)
+        self.screen = pygame.display.set_mode(self.size)
         #self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
-        self.screen = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
+        #self.screen = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUF)
         self.unshow()
         pygame.mouse.set_visible(0)
         pygame.display.toggle_fullscreen()
@@ -173,6 +173,8 @@ class Gratings(Stimulus):
     def prepare(self, conditions):
         self.clock = pygame.time.Clock()
         self.stim_conditions = dict()
+        self.timer = Timer()
+        self.timer.start()
         for cond in conditions:
             params = (GratingCond() & dict(cond_idx=cond) & self.logger.session_key).fetch1()
             params['grating'] = self.__make_grating(params['spatial_period'],
@@ -194,12 +196,20 @@ class Gratings(Stimulus):
         return cond
 
     def present_trial(self):
+        print('Trial: %s' % self.timer.elapsed_time())
+        self.timer.start()
         displacement = np.mod(self.frame_idx * self.frame_step, self.lamda)
+        print('Disp: %s' % self.timer.elapsed_time())
+        self.timer.start()
         self.screen.blit(self.grating,
                          (-self.lamda + self.yt * displacement,
                           -self.lamda + self.xt * displacement))
+        print('Blit: %s' % self.timer.elapsed_time())
+        self.timer.start()
         #self.encode_photodiode()
         self.flip()
+        print('Flip: %s' % self.timer.elapsed_time())
+        self.timer.start()
         self.frame_idx += 1
         self.clock.tick_busy_loop(self.fps)
 
