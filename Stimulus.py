@@ -29,7 +29,7 @@ class Stimulus:
         pygame.init()
         #self.screen = pygame.display.set_mode(self.size)
         #self.screen = pygame.display.set_mode(self.size, NOFRAME | HWSURFACE | DOUBLEBUF | RESIZABLE)
-        self.screen = pygame.display.set_mode(self.size, HWSURFACE | DOUBLEBUF)
+        self.screen = pygame.display.set_mode(self.size, pygame.HWSURFACE | pygame.DOUBLEBUFFER)
         self.unshow()
         pygame.mouse.set_visible(0)
         pygame.display.toggle_fullscreen()
@@ -228,8 +228,8 @@ class Gratings(Stimulus):
         yt = ym * np.sin(theta_rad)
         im = (np.sin(((xt + yt) * freq * 2 * np.pi) + phase)+1)
         if square > 0:
-            im = np.double(im > 0.5)
-        im = np.floor((im*contrast/100 + (100-contrast)/200)*255)
+            im = np.double(im > 1)*2
+        im = np.floor((im*contrast/100 + (100-contrast)/200)*127)
         print(np.max(np.max(im)))
         print(np.min(np.min(im)))
         grating = np.transpose(np.tile(im, [3, 1, 1]), (1, 2, 0))
