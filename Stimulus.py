@@ -196,24 +196,14 @@ class Gratings(Stimulus):
         return cond
 
     def present_trial(self):
-        print('Trial: %s' % self.timer.elapsed_time())
-        self.timer.start()
         displacement = np.mod(self.frame_idx * self.frame_step, self.lamda)
-        print('Disp: %s' % self.timer.elapsed_time())
-        self.timer.start()
         self.screen.blit(self.grating,
                          (-self.lamda + self.yt * displacement,
                           -self.lamda + self.xt * displacement))
-        print('Blit: %s' % self.timer.elapsed_time())
-        self.timer.start()
         #self.encode_photodiode()
+        self.clock.tick_busy_loop(self.fps)
         self.flip()
-        print('Flip: %s' % self.timer.elapsed_time())
-
         self.frame_idx += 1
-        #self.clock.tick_busy_loop(self.fps)
-
-        self.timer.start()
 
     def stop_trial(self):
         self.unshow()
@@ -242,8 +232,6 @@ class Gratings(Stimulus):
         if square > 0:
             im = np.double(im > 1)*2
         im = np.floor((im*contrast/100 + (100-contrast)/200)*127)
-        print(np.max(np.max(im)))
-        print(np.min(np.min(im)))
         grating = np.transpose(np.tile(im, [3, 1, 1]), (1, 2, 0))
         return pygame.surfarray.make_surface(grating)
 
