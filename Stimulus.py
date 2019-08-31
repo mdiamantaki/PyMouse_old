@@ -1,5 +1,7 @@
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import imageio, pygame, io
 from pygame.locals import *
-import io, imageio, pygame, os
 from Database import *
 import numpy as np
 from Timer import *
@@ -272,7 +274,7 @@ class Psychtoolbox(Stimulus):
     def init_trial(self):
         self.isrunning = True
         self.logger.update_trial_done(0)
-        self.trial = self.mat.stimulus.run_trial(nargout=0, async=True)
+        self.trial = self.mat.stimulus.run_trial(**{'nargout': 0, 'async': True})
         self.next_trial = self.next_trial + 1
         self.logger.update_next_trial(self.next_trial)
 
