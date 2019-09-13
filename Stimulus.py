@@ -1,6 +1,4 @@
-import os
-os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
-import imageio, pygame, io
+import imageio, pygame, io, os
 from pygame.locals import *
 from Database import *
 import numpy as np
@@ -377,3 +375,56 @@ class VisOlf(Stimulus):
         return [OdorCond, MovieClipCond]
 
 
+class PTOlf(Stimulus):
+    """ This class handles the presentation of Odors & Movies with an optimized library for Raspberry pi"""
+
+    def __init__(self, logger, beh):
+        import matlab.engine as eng
+        self.mat = eng.start_matlab()
+        self.mat.run('/home/atlab/pipeline/setPath.m', nargout=0)
+        self.mat.run('/home/atlab/pipeline/setDJ.m', nargout=0)
+        self.trial = []
+        super(Psychtoolbox, self).__init__(logger, beh)
+
+    def setup(self):
+        self.mat.stimulus.open(nargout=0)
+
+    def prepare(self):
+        self.mat.stimulus.useLocalDBForControl(True, nargout=0)
+        protocol_file = self.logger.get_protocol_file()
+        print(protocol_file)
+        self.mat.stimulus.prepare(self.logger.get_scan_key(), nargout=0)
+        self.mat.stimulus.run_protocol(protocol_file, nargout=0)
+        self.next_trial = self.mat.stimulus.get_next_trial()
+        self.olf_conditions.odor_idx = self.stim.mat.stimulus.get_reward_probe(self, 'odor_idx')
+        self.olf_conditions.odor_dur = self.stim.mat.stimulus.get_reward_probe(self, 'odor_dur')
+        self.logger.update_next_trial(self.next_trial)
+
+    def init_trial(self):
+        self.isrunning = True
+        self.logger.update_trial_done(0)
+        self.trial = self.mat.stimulus.run_trial(**{'nargout': 0, 'async': True})
+        self.next_trial = self.next_trial + 1
+        self.logger.update_next_trial(self.next_trial)
+
+        # present odor
+        self.beh.give_odor(self.olf_conditions.odor_idx, self.olf_conditions.odor_dur)
+
+    def stop_trial(self):
+        self.trial.cancel()
+        self.isrunning = False
+
+    def stimulus_done(self):
+        return(self.logger.get_exp_done()==1)
+
+    def trial_done(self):
+        return(self.logger.get_trial_done()==1)
+
+    def get_condition_table(self):
+        return [OdorCond, MovieClipCond]
+
+    def close(self):
+        self.mat.stimulus.close(nargout=0)
+
+    def cleanup(self):
+        self.mat.stimulus.cleanup(nargout=0)
