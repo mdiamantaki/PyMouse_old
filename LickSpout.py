@@ -157,11 +157,15 @@ class SerialProbe(Probe):
         else:
             ser_port = '/dev/cu.UC-232AC'
         self.serial = serial.serial_for_url(ser_port)
-        self.channels = {'air': {1: 24, 2: 25},
-                         'lick': {1: 'dsr', 2: 'cts'}}
+        self.channels = {'out': {1: 'dtr', 2: 'rts'},
+                         'in': {1: 'dsr', 2: 'cts'}}
 
         self.serial.dtr = False  # probe 1
         self.serial.rts = False  # place probe in position
+
+        setattr(self.serial, self.channels['out'][1], False)  # read a byte from the hardware
+        setattr(self.serial, self.channels['out'][2], False)  # read a byte from the hardware
+
         super(SerialProbe, self).__init__(logger)
         self.worker = GetHWPoller(0.001, self.poll_probe)
         self.interlock = False  # set to prohibit thread from accessing serial port
@@ -170,7 +174,7 @@ class SerialProbe(Probe):
     def give_liquid(self, probe, duration=False, log=True):
         if not duration:
             duration = self.liquid_dur[probe]
-        self.thread.submit(self.__pulse_out, duration)
+        self.thread.submit(self.__pulse_out, probe, duration)
         if log:
             self.logger.log_liquid(probe)
 
@@ -178,8 +182,8 @@ class SerialProbe(Probe):
         if self.interlock:
             return "interlock"  # someone else is using serial port, wait till done!
         self.interlock = True  # set interlock so we won't be interrupted
-        response1 = self.serial.dsr  # read a byte from the hardware
-        response2 = self.serial.cts  # read a byte from the hardware
+        response1 = getattr(self.serial, self.channels['in'][1])  # read a byte from the hardware
+        response2 = getattr(self.serial, self.channels['in'][2])  # read a byte from the hardware
         self.interlock = False
         if response1:
             if self.timer_probe1.elapsed_time() > 200:
@@ -188,26 +192,16 @@ class SerialProbe(Probe):
             if self.timer_probe2.elapsed_time() > 200:
                 self.probe2_licked(2)
 
-    def __pulse_out(self, duration):
+    def __pulse_out(self, probe, duration):
         while self.interlock:  # busy, wait for free, should timeout here
             print("waiting for interlock")
             sys.stdout.flush()
         print('reward!')
         self.interlock = True
-        self.serial.dtr = True
+        setattr(self.serial, self.channels['out'][probe], True)
         sleep(duration/1000)
-        self.serial.dtr = False
+        setattr(self.serial, self.channels['out'][probe], False)
         self.interlock = False
-
-    def get_in_position(self):
-        if not self.ready:
-            self.serial.rts = True
-            self.ready = True
-
-    def get_off_position(self):
-        if self.ready:
-            self.serial.rts = False
-            self.ready = False
 
     def in_position(self):
         return self.ready
