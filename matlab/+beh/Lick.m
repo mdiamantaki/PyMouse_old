@@ -34,7 +34,7 @@ classdef Lick < dj.Relvar
             params = getParams(params, varargin);
             
             if (nargin<2 || isempty(restrict)) || (~isstruct(restrict) && ~isobject(restrict))
-                [mice,state] = fetchn(beh.SetupInfo & beh.Condition & beh.Trial & 'animal_id>0','animal_id','state');
+                [mice,state] = fetchn(beh.SetupInfo & beh.Condition & beh.Trial & obj & 'animal_id>0','animal_id','state');
                 keys = [];
                 for imouse=1:length(mice)
                     keys(imouse).animal_id = mice(imouse);
