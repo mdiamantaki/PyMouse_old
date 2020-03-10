@@ -67,7 +67,7 @@ classdef Lick < dj.Relvar
                     figure
                     set(gcf,'name',sprintf('Licks Animal:%d Day:%s Session:%d',key.animal_id,date,key.session_id))
                 else
-                    continueclo
+                    continue
                 end
                 for icond = 1:length(conds)
                     if params.sub > 1
