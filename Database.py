@@ -3,6 +3,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.dates import DateFormatter
+import numpy as np
 
 schema = dj.schema('pipeline_behavior')
 schema2 = dj.schema('pipeline_stimulus')
@@ -222,7 +223,38 @@ class LiquidDelivery(dj.Manual):
     time			    : int 	            # time from session start (ms)
     probe               : int               # probe number
     """
-
+    def plot(self, key = 'all'):
+        if key == 'all':
+            df = pd.DataFrame((self * Session).fetch())
+        else: 
+            df = pd.DataFrame((self * Session & key).fetch())
+            
+        df['new_tmst'] = (df['session_tmst'] - pd.Timestamp("1970-01-01")) // pd.Timedelta('1ms') 
+        df['new_tmst'] = df['new_tmst'] + df['time']
+        df['new_tmst'] = pd.to_datetime(df['new_tmst'], unit='ms', origin='unix')
+        df['new_tmst']= df['new_tmst'].dt.date
+        mice = df['animal_id'].unique()
+        m_count = df['animal_id'].value_counts()
+        t_count = df.groupby(['animal_id'])['new_tmst'].value_counts().sort_index()
+        df['total_reward'] = np.nan
+        kk=0
+        for idx in mice:
+            for j in range(len(t_count[idx])):
+                df['total_reward'][kk] = t_count[idx][j] * df['reward_amount'][kk]
+                kk = kk+t_count[idx][j]
+        df['total_reward']= df['total_reward']/1000
+        k=0
+        for idx in mice:
+            ax = df[df['animal_id']==idx].dropna().plot(x='new_tmst', y='total_reward') 
+            plt.axhline(y=1, color='r', linestyle='-.')
+            plt.xticks(rotation=45)
+            plt.ylabel('DeliveredLiquid(ml)')
+            date_form = DateFormatter("%d-%m-%y")
+            ax.xaxis.set_major_formatter(date_form)
+            ax.xaxis.set_major_locator(mdates.WeekdayLocator(interval=1))
+            ax.set_title('Animal_id: %1d' % idx)
+            k = k+m_count[idx]
+        return ax
 
 @schema
 class AirpuffDelivery(dj.Manual):
